@@ -185,57 +185,76 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, supabaseConfig, 
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 bg-white p-8 rounded-sm shadow-sm border border-stone-200">
           <div>
             <h1 className="text-4xl font-black text-stone-900 tracking-tighter uppercase">Admin Control Panel</h1>
-            <p className="text-stone-400 text-sm font-medium tracking-wide">Quản lý dữ liệu qua Supabase Cloud</p>
+            <p className="text-stone-400 text-sm font-medium tracking-wide">Quản lý đồng bộ dữ liệu Cloud</p>
           </div>
-          <div className="flex bg-stone-100 p-1 rounded-sm gap-1">
-            <button onClick={() => setActiveTab('menu')} className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-sm transition-all ${activeTab === 'menu' ? 'bg-white text-orange-900 shadow-sm' : 'text-stone-400 hover:text-stone-600'}`}>Thực đơn</button>
-            <button onClick={() => setActiveTab('hero')} className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-sm transition-all ${activeTab === 'hero' ? 'bg-white text-orange-900 shadow-sm' : 'text-stone-400 hover:text-stone-600'}`}>Ảnh bìa</button>
-            <button onClick={() => setActiveTab('config')} className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-sm transition-all ${activeTab === 'config' ? 'bg-white text-orange-900 shadow-sm' : 'text-stone-400 hover:text-stone-600'}`}>Cài đặt</button>
+          <div className="flex bg-stone-100 p-1 rounded-sm gap-2">
+            <button onClick={() => setActiveTab('menu')} className={`px-5 py-2 text-[10px] font-black uppercase tracking-widest rounded-sm transition-all ${activeTab === 'menu' ? 'bg-white text-orange-900 shadow-sm border border-stone-200' : 'text-stone-400 hover:text-stone-600'}`}>
+              Món Ăn
+            </button>
+            <button onClick={() => setActiveTab('hero')} className={`px-5 py-2 text-[10px] font-black uppercase tracking-widest rounded-sm transition-all ${activeTab === 'hero' ? 'bg-white text-orange-900 shadow-sm border border-stone-200' : 'text-stone-400 hover:text-stone-600'}`}>
+              Ảnh Bìa
+            </button>
+            <button onClick={() => setActiveTab('config')} className={`px-5 py-2 text-[10px] font-black uppercase tracking-widest rounded-sm transition-all ${activeTab === 'config' ? 'bg-orange-800 text-white shadow-md' : 'bg-stone-200 text-stone-500 hover:bg-stone-300'}`}>
+              ⚙️ Cài đặt
+            </button>
           </div>
         </header>
 
         {activeTab === 'config' && (
-          <div className="bg-white p-8 shadow-sm border border-stone-200 rounded-sm">
-            <h2 className="text-xl font-bold text-orange-900 uppercase mb-6 tracking-tight">Kết nối Supabase</h2>
-            <div className="grid grid-cols-1 gap-6 max-w-2xl">
+          <div className="bg-white p-10 shadow-lg border border-orange-100 rounded-sm animate-in fade-in zoom-in-95 duration-300">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="w-12 h-12 bg-orange-100 flex items-center justify-center rounded-full text-orange-800">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+              </div>
+              <h2 className="text-2xl font-black text-stone-900 uppercase tracking-tighter">Cấu hình kết nối Cloud</h2>
+            </div>
+            
+            <div className="grid grid-cols-1 gap-8 max-w-3xl">
               <div>
-                <label className="text-[10px] uppercase font-black text-stone-400 mb-2 block">Project URL</label>
-                <input value={localConfig.url} onChange={e => setLocalConfig({...localConfig, url: e.target.value})} className="w-full border p-4 text-sm font-mono outline-none focus:ring-1 ring-orange-800" placeholder="https://your-project.supabase.co" />
+                <label className="text-[10px] uppercase font-black text-stone-500 mb-2 block tracking-widest">Supabase Project URL</label>
+                <input value={localConfig.url} onChange={e => setLocalConfig({...localConfig, url: e.target.value})} className="w-full border-2 border-stone-100 p-4 text-sm font-mono outline-none focus:border-orange-800 transition-colors bg-stone-50" placeholder="https://abcxyz.supabase.co" />
               </div>
               <div>
-                <label className="text-[10px] uppercase font-black text-stone-400 mb-2 block">Anon Key</label>
-                <input value={localConfig.key} onChange={e => setLocalConfig({...localConfig, key: e.target.value})} className="w-full border p-4 text-sm font-mono outline-none focus:ring-1 ring-orange-800" placeholder="eyJhbGciOiJIUzI1NiIsIn..." />
+                <label className="text-[10px] uppercase font-black text-stone-500 mb-2 block tracking-widest">Supabase Anon Key</label>
+                <input value={localConfig.key} onChange={e => setLocalConfig({...localConfig, key: e.target.value})} className="w-full border-2 border-stone-100 p-4 text-sm font-mono outline-none focus:border-orange-800 transition-colors bg-stone-50" placeholder="Paste your anon key here..." />
               </div>
-              <button onClick={() => setSupabaseConfig(localConfig)} className="bg-orange-800 text-white py-4 font-black uppercase tracking-widest text-xs hover:bg-stone-900 transition-all rounded-sm">
-                Lưu cấu hình & Kết nối
+              
+              <button onClick={() => { setSupabaseConfig(localConfig); alert("Đã lưu cấu hình!"); }} className="bg-orange-800 text-white py-5 font-black uppercase tracking-[0.2em] text-xs hover:bg-stone-900 transition-all shadow-xl hover:shadow-orange-900/20">
+                Kích hoạt kết nối & Đồng bộ
               </button>
-              <p className="text-[10px] text-stone-400 italic">
-                * Lấy thông tin này tại Settings &rarr; API trong Dashboard của Supabase.
-              </p>
+              
+              <div className="bg-blue-50 p-6 border-l-4 border-blue-400">
+                <p className="text-xs text-blue-800 leading-relaxed font-medium">
+                  <strong>Hướng dẫn:</strong> Đăng nhập Supabase -> Chọn Project -> Settings -> API. 
+                  Copy dòng <strong>Project URL</strong> và dòng <strong>anon public key</strong> dán vào đây.
+                </p>
+              </div>
             </div>
           </div>
         )}
 
         {activeTab === 'menu' && (
-          <div className="space-y-6">
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
              <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold text-stone-800 uppercase tracking-tight">Thực đơn hiện tại</h2>
               <div className="flex gap-4">
-                <button onClick={onSave} className="bg-stone-900 text-white px-6 py-3 text-[10px] font-black uppercase tracking-widest hover:bg-orange-900 transition-all shadow-lg">Đồng bộ Cloud</button>
-                <button onClick={addDish} className="bg-orange-800 text-white px-6 py-3 text-[10px] font-black uppercase tracking-widest hover:bg-stone-900 transition-all">Thêm món</button>
+                <button onClick={onSave} className="bg-stone-900 text-white px-6 py-3 text-[10px] font-black uppercase tracking-widest hover:bg-orange-900 transition-all shadow-lg">Đẩy lên Cloud</button>
+                <button onClick={addDish} className="bg-orange-800 text-white px-6 py-3 text-[10px] font-black uppercase tracking-widest hover:bg-stone-900 transition-all">Thêm món mới</button>
               </div>
             </div>
             {menu.map((dish: Dish) => (
-               <div key={dish.id} className="bg-white p-6 shadow-sm border border-stone-200 flex flex-col md:flex-row gap-6 items-start rounded-sm">
-                 <div className="w-32 h-24 bg-stone-100 shrink-0 overflow-hidden rounded-sm"><img src={dish.image_url} className="w-full h-full object-cover" /></div>
+               <div key={dish.id} className="bg-white p-6 shadow-sm border border-stone-200 flex flex-col md:flex-row gap-6 items-start rounded-sm hover:border-orange-200 transition-colors">
+                 <div className="w-32 h-24 bg-stone-100 shrink-0 overflow-hidden rounded-sm border border-stone-100">
+                    {dish.image_url ? <img src={dish.image_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-[10px] text-stone-300 font-bold uppercase">No Image</div>}
+                 </div>
                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 flex-1">
                     <input placeholder="Tên món" value={dish.name} onChange={e => setMenu(menu.map((d: Dish) => d.id === dish.id ? {...d, name: e.target.value} : d))} className="border p-2 text-sm focus:ring-1 ring-orange-800 outline-none" />
                     <input placeholder="Giá" value={dish.price} onChange={e => setMenu(menu.map((d: Dish) => d.id === dish.id ? {...d, price: e.target.value} : d))} className="border p-2 text-sm focus:ring-1 ring-orange-800 outline-none" />
                     <select value={dish.category} onChange={e => setMenu(menu.map((d: Dish) => d.id === dish.id ? {...d, category: e.target.value as Category} : d))} className="border p-2 text-sm focus:ring-1 ring-orange-800 outline-none">
                       {Object.values(Category).map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
-                    <textarea placeholder="Mô tả" value={dish.description} onChange={e => setMenu(menu.map((d: Dish) => d.id === dish.id ? {...d, description: e.target.value} : d))} className="md:col-span-3 border p-2 text-sm h-20 focus:ring-1 ring-orange-800 outline-none" />
-                    <input placeholder="Link ảnh" value={dish.image_url} onChange={e => setMenu(menu.map((d: Dish) => d.id === dish.id ? {...d, image_url: e.target.value} : d))} className="md:col-span-3 border p-2 text-sm focus:ring-1 ring-orange-800 outline-none" />
+                    <textarea placeholder="Mô tả món ăn" value={dish.description} onChange={e => setMenu(menu.map((d: Dish) => d.id === dish.id ? {...d, description: e.target.value} : d))} className="md:col-span-3 border p-2 text-sm h-20 focus:ring-1 ring-orange-800 outline-none" />
+                    <input placeholder="Link hình ảnh (unsplash, google, v.v.)" value={dish.image_url} onChange={e => setMenu(menu.map((d: Dish) => d.id === dish.id ? {...d, image_url: e.target.value} : d))} className="md:col-span-3 border p-2 text-sm focus:ring-1 ring-orange-800 outline-none" />
                  </div>
                  <button onClick={() => setMenu(menu.filter((d: Dish) => d.id !== dish.id))} className="text-red-300 hover:text-red-600 p-2 transition-colors">
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
@@ -246,20 +265,22 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, supabaseConfig, 
         )}
 
         {activeTab === 'hero' && (
-           <div className="space-y-6">
+           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
              <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-stone-800 uppercase tracking-tight">Cấu hình ảnh bìa</h2>
+              <h2 className="text-xl font-bold text-stone-800 uppercase tracking-tight">Ảnh bìa trang chủ</h2>
               <div className="flex gap-4">
-                <button onClick={onSave} className="bg-stone-900 text-white px-6 py-3 text-[10px] font-black uppercase tracking-widest hover:bg-orange-900 transition-all shadow-lg">Đồng bộ Cloud</button>
-                <button onClick={addHero} className="bg-orange-800 text-white px-6 py-3 text-[10px] font-black uppercase tracking-widest hover:bg-stone-900 transition-all">Thêm ảnh</button>
+                <button onClick={onSave} className="bg-stone-900 text-white px-6 py-3 text-[10px] font-black uppercase tracking-widest hover:bg-orange-900 transition-all shadow-lg">Đẩy lên Cloud</button>
+                <button onClick={addHero} className="bg-orange-800 text-white px-6 py-3 text-[10px] font-black uppercase tracking-widest hover:bg-stone-900 transition-all">Thêm ảnh bìa</button>
               </div>
             </div>
             {heroSlides.map((slide: HeroSlide) => (
-               <div key={slide.id} className="bg-white p-8 border border-stone-200 rounded-sm flex flex-col md:flex-row gap-8 items-center">
-                  <div className="w-48 h-28 bg-stone-100 shrink-0 rounded-sm overflow-hidden"><img src={slide.image_url} className="w-full h-full object-cover" /></div>
+               <div key={slide.id} className="bg-white p-8 border border-stone-200 rounded-sm flex flex-col md:flex-row gap-8 items-center hover:border-orange-200 transition-colors">
+                  <div className="w-48 h-28 bg-stone-100 shrink-0 rounded-sm overflow-hidden border border-stone-100 shadow-inner">
+                    <img src={slide.image_url} className="w-full h-full object-cover" />
+                  </div>
                   <div className="flex-1 w-full space-y-4">
-                    <input value={slide.quote} onChange={e => setHeroSlides(heroSlides.map((s: HeroSlide) => s.id === slide.id ? {...s, quote: e.target.value} : s))} className="w-full border p-3 text-lg italic focus:ring-1 ring-orange-800 outline-none" placeholder="Câu nói slogan..." />
-                    <input value={slide.image_url} onChange={e => setHeroSlides(heroSlides.map((s: HeroSlide) => s.id === slide.id ? {...s, image_url: e.target.value} : s))} className="w-full border p-2 text-sm font-mono focus:ring-1 ring-orange-800 outline-none" placeholder="Link ảnh chất lượng cao" />
+                    <input value={slide.quote} onChange={e => setHeroSlides(heroSlides.map((s: HeroSlide) => s.id === slide.id ? {...s, quote: e.target.value} : s))} className="w-full border-b p-3 text-lg italic focus:border-orange-800 outline-none transition-colors" placeholder="Câu slogan hiển thị trên ảnh bìa..." />
+                    <input value={slide.image_url} onChange={e => setHeroSlides(heroSlides.map((s: HeroSlide) => s.id === slide.id ? {...s, image_url: e.target.value} : s))} className="w-full border p-2 text-xs font-mono bg-stone-50" placeholder="Link ảnh bìa" />
                   </div>
                   <button onClick={() => setHeroSlides(heroSlides.filter((s: HeroSlide) => s.id !== slide.id))} className="text-red-300 p-2 hover:text-red-600 transition-colors">
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -320,11 +341,11 @@ const App = () => {
   }, [supabase]);
 
   const handleSave = async () => {
-    if (!supabase) return alert("Vui lòng cấu hình Supabase URL/Key trong tab Cài đặt!");
+    if (!supabase) return alert("Cảnh báo: Bạn chưa cấu hình Supabase trong tab Cài đặt!");
     
     setIsLoading(true);
     try {
-      // Xóa và chèn mới để đồng bộ đơn giản
+      // Logic đồng bộ đơn giản: Xóa cũ đẩy mới
       await supabase.from('dishes').delete().neq('id', '00000000-0000-0000-0000-000000000000');
       await supabase.from('hero_slides').delete().neq('id', '00000000-0000-0000-0000-000000000000');
 
@@ -334,17 +355,18 @@ const App = () => {
       if (dishesToInsert.length > 0) await supabase.from('dishes').insert(dishesToInsert);
       if (slidesToInsert.length > 0) await supabase.from('hero_slides').insert(slidesToInsert);
 
-      alert("Đồng bộ lên Cloud thành công!");
+      alert("🎉 Chúc mừng! Dữ liệu đã được đẩy lên Cloud thành công!");
       fetchData();
     } catch (e) {
       console.error(e);
-      alert("Lỗi khi đồng bộ dữ liệu!");
+      alert("Lỗi khi đồng bộ! Hãy kiểm tra lại URL và Key trong tab Cài đặt.");
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
+    console.log("Phiên bản: Cloud Sync v2.1 - Ready");
     localStorage.setItem('ut-trinh-supabase-config', JSON.stringify(supabaseConfig));
     fetchData();
   }, [supabaseConfig, fetchData]);
