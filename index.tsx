@@ -15,6 +15,7 @@ enum Category {
 
 interface Dish {
   id: string;
+  created_at?: string;
   name: string;
   description: string;
   price: string;
@@ -24,6 +25,7 @@ interface Dish {
 
 interface HeroSlide {
   id: string;
+  created_at?: string;
   image_url: string;
   quote: string;
 }
@@ -394,13 +396,16 @@ const App = () => {
       const { error: delHeroErr } = await supabase.from('hero_slides').delete().filter('created_at', 'lt', 'now()');
       if (delHeroErr) throw delHeroErr;
       
-      // Step 2: Insert new data
+      // Step 2: Insert new data. 
+      // CRITICAL: We MUST remove both 'id' and 'created_at' to allow Supabase to generate fresh ones.
       if (menu.length) {
-        const { error: insMenuErr } = await supabase.from('dishes').insert(menu.map(({ id, ...rest }) => rest));
+        const menuToInsert = menu.map(({ id, created_at, ...rest }: any) => rest);
+        const { error: insMenuErr } = await supabase.from('dishes').insert(menuToInsert);
         if (insMenuErr) throw insMenuErr;
       }
       if (heroSlides.length) {
-        const { error: insHeroErr } = await supabase.from('hero_slides').insert(heroSlides.map(({ id, ...rest }) => rest));
+        const heroToInsert = heroSlides.map(({ id, created_at, ...rest }: any) => rest);
+        const { error: insHeroErr } = await supabase.from('hero_slides').insert(heroToInsert);
         if (insHeroErr) throw insHeroErr;
       }
       
@@ -408,7 +413,7 @@ const App = () => {
       fetchData();
     } catch (e: any) {
       console.error(e);
-      alert(`LỖI ĐỒNG BỘ: ${e.message || 'Có thể do Row Level Security (RLS) chưa được tắt. Vui lòng vào tab Hệ Thống để xem mã SQL sửa lỗi.'}`);
+      alert(`LỖI ĐỒNG BỘ: ${e.message || 'Có thể do Row Level Security (RLS) chưa được tắt hoặc vi phạm ràng buộc dữ liệu.'}`);
     } finally {
       setIsLoading(false);
     }
