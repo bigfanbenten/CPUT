@@ -31,7 +31,7 @@ const DEFAULT_MENU: Dish[] = [
   { id: '1', name: 'Sườn Non Rim Mặn Ngọt', description: 'Sườn non tuyển chọn, rim nước mắm kẹo, óng ánh sắc nâu cánh gián, đậm đà vị quê.', price: '55.000 VNĐ', image_url: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&q=80&w=800', category: Category.MainCourse, tags: ['Bán Chạy'] },
   { id: '2', name: 'Cá Lóc Kho Tộ Miền Tây', description: 'Cá lóc đồng kho trong tộ đất, nước màu dừa tự thắng, tiêu xanh cay nồng.', price: '65.000 VNĐ', image_url: 'https://images.unsplash.com/photo-1580476262798-bddd9f4b7369?auto=format&fit=crop&q=80&w=800', category: Category.MainCourse },
   { id: '3', name: 'Canh Chua Cá Hú', description: 'Vị chua thanh của me, ngọt của cá hú, thơm nồng bông điên điển và ngò gai.', price: '45.000 VNĐ', image_url: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&q=80&w=800', category: Category.Soup },
-  { id: '4', name: 'Bông Bí Xào Tỏi', description: 'Bông bí tươi rói xào nhanh tay with tỏi cô đơn, giữ độ giòn ngọt tự nhiên.', price: '35.000 VNĐ', image_url: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&q=80&w=800', category: Category.Vegetable },
+  { id: '4', name: 'Bông Bí Xào Tỏi', description: 'Bông bí tươi rói xào nhanh tay với tỏi cô đơn, giữ độ giòn ngọt tự nhiên.', price: '35.000 VNĐ', image_url: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&q=80&w=800', category: Category.Vegetable },
   { id: '5', name: 'Nước Mủ Trôm Hạt Chia', description: 'Thức uống giải nhiệt thanh mát, ít đường, tốt cho sức khỏe.', price: '15.000 VNĐ', image_url: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&q=80&w=800', category: Category.Drink }
 ];
 
@@ -45,7 +45,7 @@ const DEFAULT_HERO: HeroSlide[] = [
 
 const Nav = ({ isAdminPage = false }: { isAdminPage?: boolean }) => (
   <nav className="fixed top-0 w-full z-40 bg-white/95 backdrop-blur-md border-b border-stone-100 px-6 md:px-12 h-20 flex items-center justify-between shadow-sm">
-    <div className="flex flex-col cursor-pointer" onClick={() => window.location.href = '/'}>
+    <div className="flex flex-col cursor-pointer" onClick={() => window.location.hash = ''}>
       <span className="text-xl md:text-2xl font-black text-orange-900 tracking-tighter uppercase leading-none">ÚT TRINH KITCHEN</span>
       <span className="text-[9px] tracking-[0.3em] text-stone-400 uppercase mt-1 font-bold">
         {isAdminPage ? 'Hệ thống Quản trị Nội bộ' : 'Cơm phần & Đặc sản quê nhà'}
@@ -53,7 +53,7 @@ const Nav = ({ isAdminPage = false }: { isAdminPage?: boolean }) => (
     </div>
     <div className="flex items-center gap-4">
       {isAdminPage ? (
-        <button onClick={() => window.location.href = '/'} className="text-stone-500 text-[10px] font-bold uppercase tracking-widest hover:text-orange-800 transition-colors">
+        <button onClick={() => window.location.hash = ''} className="text-stone-500 text-[10px] font-bold uppercase tracking-widest hover:text-orange-800 transition-colors">
           Quay lại Trang chủ
         </button>
       ) : (
@@ -102,6 +102,7 @@ const HomePage = ({ menu, heroSlides }: { menu: Dish[]; heroSlides: HeroSlide[] 
 
   // Auto slide
   useEffect(() => {
+    if (heroSlides.length === 0) return;
     const timer = setInterval(nextSlide, 8000);
     return () => clearInterval(timer);
   }, [heroSlides.length]);
@@ -112,12 +113,14 @@ const HomePage = ({ menu, heroSlides }: { menu: Dish[]; heroSlides: HeroSlide[] 
       
       {/* Hero Slider */}
       <header className="relative h-[80vh] flex items-center justify-center bg-stone-900 mt-20 overflow-hidden group">
-        {heroSlides.map((slide, index) => (
+        {heroSlides.length > 0 ? heroSlides.map((slide, index) => (
           <div key={slide.id} className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === currentHero ? 'opacity-100' : 'opacity-0'}`}>
             <img src={slide.image_url} className="w-full h-full object-cover scale-110 opacity-60 blur-[1px] transition-transform duration-[10s]" />
             <div className="absolute inset-0 bg-gradient-to-t from-stone-900/80 via-transparent to-stone-900/40"></div>
           </div>
-        ))}
+        )) : (
+          <div className="absolute inset-0 bg-stone-800 flex items-center justify-center text-stone-500 italic uppercase tracking-widest text-[10px]">Chưa có ảnh bìa</div>
+        )}
 
         <div className="relative z-10 text-center px-6 max-w-5xl">
           <h1 className="text-5xl md:text-9xl font-black text-white mb-6 leading-tight tracking-tighter uppercase animate-in fade-in slide-in-from-bottom-8 duration-1000">
@@ -125,7 +128,7 @@ const HomePage = ({ menu, heroSlides }: { menu: Dish[]; heroSlides: HeroSlide[] 
           </h1>
           <div className="overflow-hidden h-12 md:h-16">
             <p key={currentHero} className="text-stone-100 text-xl md:text-3xl font-light italic tracking-wide animate-in fade-in slide-in-from-top-4 duration-700">
-              "{heroSlides[currentHero]?.quote}"
+              "{heroSlides[currentHero]?.quote || 'Kính mời quý khách'}"
             </p>
           </div>
         </div>
@@ -309,12 +312,10 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides }: {
                   <div className="flex-1 w-full flex flex-col gap-4">
                     <div className="flex flex-col gap-1">
                       <label className="text-[9px] uppercase font-black text-stone-400">Câu nói / Slogan hiển thị</label>
-                      {/* Fixed: Use 's' instead of undefined 'd' to properly reference the slide in map */}
                       <input value={slide.quote} onChange={e => setHeroSlides(heroSlides.map(s => s.id === slide.id ? {...s, quote: e.target.value} : s))} className="border p-4 text-lg italic text-stone-800 outline-none focus:ring-1 ring-orange-800" />
                     </div>
                     <div className="flex flex-col gap-1">
                       <label className="text-[9px] uppercase font-black text-stone-400">Link ảnh nền (Chất lượng cao - 1920px)</label>
-                      {/* Fixed: Use 's' instead of undefined 'd' to properly reference the slide in map */}
                       <input value={slide.image_url} onChange={e => setHeroSlides(heroSlides.map(s => s.id === slide.id ? {...s, image_url: e.target.value} : s))} className="border p-3 text-sm outline-none focus:ring-1 ring-orange-800" />
                     </div>
                   </div>
@@ -344,22 +345,22 @@ const App = () => {
     return saved ? JSON.parse(saved) : DEFAULT_HERO;
   });
 
-  const [path, setPath] = useState(window.location.pathname);
+  // Use Hash for routing to prevent 404s on static hosting
+  const [hash, setHash] = useState(window.location.hash);
 
   useEffect(() => {
     localStorage.setItem('ut-trinh-menu-v2', JSON.stringify(menu));
     localStorage.setItem('ut-trinh-hero-v2', JSON.stringify(heroSlides));
   }, [menu, heroSlides]);
 
-  // Handle path changes (basic routing)
   useEffect(() => {
-    const handleLocationChange = () => setPath(window.location.pathname);
-    window.addEventListener('popstate', handleLocationChange);
-    return () => window.removeEventListener('popstate', handleLocationChange);
+    const handleHashChange = () => setHash(window.location.hash);
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
-  // Simple Router logic
-  if (path.toLowerCase().includes('/acpanel')) {
+  // Simple Router logic based on hash
+  if (hash.toLowerCase().includes('acpanel')) {
     return <AdminPanel menu={menu} setMenu={setMenu} heroSlides={heroSlides} setHeroSlides={setHeroSlides} />;
   }
 
