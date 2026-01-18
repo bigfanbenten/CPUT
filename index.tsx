@@ -30,9 +30,9 @@ interface HeroSlide {
 
 const CONFIG_KEY = 'ut-trinh-config-v3';
 
-// SQL Setup Script for user convenience
-const SQL_SETUP = `-- 1. Tạo bảng món ăn
-create table dishes (
+// SQL Setup Script updated for idempotency
+const SQL_SETUP = `-- 1. Tạo bảng món ăn (Nếu chưa có)
+create table if not exists dishes (
   id uuid default gen_random_uuid() primary key,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   name text,
@@ -42,15 +42,16 @@ create table dishes (
   category text
 );
 
--- 2. Tạo bảng ảnh bìa
-create table hero_slides (
+-- 2. Tạo bảng ảnh bìa (Nếu chưa có)
+create table if not exists hero_slides (
   id uuid default gen_random_uuid() primary key,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   image_url text,
   quote text
 );
 
--- 3. Cho phép truy cập công khai (Bắt buộc để app chạy được)
+-- 3. TẮT BẢO MẬT (QUAN TRỌNG NHẤT)
+-- Chạy 2 dòng này để cho phép ứng dụng lưu và xóa dữ liệu
 alter table dishes disable row level security;
 alter table hero_slides disable row level security;`;
 
@@ -265,9 +266,9 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, supabaseConfig, 
                 
                 <div className="pt-10 border-t border-stone-100 mt-10">
                    <h3 className="text-xs font-black uppercase text-amber-800 mb-4">Hướng dẫn thiết lập Database:</h3>
-                   <p className="text-sm text-stone-500 mb-6">Nếu bạn thấy thông báo "Lỗi đồng bộ", hãy vào mục **SQL Editor** trong Supabase và chạy đoạn mã dưới đây:</p>
+                   <p className="text-sm text-stone-500 mb-6">Nếu bạn thấy thông báo "Lỗi đồng bộ", hãy vào mục **SQL Editor** trong Supabase, dán đoạn mã này vào và nhấn **Run**:</p>
                    <button onClick={() => setShowSql(!showSql)} className="text-[10px] font-black uppercase tracking-widest text-stone-900 border border-stone-900 px-6 py-3 rounded-xl hover:bg-stone-900 hover:text-white transition-all">
-                     {showSql ? 'Đóng mã SQL' : 'Xem mã SQL thiết lập'}
+                     {showSql ? 'Đóng mã SQL' : 'Xem mã SQL Sửa Lỗi'}
                    </button>
                    {showSql && (
                      <div className="mt-6 relative">
@@ -387,10 +388,10 @@ const App = () => {
     if (!supabase) return alert("Vui lòng cấu hình Database trước!");
     setIsLoading(true);
     try {
-      // Step 1: Delete everything
-      const { error: delMenuErr } = await supabase.from('dishes').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      // Step 1: Delete everything (using a filter that's always true for Postgres)
+      const { error: delMenuErr } = await supabase.from('dishes').delete().filter('created_at', 'lt', 'now()');
       if (delMenuErr) throw delMenuErr;
-      const { error: delHeroErr } = await supabase.from('hero_slides').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      const { error: delHeroErr } = await supabase.from('hero_slides').delete().filter('created_at', 'lt', 'now()');
       if (delHeroErr) throw delHeroErr;
       
       // Step 2: Insert new data
@@ -407,7 +408,7 @@ const App = () => {
       fetchData();
     } catch (e: any) {
       console.error(e);
-      alert(`LỖI ĐỒNG BỘ: ${e.message || 'Có thể bảng dishes hoặc hero_slides chưa được tạo trong Supabase. Vui lòng vào tab Hệ Thống để xem mã SQL thiết lập.'}`);
+      alert(`LỖI ĐỒNG BỘ: ${e.message || 'Có thể do Row Level Security (RLS) chưa được tắt. Vui lòng vào tab Hệ Thống để xem mã SQL sửa lỗi.'}`);
     } finally {
       setIsLoading(false);
     }
