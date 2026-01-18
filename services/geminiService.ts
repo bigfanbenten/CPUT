@@ -2,16 +2,10 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Dish } from "../types";
 
+// Gợi ý từ đầu bếp dựa trên tâm trạng người dùng sử dụng Gemini AI
 export const getChefRecommendation = async (userMood: string, dishes: Dish[]) => {
-  // Tránh lỗi nếu process không tồn tại trong môi trường trình duyệt thuần
-  const apiKey = typeof process !== 'undefined' ? process.env.API_KEY : '';
-  
-  if (!apiKey) {
-    console.warn("API Key không được tìm thấy. Chức năng gợi ý AI sẽ bị hạn chế.");
-    return null;
-  }
-
-  const ai = new GoogleGenAI({ apiKey });
+  // Use the API key exclusively from process.env.API_KEY as per guidelines
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const menuSummary = dishes.map(d => `${d.id}: ${d.name} (${d.category})`).join(', ');
 
   try {
@@ -32,7 +26,8 @@ export const getChefRecommendation = async (userMood: string, dishes: Dish[]) =>
       }
     });
 
-    return JSON.parse(response.text);
+    // Access the .text property directly
+    return JSON.parse(response.text || '{}');
   } catch (e) {
     console.error("Lỗi khi xử lý phản hồi từ AI", e);
     return null;
