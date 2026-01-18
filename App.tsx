@@ -1,1 +1,0 @@
-// File này đã được hợp nhất vào index.tsx
