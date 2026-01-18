@@ -30,6 +30,30 @@ interface HeroSlide {
 
 const CONFIG_KEY = 'ut-trinh-config-v3';
 
+// SQL Setup Script for user convenience
+const SQL_SETUP = `-- 1. Tạo bảng món ăn
+create table dishes (
+  id uuid default gen_random_uuid() primary key,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  name text,
+  description text,
+  price text,
+  image_url text,
+  category text
+);
+
+-- 2. Tạo bảng ảnh bìa
+create table hero_slides (
+  id uuid default gen_random_uuid() primary key,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  image_url text,
+  quote text
+);
+
+-- 3. Cho phép truy cập công khai (Bắt buộc để app chạy được)
+alter table dishes disable row level security;
+alter table hero_slides disable row level security;`;
+
 // --- COMPONENTS ---
 
 const Nav = ({ isAdmin = false }) => (
@@ -60,7 +84,6 @@ const HomePage = ({ menu, heroSlides, isLoading }: any) => {
   const [activeFilter, setActiveFilter] = useState<Category>(Category.All);
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  // Auto-play slideshow for Hero
   useEffect(() => {
     if (heroSlides.length <= 1) return;
     const timer = setInterval(() => {
@@ -81,11 +104,9 @@ const HomePage = ({ menu, heroSlides, isLoading }: any) => {
   return (
     <div className="min-h-screen bg-[#fafafa] selection:bg-amber-100 selection:text-amber-900">
       <Nav />
-      
-      {/* Hero Section - Chuyển động mượt mà giữa các Slide */}
       <header className="relative h-[90vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
-          {heroSlides.map((slide: HeroSlide, index: number) => (
+          {heroSlides.length > 0 ? heroSlides.map((slide: HeroSlide, index: number) => (
             <div 
               key={slide.id}
               className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
@@ -94,9 +115,7 @@ const HomePage = ({ menu, heroSlides, isLoading }: any) => {
               <div className="absolute inset-0 bg-stone-900/30 backdrop-blur-[1px]"></div>
               <div className="absolute inset-0 bg-gradient-to-t from-[#fafafa] via-transparent to-transparent"></div>
             </div>
-          ))}
-          {/* Fallback if no slides */}
-          {heroSlides.length === 0 && (
+          )) : (
             <div className="absolute inset-0">
                <img src="https://images.unsplash.com/photo-1559339352-11d035aa65de?w=1920" className="w-full h-full object-cover" />
                <div className="absolute inset-0 bg-stone-900/40"></div>
@@ -115,42 +134,27 @@ const HomePage = ({ menu, heroSlides, isLoading }: any) => {
               "{activeSlide.quote}"
             </p>
           </div>
-          
-          {/* Slide Indicators */}
           {heroSlides.length > 1 && (
             <div className="flex justify-center gap-3 mt-12">
               {heroSlides.map((_: any, idx: number) => (
-                <button 
-                  key={idx}
-                  onClick={() => setCurrentSlide(idx)}
-                  className={`h-1 transition-all duration-500 rounded-full ${idx === currentSlide ? 'w-12 bg-amber-500' : 'w-4 bg-white/30'}`}
-                />
+                <button key={idx} onClick={() => setCurrentSlide(idx)} className={`h-1 transition-all duration-500 rounded-full ${idx === currentSlide ? 'w-12 bg-amber-500' : 'w-4 bg-white/30'}`} />
               ))}
             </div>
           )}
         </div>
       </header>
 
-      {/* Menu Section */}
       <main id="menu" className="max-w-7xl mx-auto py-32 px-6">
         <div className="text-center mb-24">
           <span className="text-amber-800 text-[11px] font-black uppercase tracking-[0.4em] mb-4 block">Thưởng thức trọn vẹn</span>
           <h2 className="text-5xl md:text-7xl font-black tracking-tighter mb-12 uppercase text-stone-900">Thực Đơn Đặc Sắc</h2>
-          
           <div className="flex flex-wrap justify-center gap-x-10 gap-y-4 border-b border-stone-100 pb-8 w-full max-w-4xl mx-auto">
             {Object.values(Category).map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setActiveFilter(cat)}
-                className={`text-[11px] font-black uppercase tracking-[0.2em] transition-all relative py-2 ${activeFilter === cat ? 'text-amber-800 after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-amber-800' : 'text-stone-300 hover:text-stone-900'}`}
-              >
-                {cat}
-              </button>
+              <button key={cat} onClick={() => setActiveFilter(cat)} className={`text-[11px] font-black uppercase tracking-[0.2em] transition-all relative py-2 ${activeFilter === cat ? 'text-amber-800 after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-amber-800' : 'text-stone-300 hover:text-stone-900'}`}>{cat}</button>
             ))}
           </div>
         </div>
 
-        {/* Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-24">
           {filteredMenu.map((dish: Dish) => (
             <div key={dish.id} onClick={() => setSelectedDish(dish)} className="group cursor-pointer bg-white rounded-[40px] overflow-hidden p-5 border border-stone-50 hover:shadow-2xl hover:-translate-y-2 transition-all duration-700">
@@ -168,32 +172,22 @@ const HomePage = ({ menu, heroSlides, isLoading }: any) => {
                   <h3 className="text-2xl font-black tracking-tighter uppercase leading-tight group-hover:text-amber-800 transition-colors">{dish.name}</h3>
                   <span className="text-amber-800 font-black text-xl tracking-tighter shrink-0">{dish.price}</span>
                 </div>
-                <p className="text-stone-400 text-sm italic font-medium leading-relaxed line-clamp-2">
-                   "{dish.description || 'Hương vị truyền thống đậm đà bản sắc Việt.'}"
-                </p>
-                <div className="pt-2">
-                  <span className="text-[9px] font-black uppercase tracking-widest text-white bg-stone-900 px-4 py-1.5 rounded-full shadow-sm">
-                    {dish.category}
-                  </span>
-                </div>
+                <p className="text-stone-400 text-sm italic font-medium leading-relaxed line-clamp-2">"{dish.description || 'Hương vị truyền thống đậm đà bản sắc Việt.'}"</p>
+                <div className="pt-2"><span className="text-[9px] font-black uppercase tracking-widest text-white bg-stone-900 px-4 py-1.5 rounded-full shadow-sm">{dish.category}</span></div>
               </div>
             </div>
           ))}
         </div>
       </main>
 
-      {/* Modal */}
       {selectedDish && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-stone-950/90 backdrop-blur-xl p-6" onClick={() => setSelectedDish(null)}>
           <div className="max-w-6xl w-full bg-white rounded-[60px] overflow-hidden flex flex-col md:flex-row shadow-2xl animate-in zoom-in-95 duration-500" onClick={e => e.stopPropagation()}>
-            <div className="md:w-1/2 aspect-square md:aspect-auto h-[40vh] md:h-auto overflow-hidden">
-              <img src={selectedDish.image_url} className="w-full h-full object-cover" />
-            </div>
+            <div className="md:w-1/2 aspect-square md:aspect-auto h-[40vh] md:h-auto overflow-hidden"><img src={selectedDish.image_url} className="w-full h-full object-cover" /></div>
             <div className="md:w-1/2 p-12 md:p-20 flex flex-col justify-center relative bg-white">
               <button onClick={() => setSelectedDish(null)} className="absolute top-8 right-8 text-stone-300 hover:text-stone-900 transition-all">
                 <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="0.5" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
-              
               <div className="space-y-10">
                 <div>
                   <span className="text-amber-800 text-xs font-black uppercase tracking-[0.5em] mb-4 block">{selectedDish.category}</span>
@@ -201,9 +195,7 @@ const HomePage = ({ menu, heroSlides, isLoading }: any) => {
                   <div className="text-4xl font-black text-amber-800 tracking-tighter">{selectedDish.price}</div>
                 </div>
                 <div className="w-16 h-1 bg-stone-100 rounded-full"></div>
-                <p className="text-stone-500 text-xl md:text-2xl leading-relaxed italic font-light">
-                  "{selectedDish.description || 'Món ăn được chuẩn bị tỉ mỉ từ nguyên liệu tươi sạch nhất trong ngày.'}"
-                </p>
+                <p className="text-stone-500 text-xl md:text-2xl leading-relaxed italic font-light">"{selectedDish.description || 'Món ăn được chuẩn bị tỉ mỉ từ nguyên liệu tươi sạch nhất trong ngày.'}"</p>
               </div>
             </div>
           </div>
@@ -219,10 +211,7 @@ const HomePage = ({ menu, heroSlides, isLoading }: any) => {
           <p className="text-stone-500 text-[10px] font-bold uppercase tracking-widest">© 2024 Ut Trinh Kitchen — Premium Dining</p>
         </div>
       </footer>
-
-      <style>{`
-        @keyframes slow-zoom { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
-      `}</style>
+      <style>{`@keyframes slow-zoom { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }`}</style>
     </div>
   );
 };
@@ -230,6 +219,7 @@ const HomePage = ({ menu, heroSlides, isLoading }: any) => {
 const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, supabaseConfig, setSupabaseConfig, onSave }: any) => {
   const [activeTab, setActiveTab] = useState<'menu' | 'hero' | 'config'>(supabaseConfig.url ? 'menu' : 'config');
   const [localConfig, setLocalConfig] = useState(supabaseConfig);
+  const [showSql, setShowSql] = useState(false);
 
   const addDish = () => {
     setMenu([...menu, { id: Date.now().toString(), name: 'Tên món mới', price: '00.000 VNĐ', description: '', image_url: '', category: Category.MainCourse }]);
@@ -259,24 +249,34 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, supabaseConfig, 
         <div className="bg-white shadow-2xl border border-stone-100 overflow-hidden rounded-[50px]">
           <div className="flex bg-stone-50/50 border-b border-stone-200 p-4 gap-4">
             {['menu', 'hero', 'config'].map((tab: any) => (
-              <button 
-                key={tab}
-                onClick={() => setActiveTab(tab)} 
-                className={`flex-1 py-5 rounded-3xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-white shadow-xl text-stone-900' : 'text-stone-400 hover:text-stone-600'}`}
-              >
-                {tab === 'menu' ? '🍱 Thực Đơn' : tab === 'hero' ? '🖼️ Ảnh Bìa' : '⚙️ Hệ Thống'}
-              </button>
+              <button key={tab} onClick={() => setActiveTab(tab)} className={`flex-1 py-5 rounded-3xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-white shadow-xl text-stone-900' : 'text-stone-400 hover:text-stone-600'}`}>{tab === 'menu' ? '🍱 Thực Đơn' : tab === 'hero' ? '🖼️ Ảnh Bìa' : '⚙️ Hệ Thống'}</button>
             ))}
           </div>
 
           <div className="p-10 md:p-16">
             {activeTab === 'config' && (
-              <div className="max-w-md mx-auto py-12 space-y-8">
+              <div className="max-w-xl mx-auto py-12 space-y-8">
                 <h2 className="text-3xl font-black tracking-tighter mb-4 uppercase">Cấu hình kết nối</h2>
                 <div className="space-y-4">
                   <input placeholder="Supabase URL" value={localConfig.url || ''} onChange={e => setLocalConfig({...localConfig, url: e.target.value})} className="w-full border-2 border-stone-100 p-5 rounded-2xl outline-none focus:border-stone-900 font-mono text-xs" />
                   <input placeholder="Anon Key" value={localConfig.key || ''} onChange={e => setLocalConfig({...localConfig, key: e.target.value})} className="w-full border-2 border-stone-100 p-5 rounded-2xl outline-none focus:border-stone-900 font-mono text-xs" />
                   <button onClick={() => { setSupabaseConfig(localConfig); alert("Đã cập nhật!"); setActiveTab('menu'); }} className="w-full bg-stone-900 text-white py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-stone-800 transition-all">Kết nối ngay</button>
+                </div>
+                
+                <div className="pt-10 border-t border-stone-100 mt-10">
+                   <h3 className="text-xs font-black uppercase text-amber-800 mb-4">Hướng dẫn thiết lập Database:</h3>
+                   <p className="text-sm text-stone-500 mb-6">Nếu bạn thấy thông báo "Lỗi đồng bộ", hãy vào mục **SQL Editor** trong Supabase và chạy đoạn mã dưới đây:</p>
+                   <button onClick={() => setShowSql(!showSql)} className="text-[10px] font-black uppercase tracking-widest text-stone-900 border border-stone-900 px-6 py-3 rounded-xl hover:bg-stone-900 hover:text-white transition-all">
+                     {showSql ? 'Đóng mã SQL' : 'Xem mã SQL thiết lập'}
+                   </button>
+                   {showSql && (
+                     <div className="mt-6 relative">
+                       <pre className="bg-stone-900 text-amber-200 p-6 rounded-2xl text-[10px] font-mono overflow-x-auto leading-relaxed shadow-inner">
+                         {SQL_SETUP}
+                       </pre>
+                       <button onClick={() => { navigator.clipboard.writeText(SQL_SETUP); alert("Đã copy mã SQL!"); }} className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 text-white text-[9px] px-3 py-1.5 rounded-lg transition-all font-black uppercase">Copy</button>
+                     </div>
+                   )}
                 </div>
               </div>
             )}
@@ -286,38 +286,18 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, supabaseConfig, 
                 <div className="flex justify-between items-center">
                   <h2 className="text-4xl font-black tracking-tighter uppercase">Thực Đơn ({menu.length})</h2>
                   <div className="flex gap-4">
-                    <button onClick={onSave} className="bg-stone-900 text-white px-10 py-4 text-[10px] font-black uppercase tracking-widest rounded-2xl">Đồng Bộ Cloud</button>
-                    <button onClick={addDish} className="bg-amber-800 text-white px-10 py-4 text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-lg">+ Thêm món mới</button>
+                    <button onClick={onSave} className="bg-stone-900 text-white px-10 py-4 text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl hover:-translate-y-1 transition-all">Đồng Bộ Cloud</button>
+                    <button onClick={addDish} className="bg-amber-800 text-white px-10 py-4 text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl hover:-translate-y-1 transition-all">+ Thêm món mới</button>
                   </div>
                 </div>
                 <div className="space-y-8">
                   {menu.map((dish: Dish) => (
                     <div key={dish.id} className="p-8 border border-stone-100 bg-stone-50/50 rounded-[40px] grid grid-cols-1 md:grid-cols-4 gap-8 relative group hover:bg-white transition-all">
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase text-stone-400">Tên món</label>
-                        <input value={dish.name || ''} onChange={e => setMenu(menu.map((d: any) => d.id === dish.id ? {...d, name: e.target.value} : d))} className="w-full bg-white border border-stone-100 p-4 rounded-xl outline-none focus:border-stone-900 font-bold" />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase text-stone-400">Giá</label>
-                        <input value={dish.price || ''} onChange={e => setMenu(menu.map((d: any) => d.id === dish.id ? {...d, price: e.target.value} : d))} className="w-full bg-white border border-stone-100 p-4 rounded-xl outline-none focus:border-stone-900 font-black text-amber-800" />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase text-stone-400">Loại</label>
-                        <select value={dish.category} onChange={e => setMenu(menu.map((d: any) => d.id === dish.id ? {...d, category: e.target.value as Category} : d))} className="w-full bg-white border border-stone-100 p-4 rounded-xl outline-none focus:border-stone-900 font-black text-[10px] uppercase">
-                          {Object.values(Category).filter(c => c !== Category.All).map(c => <option key={c} value={c}>{c}</option>)}
-                        </select>
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase text-stone-400 flex justify-between">
-                          <span>Link ảnh</span>
-                          <button onClick={() => pasteFromClipboard(dish.id, 'dish')} className="text-amber-800 underline">Dán</button>
-                        </label>
-                        <input value={dish.image_url || ''} onChange={e => setMenu(menu.map((d: any) => d.id === dish.id ? {...d, image_url: e.target.value} : d))} className="w-full bg-white border border-stone-100 p-4 rounded-xl outline-none focus:border-stone-900 font-mono text-[9px]" />
-                      </div>
-                      <div className="md:col-span-4 space-y-2">
-                        <label className="text-[10px] font-black uppercase text-stone-400">Mô tả</label>
-                        <textarea value={dish.description || ''} onChange={e => setMenu(menu.map((d: any) => d.id === dish.id ? {...d, description: e.target.value} : d))} className="w-full bg-white border border-stone-100 p-4 rounded-xl outline-none focus:border-stone-900 italic text-sm" />
-                      </div>
+                      <div className="space-y-2"><label className="text-[10px] font-black uppercase text-stone-400">Tên món</label><input value={dish.name || ''} onChange={e => setMenu(menu.map((d: any) => d.id === dish.id ? {...d, name: e.target.value} : d))} className="w-full bg-white border border-stone-100 p-4 rounded-xl outline-none focus:border-stone-900 font-bold" /></div>
+                      <div className="space-y-2"><label className="text-[10px] font-black uppercase text-stone-400">Giá</label><input value={dish.price || ''} onChange={e => setMenu(menu.map((d: any) => d.id === dish.id ? {...d, price: e.target.value} : d))} className="w-full bg-white border border-stone-100 p-4 rounded-xl outline-none focus:border-stone-900 font-black text-amber-800" /></div>
+                      <div className="space-y-2"><label className="text-[10px] font-black uppercase text-stone-400">Loại</label><select value={dish.category} onChange={e => setMenu(menu.map((d: any) => d.id === dish.id ? {...d, category: e.target.value as Category} : d))} className="w-full bg-white border border-stone-100 p-4 rounded-xl outline-none focus:border-stone-900 font-black text-[10px] uppercase">{Object.values(Category).filter(c => c !== Category.All).map(c => <option key={c} value={c}>{c}</option>)}</select></div>
+                      <div className="space-y-2"><label className="text-[10px] font-black uppercase text-stone-400 flex justify-between"><span>Link ảnh</span><button onClick={() => pasteFromClipboard(dish.id, 'dish')} className="text-amber-800 underline">Dán</button></label><input value={dish.image_url || ''} onChange={e => setMenu(menu.map((d: any) => d.id === dish.id ? {...d, image_url: e.target.value} : d))} className="w-full bg-white border border-stone-100 p-4 rounded-xl outline-none focus:border-stone-900 font-mono text-[9px]" /></div>
+                      <div className="md:col-span-4 space-y-2"><label className="text-[10px] font-black uppercase text-stone-400">Mô tả</label><textarea value={dish.description || ''} onChange={e => setMenu(menu.map((d: any) => d.id === dish.id ? {...d, description: e.target.value} : d))} className="w-full bg-white border border-stone-100 p-4 rounded-xl outline-none focus:border-stone-900 italic text-sm" /></div>
                       <button onClick={() => setMenu(menu.filter((d: any) => d.id !== dish.id))} className="absolute top-4 right-4 text-red-300 hover:text-red-500 text-2xl font-light">×</button>
                     </div>
                   ))}
@@ -329,19 +309,14 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, supabaseConfig, 
               <div className="space-y-12">
                 <div className="flex justify-between items-center">
                   <h2 className="text-4xl font-black tracking-tighter uppercase">Ảnh bìa Hero</h2>
-                  <button onClick={addHero} className="bg-amber-800 text-white px-10 py-4 text-[10px] font-black uppercase tracking-widest rounded-2xl">+ Thêm Slide Mới</button>
+                  <button onClick={addHero} className="bg-amber-800 text-white px-10 py-4 text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl hover:-translate-y-1 transition-all">+ Thêm Slide Mới</button>
                 </div>
                 {heroSlides.map((slide: HeroSlide) => (
                   <div key={slide.id} className="p-10 border-2 border-stone-50 bg-stone-50/50 rounded-[40px] flex flex-col gap-10 relative hover:bg-white transition-all">
-                    <div className="aspect-[21/9] w-full bg-stone-200 rounded-[30px] overflow-hidden border-4 border-white shadow-inner">
-                       {slide.image_url && <img src={slide.image_url} className="w-full h-full object-cover" />}
-                    </div>
+                    <div className="aspect-[21/9] w-full bg-stone-200 rounded-[30px] overflow-hidden border-4 border-white shadow-inner">{slide.image_url && <img src={slide.image_url} className="w-full h-full object-cover" />}</div>
                     <div className="grid md:grid-cols-2 gap-10">
                        <div className="space-y-4">
-                         <label className="text-[10px] font-black uppercase text-stone-400 flex justify-between items-center">
-                           <span>Link ảnh nền</span>
-                           <button onClick={() => pasteFromClipboard(slide.id, 'hero')} className="bg-amber-100 text-amber-900 px-4 py-1.5 rounded-full text-[9px] font-black uppercase">Dán Từ Bộ Nhớ</button>
-                         </label>
+                         <label className="text-[10px] font-black uppercase text-stone-400 flex justify-between items-center"><span>Link ảnh nền</span><button onClick={() => pasteFromClipboard(slide.id, 'hero')} className="bg-amber-100 text-amber-900 px-4 py-1.5 rounded-full text-[9px] font-black uppercase">Dán Từ Bộ Nhớ</button></label>
                          <input value={slide.image_url || ''} onChange={e => setHeroSlides(heroSlides.map((s: any) => s.id === slide.id ? {...s, image_url: e.target.value} : s))} className="w-full bg-white border border-stone-100 p-5 rounded-2xl outline-none focus:border-stone-900 font-mono text-xs" />
                        </div>
                        <div className="space-y-4">
@@ -352,7 +327,7 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, supabaseConfig, 
                     <button onClick={() => setHeroSlides(heroSlides.filter((s: any) => s.id !== slide.id))} className="text-[10px] font-black uppercase text-red-300 hover:text-red-500 underline self-center">Xóa slide này</button>
                   </div>
                 ))}
-                <button onClick={onSave} className="w-full bg-stone-900 text-white py-6 rounded-[28px] font-black uppercase tracking-widest mt-10 shadow-2xl">Lưu Tất Cả Thay Đổi</button>
+                <button onClick={onSave} className="w-full bg-stone-900 text-white py-8 rounded-[35px] font-black uppercase tracking-[0.3em] mt-10 shadow-2xl hover:bg-black transition-all">Lưu Tất Cả Thay Đổi</button>
               </div>
             )}
           </div>
@@ -386,14 +361,10 @@ const App = () => {
       return;
     }
     try {
-      const { data: dishes, error: dError } = await supabase.from('dishes').select('*').order('created_at', { ascending: true });
-      const { data: slides, error: sError } = await supabase.from('hero_slides').select('*').order('created_at', { ascending: true });
-      
-      // Quan trọng: Cập nhật state ngay cả khi mảng rỗng để không bị kẹt ở dữ liệu cũ
-      setMenu(dishes || []);
-      setHeroSlides(slides || []);
-      
-      if (dError || sError) console.error("Database fetch error:", dError || sError);
+      const { data: dishes } = await supabase.from('dishes').select('*').order('created_at', { ascending: true });
+      const { data: slides } = await supabase.from('hero_slides').select('*').order('created_at', { ascending: true });
+      if (dishes) setMenu(dishes);
+      if (slides) setHeroSlides(slides);
     } catch (e) {
       console.error("Fetch failed", e);
     } finally {
@@ -416,10 +387,13 @@ const App = () => {
     if (!supabase) return alert("Vui lòng cấu hình Database trước!");
     setIsLoading(true);
     try {
-      // Xóa hết rồi chèn lại để đảm bảo đồng bộ
+      // Step 1: Delete everything
       const { error: delMenuErr } = await supabase.from('dishes').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      if (delMenuErr) throw delMenuErr;
       const { error: delHeroErr } = await supabase.from('hero_slides').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      if (delHeroErr) throw delHeroErr;
       
+      // Step 2: Insert new data
       if (menu.length) {
         const { error: insMenuErr } = await supabase.from('dishes').insert(menu.map(({ id, ...rest }) => rest));
         if (insMenuErr) throw insMenuErr;
@@ -433,7 +407,7 @@ const App = () => {
       fetchData();
     } catch (e: any) {
       console.error(e);
-      alert("Lỗi đồng bộ! Có thể bảng dishes hoặc hero_slides chưa được tạo trong Supabase.");
+      alert(`LỖI ĐỒNG BỘ: ${e.message || 'Có thể bảng dishes hoặc hero_slides chưa được tạo trong Supabase. Vui lòng vào tab Hệ Thống để xem mã SQL thiết lập.'}`);
     } finally {
       setIsLoading(false);
     }
