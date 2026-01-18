@@ -32,8 +32,8 @@ interface HeroSlide {
 
 const CONFIG_KEY = 'ut-trinh-config-v3';
 
-// SQL Setup Script updated for idempotency
-const SQL_SETUP = `-- 1. Tạo bảng món ăn (Nếu chưa có)
+// SQL Setup Script updated to fix existing table defaults
+const SQL_SETUP = `-- 1. Tạo bảng (Nếu chưa có)
 create table if not exists dishes (
   id uuid default gen_random_uuid() primary key,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
@@ -44,7 +44,6 @@ create table if not exists dishes (
   category text
 );
 
--- 2. Tạo bảng ảnh bìa (Nếu chưa có)
 create table if not exists hero_slides (
   id uuid default gen_random_uuid() primary key,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
@@ -52,8 +51,16 @@ create table if not exists hero_slides (
   quote text
 );
 
--- 3. TẮT BẢO MẬT (QUAN TRỌNG NHẤT)
--- Chạy 2 dòng này để cho phép ứng dụng lưu và xóa dữ liệu
+-- 2. CẬP NHẬT GIÁ TRỊ MẶC ĐỊNH (Quan trọng nếu bảng đã tồn tại từ trước)
+alter table dishes alter column id set default gen_random_uuid();
+alter table dishes alter column created_at set default timezone('utc'::text, now());
+alter table dishes alter column created_at set not null;
+
+alter table hero_slides alter column id set default gen_random_uuid();
+alter table hero_slides alter column created_at set default timezone('utc'::text, now());
+alter table hero_slides alter column created_at set not null;
+
+-- 3. TẮT BẢO MẬT RLS
 alter table dishes disable row level security;
 alter table hero_slides disable row level security;`;
 
@@ -390,22 +397,24 @@ const App = () => {
     if (!supabase) return alert("Vui lòng cấu hình Database trước!");
     setIsLoading(true);
     try {
-      // Step 1: Delete everything (using a filter that's always true for Postgres)
-      const { error: delMenuErr } = await supabase.from('dishes').delete().filter('created_at', 'lt', 'now()');
+      // Step 1: Xóa dữ liệu cũ bằng filter chắc chắn (luôn đúng)
+      const { error: delMenuErr } = await supabase.from('dishes').delete().neq('name', '___DELETED___');
       if (delMenuErr) throw delMenuErr;
-      const { error: delHeroErr } = await supabase.from('hero_slides').delete().filter('created_at', 'lt', 'now()');
+      const { error: delHeroErr } = await supabase.from('hero_slides').delete().neq('image_url', '___DELETED___');
       if (delHeroErr) throw delHeroErr;
       
-      // Step 2: Insert new data. 
-      // CRITICAL: We MUST remove both 'id' and 'created_at' to allow Supabase to generate fresh ones.
+      // Step 2: Chuẩn bị dữ liệu sạch (loại bỏ id và created_at để DB tự tạo)
+      const sanitize = (list: any[]) => list.map(({ id, created_at, ...rest }) => {
+          // Chỉ lấy những trường hợp lệ
+          return rest;
+      });
+
       if (menu.length) {
-        const menuToInsert = menu.map(({ id, created_at, ...rest }: any) => rest);
-        const { error: insMenuErr } = await supabase.from('dishes').insert(menuToInsert);
+        const { error: insMenuErr } = await supabase.from('dishes').insert(sanitize(menu));
         if (insMenuErr) throw insMenuErr;
       }
       if (heroSlides.length) {
-        const heroToInsert = heroSlides.map(({ id, created_at, ...rest }: any) => rest);
-        const { error: insHeroErr } = await supabase.from('hero_slides').insert(heroToInsert);
+        const { error: insHeroErr } = await supabase.from('hero_slides').insert(sanitize(heroSlides));
         if (insHeroErr) throw insHeroErr;
       }
       
@@ -413,7 +422,7 @@ const App = () => {
       fetchData();
     } catch (e: any) {
       console.error(e);
-      alert(`LỖI ĐỒNG BỘ: ${e.message || 'Có thể do Row Level Security (RLS) chưa được tắt hoặc vi phạm ràng buộc dữ liệu.'}`);
+      alert(`LỖI ĐỒNG BỘ: ${e.message || 'Có thể do cấu hình SQL hoặc Row Level Security (RLS).'}`);
     } finally {
       setIsLoading(false);
     }
