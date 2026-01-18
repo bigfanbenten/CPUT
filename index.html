@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ÚT TRINH - Hương Vị Cơm Nhà Cao Cấp</title>
+    <title>Cơm Phần Út Trinh - Hương Vị Cơm Nhà</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,10 +12,10 @@
     <style>
         body { 
             font-family: 'Be Vietnam Pro', sans-serif; 
-            background-color: #fafafa; 
+            background-color: #ffffff; 
             margin: 0; 
-            color: #1a1a1a;
             -webkit-font-smoothing: antialiased;
+            color: #1c1917;
         }
         #initial-loader {
             position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
@@ -23,19 +23,11 @@
         }
         .spinner {
             width: 40px; height: 40px; border: 3px solid #f3f3f3;
-            border-top: 3px solid #b45309; border-radius: 50%;
+            border-top: 3px solid #9a3412; border-radius: 50%;
             animation: spin 1s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        /* Chống giật khi hover */
-        .card-shadow {
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .card-shadow:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
-        }
+        html { scroll-behavior: smooth; }
     </style>
 <script type="importmap">
 {
@@ -54,7 +46,7 @@
     <div id="initial-loader">
         <div class="flex flex-col items-center gap-4">
             <div class="spinner"></div>
-            <p className="text-stone-400 font-medium tracking-widest text-[10px] uppercase">Đang bày mâm cơm...</p>
+            <p class="text-orange-900 font-medium italic">Đang dọn mâm cơm...</p>
         </div>
     </div>
     <div id="root"></div>
@@ -62,7 +54,7 @@
     <script>
         window.addEventListener('load', () => {
             const loader = document.getElementById('initial-loader');
-            if (loader) setTimeout(() => loader.remove(), 600);
+            if (loader) setTimeout(() => loader.remove(), 500);
         });
     </script>
 </body>
