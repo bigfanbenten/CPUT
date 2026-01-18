@@ -119,7 +119,6 @@ const DishModal: React.FC<{ dish: Dish | null; onClose: () => void }> = ({ dish,
   );
 };
 
-// --- APP CHÍNH ---
 const App = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('Tất cả');
   const [selectedDish, setSelectedDish] = useState<Dish | null>(null);
@@ -137,7 +136,11 @@ const App = () => {
     if (!mood.trim()) return;
     setIsAiLoading(true);
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+      // API Key được lấy từ process.env được định nghĩa trong vite.config.ts
+      const apiKey = process.env.API_KEY;
+      if (!apiKey) throw new Error("API Key is missing");
+      
+      const ai = new GoogleGenAI({ apiKey });
       const menuStr = MENU_DATA.map(d => `${d.name} (${d.category})`).join(', ');
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
@@ -155,8 +158,8 @@ const App = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <nav className="fixed top-0 w-full z-40 bg-white/95 backdrop-blur-md border-b border-stone-100 px-8 h-20 flex items-center justify-between">
+    <div className="min-h-screen flex flex-col bg-[#fdfcfb]">
+      <nav className="fixed top-0 w-full z-40 bg-white/95 backdrop-blur-md border-b border-stone-100 px-8 h-20 flex items-center justify-between shadow-sm">
         <div className="flex flex-col">
           <span className="text-xl md:text-2xl font-serif font-black text-orange-900 tracking-tighter uppercase leading-none">ÚT TRINH KITCHEN</span>
           <span className="text-[9px] tracking-[0.3em] text-stone-400 uppercase mt-1">Cơm phần & Đặc sản quê nhà</span>
@@ -164,7 +167,7 @@ const App = () => {
         <a href="tel:0900000000" className="bg-stone-900 text-white px-6 py-2 text-[10px] uppercase font-bold tracking-widest hover:bg-orange-900 transition-all rounded-sm">090.XXX.XXXX</a>
       </nav>
 
-      <header className="relative h-[70vh] flex items-center justify-center bg-stone-900 mt-20 overflow-hidden">
+      <header className="relative h-[60vh] flex items-center justify-center bg-stone-900 mt-20 overflow-hidden">
         <img src="https://images.unsplash.com/photo-1528605248644-14dd04cb21c7?auto=format&fit=crop&q=80&w=1920" className="absolute inset-0 w-full h-full object-cover opacity-40 animate-slow-zoom" />
         <div className="relative z-10 text-center px-6">
           <h1 className="text-5xl md:text-8xl font-serif text-white mb-6">Mỹ thực quê nhà</h1>
