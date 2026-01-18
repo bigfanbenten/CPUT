@@ -82,7 +82,7 @@ const Nav = ({ isAdmin = false }) => (
         <div className="flex gap-10 items-center">
           <a href="#menu" className="text-stone-900 text-[10px] font-black uppercase tracking-widest hover:text-amber-700 transition-colors">Thực Đơn</a>
           <div className="w-px h-6 bg-stone-200 hidden md:block"></div>
-          <span className="text-stone-900 text-[11px] font-black tracking-widest hidden md:block">090.XXX.XXXX</span>
+          <span className="text-stone-900 text-[11px] font-black tracking-widest hidden md:block uppercase">Hãy gọi đặt món ngay 0939.70.90.20</span>
         </div>
       )}
     </div>
@@ -216,9 +216,10 @@ const HomePage = ({ menu, heroSlides, isLoading }: any) => {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-12">
           <div className="text-center md:text-left">
             <span className="font-black tracking-[0.4em] uppercase text-2xl block mb-2">ÚT TRINH</span>
+            <span className="text-stone-400 text-[10px] font-medium block mb-2 uppercase tracking-widest">158A/5 Trần Vĩnh Kiết, Ninh Kiều, TP Cần Thơ</span>
             <span className="text-amber-500 text-[10px] font-bold uppercase tracking-[0.3em]">Hương Vị Gia Đình Thượng Hạng</span>
           </div>
-          <p className="text-stone-500 text-[10px] font-bold uppercase tracking-widest">© 2024 Ut Trinh Kitchen — Premium Dining</p>
+          <p className="text-stone-500 text-[10px] font-bold uppercase tracking-widest">© 2026 UT TRINH KITCHEN — PREMIUM DINING - EST 2019</p>
         </div>
       </footer>
       <style>{`@keyframes slow-zoom { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }`}</style>
@@ -398,9 +399,9 @@ const App = () => {
     setIsLoading(true);
     try {
       // Step 1: Xóa dữ liệu cũ bằng filter chắc chắn (luôn đúng)
-      const { error: delMenuErr } = await supabase.from('dishes').delete().neq('name', '___DELETED___');
+      const { error: delMenuErr = null } = await supabase.from('dishes').delete().neq('name', '___DELETED___');
       if (delMenuErr) throw delMenuErr;
-      const { error: delHeroErr } = await supabase.from('hero_slides').delete().neq('image_url', '___DELETED___');
+      const { error: delHeroErr = null } = await supabase.from('hero_slides').delete().neq('image_url', '___DELETED___');
       if (delHeroErr) throw delHeroErr;
       
       // Step 2: Chuẩn bị dữ liệu sạch (loại bỏ id và created_at để DB tự tạo)
@@ -410,11 +411,11 @@ const App = () => {
       });
 
       if (menu.length) {
-        const { error: insMenuErr } = await supabase.from('dishes').insert(sanitize(menu));
+        const { error: insMenuErr = null } = await supabase.from('dishes').insert(sanitize(menu));
         if (insMenuErr) throw insMenuErr;
       }
       if (heroSlides.length) {
-        const { error: insHeroErr } = await supabase.from('hero_slides').insert(sanitize(heroSlides));
+        const { error: insHeroErr = null } = await supabase.from('hero_slides').insert(sanitize(heroSlides));
         if (insHeroErr) throw insHeroErr;
       }
       
@@ -428,7 +429,7 @@ const App = () => {
     }
   };
 
-  if (hash.toLowerCase().includes('acpanel')) {
+  if (hash.toLowerCase().includes('acp1122')) {
     return <AdminPanel menu={menu} setMenu={setMenu} heroSlides={heroSlides} setHeroSlides={setHeroSlides} supabaseConfig={supabaseConfig} setSupabaseConfig={setSupabaseConfig} onSave={handleSave} />;
   }
   return <HomePage menu={menu} heroSlides={heroSlides} isLoading={isLoading} />;
