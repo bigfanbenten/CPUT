@@ -183,15 +183,15 @@ const App = () => {
           <div className="flex justify-center gap-8 mb-12 text-stone-400">
             <div className="flex flex-col gap-1">
               <span className="text-[9px] uppercase tracking-widest text-stone-600 font-bold">Địa chỉ</span>
-              <span className="text-sm font-medium">Quận 7, TP. Hồ Chí Minh</span>
+              <span className="text-sm font-medium">158A/5 Trần Vĩnh Kiết, Tân An, Ninh Kiều, TP Cần Thơ</span>
             </div>
             <div className="w-px h-8 bg-stone-800 self-center"></div>
             <div className="flex flex-col gap-1">
               <span className="text-[9px] uppercase tracking-widest text-stone-600 font-bold">Thời gian</span>
-              <span className="text-sm font-medium">10:00 - 21:00</span>
+              <span className="text-sm font-medium">9:00 - 18:00</span>
             </div>
           </div>
-          <p className="text-stone-600 text-[11px] border-t border-stone-800/50 pt-10 font-light">© 2024 - Vì một bữa cơm ngon tròn vị cho mọi gia đình Việt</p>
+          <p className="text-stone-600 text-[11px] border-t border-stone-800/50 pt-10 font-light">EST © 2019 - Vì một bữa cơm ngon tròn vị cho mọi gia đình Việt</p>
         </div>
       </footer>
 
