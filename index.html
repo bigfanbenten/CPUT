@@ -27,15 +27,7 @@
             animation: spin 1s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        /* Smooth scrolling */
         html { scroll-behavior: smooth; }
-        
-        /* Custom scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #9a3412; }
     </style>
 <script type="importmap">
 {
@@ -54,7 +46,7 @@
     <div id="initial-loader">
         <div class="flex flex-col items-center gap-4">
             <div class="spinner"></div>
-            <p class="text-orange-900 font-medium italic">Đang chuẩn bị mâm cơm...</p>
+            <p class="text-orange-900 font-medium italic">Đang dọn mâm cơm...</p>
         </div>
     </div>
     <div id="root"></div>
@@ -62,10 +54,7 @@
     <script>
         window.addEventListener('load', () => {
             const loader = document.getElementById('initial-loader');
-            if (loader) setTimeout(() => {
-                loader.style.opacity = '0';
-                setTimeout(() => loader.remove(), 500);
-            }, 500);
+            if (loader) setTimeout(() => loader.remove(), 500);
         });
     </script>
 </body>
