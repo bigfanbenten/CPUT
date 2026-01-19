@@ -80,7 +80,7 @@ const Nav = ({ isAdmin = false }) => {
           <div className="w-10 h-10 bg-stone-900 flex items-center justify-center text-white font-black text-xl rounded-sm group-hover:bg-amber-800 transition-colors">Ú</div>
           <div className="flex flex-col">
             <span className="text-lg font-black text-stone-900 uppercase tracking-[0.3em] leading-none">ÚT TRINH</span>
-            <span className="text-[9px] font-bold text-amber-700 tracking-[0.2em] uppercase mt-1">Authentic Cuisine</span>
+            <span className="text-[9px] font-bold text-amber-700 tracking-[0.2em] uppercase mt-1">CƠM PHẦN</span>
           </div>
         </div>
         <div className="flex gap-4 md:gap-10 items-center">
