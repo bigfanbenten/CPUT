@@ -5,8 +5,8 @@ import { createClient } from '@supabase/supabase-js';
 
 // --- CẤU HÌNH CỐ ĐỊNH (QUAN TRỌNG) ---
 // Bạn có thể dán URL và Key của mình vào đây để mọi thiết bị đều thấy dữ liệu thực tế
-const HARDCODED_SUPABASE_URL = ''; // Dán Supabase URL vào đây (ví dụ: https://xyz.supabase.co)
-const HARDCODED_SUPABASE_KEY = ''; // Dán Anon Key vào đây
+const HARDCODED_SUPABASE_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co'; // Dán Supabase URL vào đây (ví dụ: https://xyz.supabase.co)
+const HARDCODED_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyemZwZWV1b2h6ZnF1emZpZWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3NDY4MDgsImV4cCI6MjA4NDMyMjgwOH0.tyzhzbucriL09bH-ndgXs3ob1-Www97vsfQ6Wsh8d7s'; // Dán Anon Key vào đây
 
 // --- TYPES ---
 enum Category {
