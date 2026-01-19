@@ -5,8 +5,8 @@ import { createClient } from '@supabase/supabase-js';
 
 // --- CẤU HÌNH CỐ ĐỊNH (QUAN TRỌNG) ---
 // Bạn có thể dán URL và Key của mình vào đây để mọi thiết bị đều thấy dữ liệu thực tế
-const HARDCODED_SUPABASE_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co'; // Dán Supabase URL vào đây (ví dụ: https://xyz.supabase.co)
-const HARDCODED_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyemZwZWV1b2h6ZnF1emZpZWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3NDY4MDgsImV4cCI6MjA4NDMyMjgwOH0.tyzhzbucriL09bH-ndgXs3ob1-Www97vsfQ6Wsh8d7s'; // Dán Anon Key vào đây
+const HARDCODED_SUPABASE_URL = ''; // Dán Supabase URL vào đây (ví dụ: https://xyz.supabase.co)
+const HARDCODED_SUPABASE_KEY = ''; // Dán Anon Key vào đây
 
 // --- TYPES ---
 enum Category {
@@ -70,28 +70,69 @@ alter table hero_slides disable row level security;`;
 
 // --- COMPONENTS ---
 
-const Nav = ({ isAdmin = false }) => (
-  <nav className="fixed top-0 w-full z-40 bg-white/90 backdrop-blur-xl border-b border-stone-100 px-6 md:px-20 h-24 flex items-center justify-between transition-all">
-    <div className="flex items-center gap-4 cursor-pointer group" onClick={() => window.location.hash = ''}>
-      <div className="w-10 h-10 bg-stone-900 flex items-center justify-center text-white font-black text-xl rounded-sm group-hover:bg-amber-800 transition-colors">Ú</div>
-      <div className="flex flex-col">
-        <span className="text-lg font-black text-stone-900 uppercase tracking-[0.3em] leading-none">ÚT TRINH</span>
-        <span className="text-[9px] font-bold text-amber-700 tracking-[0.2em] uppercase mt-1">Authentic Cuisine</span>
-      </div>
-    </div>
-    <div className="flex gap-10 items-center">
-      {isAdmin ? (
-        <button onClick={() => window.location.hash = ''} className="bg-amber-800 text-white px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-stone-900 transition-all shadow-md">Thoát Quản Trị</button>
-      ) : (
-        <div className="flex gap-10 items-center">
-          <a href="#menu" className="text-stone-900 text-[10px] font-black uppercase tracking-widest hover:text-amber-700 transition-colors">Thực Đơn</a>
-          <div className="w-px h-6 bg-stone-200 hidden md:block"></div>
-          <span className="text-stone-900 text-[11px] font-black tracking-widest hidden md:block uppercase">Hãy gọi đặt món ngay 0939.70.90.20</span>
+const Nav = ({ isAdmin = false }) => {
+  const [showConciseMenu, setShowConciseMenu] = useState(false);
+
+  return (
+    <>
+      <nav className="fixed top-0 w-full z-40 bg-white/90 backdrop-blur-xl border-b border-stone-100 px-6 md:px-20 h-24 flex items-center justify-between transition-all">
+        <div className="flex items-center gap-4 cursor-pointer group" onClick={() => window.location.hash = ''}>
+          <div className="w-10 h-10 bg-stone-900 flex items-center justify-center text-white font-black text-xl rounded-sm group-hover:bg-amber-800 transition-colors">Ú</div>
+          <div className="flex flex-col">
+            <span className="text-lg font-black text-stone-900 uppercase tracking-[0.3em] leading-none">ÚT TRINH</span>
+            <span className="text-[9px] font-bold text-amber-700 tracking-[0.2em] uppercase mt-1">Authentic Cuisine</span>
+          </div>
+        </div>
+        <div className="flex gap-4 md:gap-10 items-center">
+          {isAdmin ? (
+            <button onClick={() => window.location.hash = ''} className="bg-amber-800 text-white px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-stone-900 transition-all shadow-md">Thoát Quản Trị</button>
+          ) : (
+            <div className="flex gap-4 md:gap-10 items-center">
+              <a href="#menu" className="text-stone-900 text-[10px] font-black uppercase tracking-widest hover:text-amber-700 transition-colors">Thực Đơn</a>
+              <button 
+                onClick={() => setShowConciseMenu(true)} 
+                className="text-amber-800 text-[10px] font-black uppercase tracking-widest hover:text-stone-900 transition-colors bg-amber-50 px-4 py-2 rounded-full border border-amber-100"
+              >
+                Xem Ảnh Menu Rút Gọn
+              </button>
+              <div className="w-px h-6 bg-stone-200 hidden md:block"></div>
+              <span className="text-stone-900 text-[11px] font-black tracking-widest hidden lg:block uppercase">Hãy gọi đặt món ngay 0939.70.90.20</span>
+            </div>
+          )}
+        </div>
+      </nav>
+
+      {/* Concise Menu Image Modal */}
+      {showConciseMenu && (
+        <div 
+          className="fixed inset-0 z-[110] flex items-center justify-center bg-stone-950/90 backdrop-blur-2xl p-4 md:p-12 animate-in fade-in duration-300" 
+          onClick={() => setShowConciseMenu(false)}
+        >
+          <div className="relative max-w-4xl w-full h-full flex flex-col items-center justify-center" onClick={e => e.stopPropagation()}>
+            <button 
+              onClick={() => setShowConciseMenu(false)} 
+              className="absolute -top-14 right-0 md:top-0 md:-right-16 text-white bg-white/10 p-4 rounded-full hover:bg-white/20 transition-all group"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <div className="w-full h-full overflow-auto rounded-[30px] shadow-2xl bg-white/5 flex items-start justify-center">
+              <img 
+                src="https://i.postimg.cc/FRJy6Vds/3083583a-d289-482f-9d4e-09d3f06f8893.jpg" 
+                className="max-w-full h-auto rounded-[30px] border-4 border-white/10" 
+                alt="Thực đơn rút gọn Út Trinh Kitchen"
+              />
+            </div>
+            <div className="mt-6">
+              <span className="text-white/60 text-[10px] font-black uppercase tracking-[0.4em]">Slogan: Hương Vị Gia Đình Thượng Hạng</span>
+            </div>
+          </div>
         </div>
       )}
-    </div>
-  </nav>
-);
+    </>
+  );
+};
 
 const HomePage = ({ menu, heroSlides, isLoading }: any) => {
   const [selectedDish, setSelectedDish] = useState<Dish | null>(null);
