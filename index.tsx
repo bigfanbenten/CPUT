@@ -3,6 +3,11 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import ReactDOM from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
 
+// --- CẤU HÌNH CỐ ĐỊNH (QUAN TRỌNG) ---
+// Bạn có thể dán URL và Key của mình vào đây để mọi thiết bị đều thấy dữ liệu thực tế
+const HARDCODED_SUPABASE_URL = ''; // Dán Supabase URL vào đây (ví dụ: https://xyz.supabase.co)
+const HARDCODED_SUPABASE_KEY = ''; // Dán Anon Key vào đây
+
 // --- TYPES ---
 enum Category {
   All = 'Tất Cả',
@@ -32,7 +37,6 @@ interface HeroSlide {
 
 const CONFIG_KEY = 'ut-trinh-config-v3';
 
-// SQL Setup Script updated to fix existing table defaults
 const SQL_SETUP = `-- 1. Tạo bảng (Nếu chưa có)
 create table if not exists dishes (
   id uuid default gen_random_uuid() primary key,
@@ -51,7 +55,7 @@ create table if not exists hero_slides (
   quote text
 );
 
--- 2. CẬP NHẬT GIÁ TRỊ MẶC ĐỊNH (Quan trọng nếu bảng đã tồn tại từ trước)
+-- 2. CẬP NHẬT GIÁ TRỊ MẶC ĐỊNH
 alter table dishes alter column id set default gen_random_uuid();
 alter table dishes alter column created_at set default timezone('utc'::text, now());
 alter table dishes alter column created_at set not null;
@@ -350,6 +354,10 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, supabaseConfig, 
 
 const App = () => {
   const [supabaseConfig, setSupabaseConfig] = useState(() => {
+    // Ưu tiên dùng cấu hình ghim trong code, nếu không có mới tìm trong LocalStorage
+    if (HARDCODED_SUPABASE_URL && HARDCODED_SUPABASE_KEY) {
+        return { url: HARDCODED_SUPABASE_URL, key: HARDCODED_SUPABASE_KEY };
+    }
     const saved = localStorage.getItem(CONFIG_KEY);
     return saved ? JSON.parse(saved) : { url: '', key: '' };
   });
@@ -366,8 +374,8 @@ const App = () => {
 
   const fetchData = useCallback(async () => {
     if (!supabase) {
-      setMenu([{ id: '1', name: 'Sườn Non Rim Mắm Nhĩ', price: '125.000 VNĐ', description: 'Sườn non tươi ngon, rim mắm đậm đà.', image_url: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=1000', category: Category.MainCourse }]);
-      setHeroSlides([{ id: 'h1', image_url: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=1920', quote: 'Hương vị cơm nhà tinh túy.' }]);
+      setMenu([{ id: '1', name: 'Món Mẫu: Sườn Rim', price: '125.000 VNĐ', description: 'Đây là dữ liệu mẫu khi chưa kết nối Database.', image_url: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=1000', category: Category.MainCourse }]);
+      setHeroSlides([{ id: 'h1', image_url: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=1920', quote: 'Dữ liệu mẫu - Vui lòng cấu hình Database.' }]);
       setIsLoading(false);
       return;
     }
@@ -384,7 +392,10 @@ const App = () => {
   }, [supabase]);
 
   useEffect(() => {
-    localStorage.setItem(CONFIG_KEY, JSON.stringify(supabaseConfig));
+    // Chỉ lưu vào LocalStorage nếu không phải là cấu hình ghim sẵn
+    if (!HARDCODED_SUPABASE_URL) {
+        localStorage.setItem(CONFIG_KEY, JSON.stringify(supabaseConfig));
+    }
     fetchData();
   }, [supabaseConfig, fetchData]);
 
@@ -398,17 +409,12 @@ const App = () => {
     if (!supabase) return alert("Vui lòng cấu hình Database trước!");
     setIsLoading(true);
     try {
-      // Step 1: Xóa dữ liệu cũ bằng filter chắc chắn (luôn đúng)
       const { error: delMenuErr = null } = await supabase.from('dishes').delete().neq('name', '___DELETED___');
       if (delMenuErr) throw delMenuErr;
       const { error: delHeroErr = null } = await supabase.from('hero_slides').delete().neq('image_url', '___DELETED___');
       if (delHeroErr) throw delHeroErr;
       
-      // Step 2: Chuẩn bị dữ liệu sạch (loại bỏ id và created_at để DB tự tạo)
-      const sanitize = (list: any[]) => list.map(({ id, created_at, ...rest }) => {
-          // Chỉ lấy những trường hợp lệ
-          return rest;
-      });
+      const sanitize = (list: any[]) => list.map(({ id, created_at, ...rest }) => rest);
 
       if (menu.length) {
         const { error: insMenuErr = null } = await supabase.from('dishes').insert(sanitize(menu));
@@ -419,11 +425,11 @@ const App = () => {
         if (insHeroErr) throw insHeroErr;
       }
       
-      alert("Đã đồng bộ thực đơn và ảnh bìa thành công!");
+      alert("Đã đồng bộ thành công!");
       fetchData();
     } catch (e: any) {
       console.error(e);
-      alert(`LỖI ĐỒNG BỘ: ${e.message || 'Có thể do cấu hình SQL hoặc Row Level Security (RLS).'}`);
+      alert(`LỖI: ${e.message}`);
     } finally {
       setIsLoading(false);
     }
