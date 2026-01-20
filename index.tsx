@@ -4,8 +4,8 @@ import ReactDOM from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
 
 // --- CẤU HÌNH CỐ ĐỊNH ---
-const HARDCODED_SUPABASE_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co'; 
-const HARDCODED_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyemZwZWV1b2h6ZnF1emZpZWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3NDY4MDgsImV4cCI6MjA4NDMyMjgwOH0.tyzhzbucriL09bH-ndgXs3ob1-Www97vsfQ6Wsh8d7s'; 
+const HARDCODED_SUPABASE_URL = ''; 
+const HARDCODED_SUPABASE_KEY = ''; 
 
 // --- TYPES ---
 enum Category {
@@ -117,37 +117,31 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
   const [activeFilter, setActiveFilter] = useState<Category>(Category.All);
   const [currentSlide, setCurrentSlide] = useState(0);
   
-  // Thống kê thực tế từ Database
   const [onlineUsers, setOnlineUsers] = useState(1);
   const [totalVisitors, setTotalVisitors] = useState(300);
 
   useEffect(() => {
     if (!supabase) return;
 
-    const BASE_START = 300; // Số gốc mặc định ban đầu
-    const SESSION_TIME = 5 * 60 * 60 * 1000; // Đổi thành 5 tiếng theo yêu cầu
+    const BASE_START = 300; 
+    const SESSION_TIME = 5 * 60 * 60 * 1000; 
 
-    // 1. Logic Đếm tổng lượt khách (Ghi vào Database)
     const handleVisits = async () => {
-      // Lấy tổng số lượt đã lưu trong Database
       const { count } = await supabase.from('site_visits').select('*', { count: 'exact', head: true });
       setTotalVisitors(BASE_START + (count || 0));
 
       const lastVisit = localStorage.getItem('ut_v5_visit_time');
       const now = Date.now();
 
-      // Nếu khách mới HOẶC quay lại sau 5 tiếng -> Ghi 1 bản ghi mới vào Database
       if (!lastVisit || (now - parseInt(lastVisit)) > SESSION_TIME) {
         const { error } = await supabase.from('site_visits').insert({});
         if (!error) {
           localStorage.setItem('ut_v5_visit_time', now.toString());
-          // Tăng ngay lập tức trên giao diện để khách thấy con số nhảy lên
           setTotalVisitors(prev => prev + 1);
         }
       }
     };
 
-    // 2. Logic Đếm số người online chính xác (Dùng Presence Realtime)
     const channel = supabase.channel('online_tracking_v5', {
       config: { presence: { key: 'visitor-' + Math.random().toString(36).substring(7) } }
     });
@@ -155,7 +149,6 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
     channel
       .on('presence', { event: 'sync' }, () => {
         const state = channel.presenceState();
-        // Đếm số lượng thiết bị đang giữ kết nối WebSocket mở
         setOnlineUsers(Object.keys(state).length || 1);
       })
       .subscribe(async (status: string) => {
@@ -252,35 +245,38 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
         </div>
       )}
 
-      <footer className="py-24 px-12 bg-stone-900 text-white mt-40">
+      <footer className="py-20 px-12 bg-stone-900 text-white mt-40">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-12 border-b border-white/5 pb-16">
-          <div className="text-center md:text-left">
-            <span className="font-black tracking-[0.4em] uppercase text-2xl block mb-2">ÚT TRINH</span>
-            <span className="text-stone-400 text-[10px] uppercase tracking-widest">158A/5 Trần Vĩnh Kiết, Ninh Kiều, TP Cần Thơ</span>
+          <div className="text-center md:text-left space-y-3">
+            <span className="font-black tracking-[0.4em] uppercase text-2xl block">ÚT TRINH</span>
+            <span className="text-amber-500 font-black tracking-[0.2em] text-sm uppercase block">HƯƠNG VỊ QUÊ NHÀ</span>
+            <span className="text-amber-500 font-bold text-[11px] uppercase tracking-widest block">158A/5 Trần Vĩnh Kiết, Ninh Kiều, TP Cần Thơ</span>
           </div>
-          <p className="text-stone-500 text-[10px] font-bold uppercase tracking-widest">© 2026 UT TRINH KITCHEN — EST 2019</p>
+          
+          <div className="flex flex-wrap justify-center md:justify-end gap-x-12 gap-y-6">
+            <div className="flex items-center gap-3">
+              <div className="w-2 h-2 bg-stone-600 rounded-full"></div>
+              <div className="flex flex-col">
+                <span className="text-stone-500 text-[8px] font-black uppercase tracking-widest">Tổng lượt khách</span>
+                <span className="text-white text-sm font-black tracking-widest tabular-nums">
+                  {supabase ? totalVisitors.toLocaleString() : '---'}
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_green]"></div>
+              <div className="flex flex-col">
+                <span className="text-stone-500 text-[8px] font-black uppercase tracking-widest">Đang online</span>
+                <span className="text-green-500 text-sm font-black tracking-widest tabular-nums">
+                  {supabase ? onlineUsers : '---'}
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
         
-        {/* STATS AREA */}
-        <div className="max-w-7xl mx-auto mt-12 flex flex-wrap justify-center md:justify-end gap-x-12 gap-y-6">
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-2 bg-stone-600 rounded-full"></div>
-            <div className="flex flex-col">
-              <span className="text-stone-500 text-[8px] font-black uppercase tracking-widest">Tổng lượt khách truy cập</span>
-              <span className="text-white text-sm font-black tracking-widest tabular-nums">
-                {supabase ? totalVisitors.toLocaleString() : '---'}
-              </span>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_green]"></div>
-            <div className="flex flex-col">
-              <span className="text-stone-500 text-[8px] font-black uppercase tracking-widest">Số khách đang online</span>
-              <span className="text-green-500 text-sm font-black tracking-widest tabular-nums">
-                {supabase ? onlineUsers : '---'}
-              </span>
-            </div>
-          </div>
+        <div className="max-w-7xl mx-auto mt-10 text-center md:text-right">
+          <p className="text-stone-500 text-[10px] font-bold uppercase tracking-widest">© 2026 UT TRINH KITCHEN — EST 2019</p>
         </div>
       </footer>
     </div>
