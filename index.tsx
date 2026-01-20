@@ -4,8 +4,8 @@ import ReactDOM from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
 
 // --- CẤU HÌNH CỐ ĐỊNH ---
-const HARDCODED_SUPABASE_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co'; 
-const HARDCODED_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyemZwZWV1b2h6ZnF1emZpZWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3NDY4MDgsImV4cCI6MjA4NDMyMjgwOH0.tyzhzbucriL09bH-ndgXs3ob1-Www97vsfQ6Wsh8d7s'; 
+const HARDCODED_SUPABASE_URL = ''; 
+const HARDCODED_SUPABASE_KEY = ''; 
 
 // --- TYPES ---
 enum Category {
@@ -91,7 +91,7 @@ const Nav = ({ isAdmin = false }) => {
                 onClick={() => setShowConciseMenu(true)} 
                 className="text-amber-800 text-[10px] font-black uppercase tracking-widest hover:text-stone-900 transition-colors bg-amber-50 px-4 py-2 rounded-full border border-amber-100"
               >
-                Xem Ảnh Menu Rút Gọn
+                Xem Ảnh Menu
               </button>
               <div className="w-px h-6 bg-stone-200 hidden md:block"></div>
               <span className="text-stone-900 text-[11px] font-black tracking-widest hidden lg:block uppercase">Hãy gọi đặt món ngay 0939.70.90.20</span>
@@ -245,29 +245,35 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
         </div>
       )}
 
-      <footer className="py-20 px-12 bg-stone-900 text-white mt-40">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-12 border-b border-white/5 pb-16">
-          <div className="text-center md:text-left space-y-3">
-            <span className="font-black tracking-[0.4em] uppercase text-2xl block">ÚT TRINH</span>
-            <span className="text-amber-500 font-black tracking-[0.2em] text-sm uppercase block">HƯƠNG VỊ QUÊ NHÀ</span>
-            <span className="text-amber-500 font-bold text-[11px] uppercase tracking-widest block">158A/5 Trần Vĩnh Kiết, Ninh Kiều, TP Cần Thơ</span>
+      <footer className="py-24 px-12 bg-stone-900 text-white mt-40">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-12 border-b border-white/5 pb-20">
+          <div className="text-center md:text-left space-y-4">
+            <div className="inline-block bg-white/5 backdrop-blur-md px-8 py-3 rounded-2xl border border-white/10 shadow-2xl">
+              <span className="font-black tracking-[0.5em] uppercase text-3xl block">ÚT TRINH</span>
+            </div>
+            <div className="flex flex-col gap-3">
+              <div className="inline-block bg-amber-500/10 backdrop-blur-md px-5 py-2 rounded-xl border border-amber-500/20 w-fit mx-auto md:mx-0">
+                <span className="text-amber-500 font-black tracking-[0.3em] text-sm uppercase block">HƯƠNG VỊ QUÊ NHÀ</span>
+              </div>
+              <span className="text-amber-500 font-bold text-[12px] uppercase tracking-[0.18em] block md:pl-2">158A/5 Trần Vĩnh Kiết, Ninh Kiều, TP Cần Thơ</span>
+            </div>
           </div>
           
-          <div className="flex flex-wrap justify-center md:justify-end gap-x-12 gap-y-6">
-            <div className="flex items-center gap-3">
-              <div className="w-2 h-2 bg-stone-600 rounded-full"></div>
+          <div className="flex flex-wrap justify-center md:justify-end gap-x-16 gap-y-8">
+            <div className="flex items-center gap-4 bg-white/5 px-6 py-3 rounded-2xl border border-white/5">
+              <div className="w-2.5 h-2.5 bg-stone-600 rounded-full"></div>
               <div className="flex flex-col">
-                <span className="text-stone-500 text-[8px] font-black uppercase tracking-widest">Tổng lượt khách</span>
-                <span className="text-white text-sm font-black tracking-widest tabular-nums">
+                <span className="text-stone-500 text-[9px] font-black uppercase tracking-widest">Tổng lượt khách</span>
+                <span className="text-white text-base font-black tracking-widest tabular-nums">
                   {supabase ? totalVisitors.toLocaleString() : '---'}
                 </span>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_green]"></div>
+            <div className="flex items-center gap-4 bg-green-500/5 px-6 py-3 rounded-2xl border border-green-500/10">
+              <div className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_15px_green]"></div>
               <div className="flex flex-col">
-                <span className="text-stone-500 text-[8px] font-black uppercase tracking-widest">Đang online</span>
-                <span className="text-green-500 text-sm font-black tracking-widest tabular-nums">
+                <span className="text-stone-500 text-[9px] font-black uppercase tracking-widest">Đang online</span>
+                <span className="text-green-500 text-base font-black tracking-widest tabular-nums">
                   {supabase ? onlineUsers : '---'}
                 </span>
               </div>
@@ -275,8 +281,8 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
           </div>
         </div>
         
-        <div className="max-w-7xl mx-auto mt-10 text-center md:text-right">
-          <p className="text-stone-500 text-[10px] font-bold uppercase tracking-widest">© 2026 UT TRINH KITCHEN — EST 2019</p>
+        <div className="max-w-7xl mx-auto mt-12 text-center md:text-right">
+          <p className="text-stone-500 text-[11px] font-bold uppercase tracking-[0.2em] opacity-80">© 2026 UT TRINH KITCHEN — EST 2019</p>
         </div>
       </footer>
     </div>
