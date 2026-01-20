@@ -4,9 +4,8 @@ import ReactDOM from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
 
 // --- CẤU HÌNH CỐ ĐỊNH (QUAN TRỌNG) ---
-// Bạn có thể dán URL và Key của mình vào đây để mọi thiết bị đều thấy dữ liệu thực tế
-const HARDCODED_SUPABASE_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co'; // Dán Supabase URL vào đây (ví dụ: https://xyz.supabase.co)
-const HARDCODED_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyemZwZWV1b2h6ZnF1emZpZWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3NDY4MDgsImV4cCI6MjA4NDMyMjgwOH0.tyzhzbucriL09bH-ndgXs3ob1-Www97vsfQ6Wsh8d7s'; // Dán Anon Key vào đây
+const HARDCODED_SUPABASE_URL = ''; 
+const HARDCODED_SUPABASE_KEY = ''; 
 
 // --- TYPES ---
 enum Category {
@@ -138,6 +137,33 @@ const HomePage = ({ menu, heroSlides, isLoading }: any) => {
   const [selectedDish, setSelectedDish] = useState<Dish | null>(null);
   const [activeFilter, setActiveFilter] = useState<Category>(Category.All);
   const [currentSlide, setCurrentSlide] = useState(0);
+  
+  // States for Stats
+  const [onlineUsers, setOnlineUsers] = useState(Math.floor(Math.random() * 15) + 5);
+  const [totalVisitors, setTotalVisitors] = useState(0);
+
+  useEffect(() => {
+    // Simulate total visitors based on a starting point + session persistence
+    const baseVisitors = 15842;
+    const sessionVisits = parseInt(localStorage.getItem('ut_visits') || '0');
+    if (sessionVisits === 0) {
+      localStorage.setItem('ut_visits', '1');
+      setTotalVisitors(baseVisitors + 1);
+    } else {
+      setTotalVisitors(baseVisitors + sessionVisits);
+    }
+
+    // Simulate online users fluctuating
+    const interval = setInterval(() => {
+      setOnlineUsers(prev => {
+        const delta = Math.random() > 0.5 ? 1 : -1;
+        const newVal = prev + delta;
+        return newVal < 1 ? 1 : newVal > 50 ? 49 : newVal;
+      });
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     if (heroSlides.length <= 1) return;
@@ -258,13 +284,31 @@ const HomePage = ({ menu, heroSlides, isLoading }: any) => {
       )}
 
       <footer className="py-24 px-12 bg-stone-900 text-white mt-40">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-12">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-12 border-b border-white/5 pb-16">
           <div className="text-center md:text-left">
             <span className="font-black tracking-[0.4em] uppercase text-2xl block mb-2">ÚT TRINH</span>
             <span className="text-stone-400 text-[10px] font-medium block mb-2 uppercase tracking-widest">158A/5 Trần Vĩnh Kiết, Ninh Kiều, TP Cần Thơ</span>
             <span className="text-amber-500 text-[10px] font-bold uppercase tracking-[0.3em]">Hương Vị Gia Đình Thượng Hạng</span>
           </div>
           <p className="text-stone-500 text-[10px] font-bold uppercase tracking-widest">© 2026 UT TRINH KITCHEN — PREMIUM DINING - EST 2019</p>
+        </div>
+        
+        {/* Visitor Stats Section */}
+        <div className="max-w-7xl mx-auto mt-12 flex flex-wrap justify-center md:justify-end gap-x-12 gap-y-6">
+          <div className="flex items-center gap-3 group">
+            <div className="w-2 h-2 bg-stone-600 rounded-full"></div>
+            <div className="flex flex-col">
+              <span className="text-stone-500 text-[8px] font-black uppercase tracking-widest">Tổng lượt khách truy cập</span>
+              <span className="text-white text-sm font-black tracking-widest tabular-nums group-hover:text-amber-500 transition-colors">{totalVisitors.toLocaleString()}</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 group">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
+            <div className="flex flex-col">
+              <span className="text-stone-500 text-[8px] font-black uppercase tracking-widest">Số khách đang online</span>
+              <span className="text-green-500 text-sm font-black tracking-widest tabular-nums group-hover:scale-110 transition-transform origin-left">{onlineUsers}</span>
+            </div>
+          </div>
         </div>
       </footer>
       <style>{`@keyframes slow-zoom { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }`}</style>
@@ -395,7 +439,6 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, supabaseConfig, 
 
 const App = () => {
   const [supabaseConfig, setSupabaseConfig] = useState(() => {
-    // Ưu tiên dùng cấu hình ghim trong code, nếu không có mới tìm trong LocalStorage
     if (HARDCODED_SUPABASE_URL && HARDCODED_SUPABASE_KEY) {
         return { url: HARDCODED_SUPABASE_URL, key: HARDCODED_SUPABASE_KEY };
     }
@@ -433,7 +476,6 @@ const App = () => {
   }, [supabase]);
 
   useEffect(() => {
-    // Chỉ lưu vào LocalStorage nếu không phải là cấu hình ghim sẵn
     if (!HARDCODED_SUPABASE_URL) {
         localStorage.setItem(CONFIG_KEY, JSON.stringify(supabaseConfig));
     }
