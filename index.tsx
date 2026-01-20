@@ -4,8 +4,8 @@ import ReactDOM from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
 
 // --- CẤU HÌNH CỐ ĐỊNH ---
-const HARDCODED_SUPABASE_URL = ''; 
-const HARDCODED_SUPABASE_KEY = ''; 
+const HARDCODED_SUPABASE_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co'; 
+const HARDCODED_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyemZwZWV1b2h6ZnF1emZpZWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3NDY4MDgsImV4cCI6MjA4NDMyMjgwOH0.tyzhzbucriL09bH-ndgXs3ob1-Www97vsfQ6Wsh8d7s'; 
 
 // --- TYPES ---
 enum Category {
