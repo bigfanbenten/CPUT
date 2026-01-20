@@ -96,9 +96,9 @@ const Nav = ({ isAdmin = false }) => {
               <div className="w-px h-6 bg-stone-200 hidden lg:block"></div>
               <div className="hidden lg:flex items-center gap-4">
                 <span className="text-red-600 text-[11px] font-black tracking-widest uppercase drop-shadow-sm">Hãy gọi đặt món ngay 0939.70.90.20</span>
-                <div className="flex items-center gap-3 border-l border-stone-200 pl-4">
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="GrabFood" className="h-4 object-contain opacity-80" />
-                  <img src="https://i.postimg.cc/mD7G0Z0x/Shopee-Food-logo.png" alt="ShopeeFood" className="h-4 object-contain opacity-80" />
+                <div className="flex items-center gap-3 border-l border-stone-200 pl-4 select-none pointer-events-none opacity-70">
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="Grab" className="h-4 w-auto object-contain" />
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Shopee.svg/512px-Shopee.svg.png" alt="Shopee" className="h-4 w-auto object-contain" />
                 </div>
               </div>
             </div>
