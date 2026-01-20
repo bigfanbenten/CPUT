@@ -4,8 +4,8 @@ import ReactDOM from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
 
 // --- CẤU HÌNH CỐ ĐỊNH ---
-const HARDCODED_SUPABASE_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co'; 
-const HARDCODED_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyemZwZWV1b2h6ZnF1emZpZWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3NDY4MDgsImV4cCI6MjA4NDMyMjgwOH0.tyzhzbucriL09bH-ndgXs3ob1-Www97vsfQ6Wsh8d7s'; 
+const HARDCODED_SUPABASE_URL = ''; 
+const HARDCODED_SUPABASE_KEY = ''; 
 
 // --- TYPES ---
 enum Category {
@@ -75,10 +75,10 @@ const Nav = ({ isAdmin = false }) => {
     <>
       <nav className="fixed top-0 w-full z-40 bg-white/90 backdrop-blur-xl border-b border-stone-100 px-6 md:px-20 h-24 flex items-center justify-between transition-all">
         <div className="flex items-center gap-4 cursor-pointer group" onClick={() => window.location.hash = ''}>
-          <div className="w-10 h-10 bg-stone-900 flex items-center justify-center text-white font-black text-xl rounded-sm group-hover:bg-amber-800 transition-colors">Ú</div>
-          <div className="flex flex-col">
-            <span className="text-[14px] font-black text-amber-700 uppercase tracking-[0.3em] leading-none">CƠM PHẦN</span>
-            <span className="text-[14px] font-black text-stone-900 uppercase tracking-[0.3em] leading-none mt-1">ÚT TRINH</span>
+          <div className="w-10 h-10 bg-stone-900 flex items-center justify-center text-white font-black text-xl rounded-sm group-hover:bg-amber-800 transition-colors shrink-0">Ú</div>
+          <div className="flex items-baseline gap-2 whitespace-nowrap">
+            <span className="text-lg md:text-xl font-black text-amber-700 uppercase tracking-tighter">CƠM PHẦN</span>
+            <span className="text-lg md:text-xl font-black text-stone-900 uppercase tracking-tighter">ÚT TRINH</span>
           </div>
         </div>
         <div className="flex gap-4 md:gap-10 items-center">
@@ -94,7 +94,7 @@ const Nav = ({ isAdmin = false }) => {
                 Xem Ảnh Menu
               </button>
               <div className="w-px h-6 bg-stone-200 hidden md:block"></div>
-              <span className="text-red-700 text-[11px] font-black tracking-widest hidden lg:block uppercase">Hãy gọi đặt món ngay 0939.70.90.20</span>
+              <span className="text-red-600 text-[11px] font-black tracking-widest hidden lg:block uppercase drop-shadow-sm">Hãy gọi đặt món ngay 0939.70.90.20</span>
             </div>
           )}
         </div>
@@ -103,7 +103,7 @@ const Nav = ({ isAdmin = false }) => {
       {showConciseMenu && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center bg-stone-950/90 backdrop-blur-2xl p-4" onClick={() => setShowConciseMenu(false)}>
           <div className="relative max-w-4xl w-full h-full flex items-center justify-center" onClick={e => e.stopPropagation()}>
-            <img src="https://i.postimg.cc/FRJy6Vds/3083583a-d289-482f-9d4e-09d3f06f8893.jpg" className="max-h-[90vh] object-contain rounded-[30px] border-4 border-white/10 shadow-2xl" alt="Menu rút gọn" />
+            <img src="https://i.postimg.cc/FRJy6Vds/3083583a-d289-482f-9d4e-09d3f06f8893.jpg" className="max-h-[90vh] object-contain rounded-[30px] border-4 border-white/10 shadow-2xl" alt="Menu" />
             <button onClick={() => setShowConciseMenu(false)} className="absolute top-0 right-0 text-white bg-white/10 p-4 rounded-full">×</button>
           </div>
         </div>
@@ -245,35 +245,35 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
         </div>
       )}
 
-      <footer className="py-20 px-12 bg-stone-900 text-white mt-40">
+      <footer className="py-16 px-12 bg-stone-900 text-white mt-40">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-12 border-b border-white/5 pb-16">
-          <div className="text-center md:text-left space-y-4">
-            <div className="inline-block bg-white/5 backdrop-blur-md px-6 py-2.5 rounded-2xl border border-white/10 shadow-2xl">
-              <span className="font-black tracking-[0.5em] uppercase text-2xl block">ÚT TRINH</span>
+          <div className="text-center md:text-left space-y-3">
+            <div className="inline-block bg-white/5 backdrop-blur-md px-5 py-2 rounded-xl border border-white/10 shadow-xl">
+              <span className="font-black tracking-[0.4em] uppercase text-xl block">ÚT TRINH</span>
             </div>
             <div className="flex flex-col gap-2">
-              <div className="inline-block bg-amber-500/10 backdrop-blur-md px-4 py-1.5 rounded-xl border border-amber-500/20 w-fit mx-auto md:mx-0">
-                <span className="text-amber-500 font-black tracking-[0.3em] text-[11px] uppercase block">HƯƠNG VỊ QUÊ NHÀ</span>
+              <div className="inline-block bg-amber-500/10 backdrop-blur-md px-3 py-1.5 rounded-lg border border-amber-500/20 w-fit mx-auto md:mx-0">
+                <span className="text-amber-500 font-black tracking-[0.25em] text-[10px] uppercase block">HƯƠNG VỊ QUÊ NHÀ</span>
               </div>
-              <span className="text-amber-500 font-bold text-[10px] uppercase tracking-[0.18em] block md:pl-2">158A/5 Trần Vĩnh Kiết, Ninh Kiều, TP Cần Thơ</span>
+              <span className="text-amber-500/90 font-bold text-[9px] uppercase tracking-[0.15em] block md:pl-1">158A/5 Trần Vĩnh Kiết, Ninh Kiều, TP Cần Thơ</span>
             </div>
           </div>
           
-          <div className="flex flex-wrap justify-center md:justify-end gap-x-12 gap-y-8">
-            <div className="flex items-center gap-4 bg-white/5 px-5 py-2.5 rounded-2xl border border-white/5">
-              <div className="w-2 h-2 bg-stone-600 rounded-full"></div>
+          <div className="flex flex-wrap justify-center md:justify-end gap-x-10 gap-y-6">
+            <div className="flex items-center gap-3 bg-white/5 px-4 py-2 rounded-xl border border-white/5">
+              <div className="w-1.5 h-1.5 bg-stone-600 rounded-full"></div>
               <div className="flex flex-col">
-                <span className="text-stone-500 text-[8px] font-black uppercase tracking-widest">Tổng lượt khách</span>
-                <span className="text-white text-sm font-black tracking-widest tabular-nums">
+                <span className="text-stone-500 text-[7px] font-black uppercase tracking-widest">Lượt khách</span>
+                <span className="text-white text-xs font-black tracking-widest tabular-nums">
                   {supabase ? totalVisitors.toLocaleString() : '---'}
                 </span>
               </div>
             </div>
-            <div className="flex items-center gap-4 bg-green-500/5 px-5 py-2.5 rounded-2xl border border-green-500/10">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_12px_green]"></div>
+            <div className="flex items-center gap-3 bg-green-500/5 px-4 py-2 rounded-xl border border-green-500/10">
+              <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
               <div className="flex flex-col">
-                <span className="text-stone-500 text-[8px] font-black uppercase tracking-widest">Đang online</span>
-                <span className="text-green-500 text-sm font-black tracking-widest tabular-nums">
+                <span className="text-stone-500 text-[7px] font-black uppercase tracking-widest">Online</span>
+                <span className="text-green-500 text-xs font-black tracking-widest tabular-nums">
                   {supabase ? onlineUsers : '---'}
                 </span>
               </div>
@@ -281,8 +281,8 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
           </div>
         </div>
         
-        <div className="max-w-7xl mx-auto mt-10 text-center md:text-right">
-          <p className="text-stone-500 text-[10px] font-bold uppercase tracking-[0.2em] opacity-80">© 2026 UT TRINH KITCHEN — EST 2019</p>
+        <div className="max-w-7xl mx-auto mt-8 text-center md:text-right">
+          <p className="text-stone-500 text-[9px] font-bold uppercase tracking-[0.15em] opacity-60">© 2026 UT TRINH KITCHEN — EST 2019</p>
         </div>
       </footer>
     </div>
