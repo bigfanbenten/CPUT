@@ -4,8 +4,8 @@ import ReactDOM from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
 
 // --- CẤU HÌNH CỐ ĐỊNH ---
-const HARDCODED_SUPABASE_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co'; 
-const HARDCODED_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyemZwZWV1b2h6ZnF1emZpZWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3NDY4MDgsImV4cCI6MjA4NDMyMjgwOH0.tyzhzbucriL09bH-ndgXs3ob1-Www97vsfQ6Wsh8d7s'; 
+const HARDCODED_SUPABASE_URL = ''; 
+const HARDCODED_SUPABASE_KEY = ''; 
 
 // --- TYPES ---
 enum Category {
@@ -81,20 +81,27 @@ const Nav = ({ isAdmin = false }) => {
             <span className="text-lg md:text-xl font-black text-stone-900 uppercase tracking-tighter">ÚT TRINH</span>
           </div>
         </div>
-        <div className="flex gap-4 md:gap-10 items-center">
+        <div className="flex gap-4 md:gap-8 items-center">
           {isAdmin ? (
             <button onClick={() => window.location.hash = ''} className="bg-amber-800 text-white px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-stone-900 transition-all shadow-md">Thoát Quản Trị</button>
           ) : (
-            <div className="flex gap-4 md:gap-10 items-center">
-              <a href="#menu" className="text-stone-900 text-[10px] font-black uppercase tracking-widest hover:text-amber-700 transition-colors">Thực Đơn</a>
+            <div className="flex gap-4 md:gap-8 items-center">
+              <a href="#menu" className="text-stone-900 text-[10px] font-black uppercase tracking-widest hover:text-amber-700 transition-colors hidden sm:block">Thực Đơn</a>
               <button 
                 onClick={() => setShowConciseMenu(true)} 
-                className="text-amber-800 text-[10px] font-black uppercase tracking-widest hover:text-stone-900 transition-colors bg-amber-50 px-4 py-2 rounded-full border border-amber-100"
+                className="text-amber-800 text-[10px] font-black uppercase tracking-widest hover:text-stone-900 transition-colors bg-amber-50 px-4 py-2 rounded-full border border-amber-100 whitespace-nowrap"
               >
                 Xem Ảnh Menu
               </button>
-              <div className="w-px h-6 bg-stone-200 hidden md:block"></div>
-              <span className="text-red-600 text-[11px] font-black tracking-widest hidden lg:block uppercase drop-shadow-sm">Hãy gọi đặt món ngay 0939.70.90.20</span>
+              <div className="w-px h-6 bg-stone-200 hidden lg:block"></div>
+              <div className="flex flex-col items-end gap-1">
+                <span className="text-red-600 text-[11px] font-black tracking-widest hidden lg:block uppercase drop-shadow-sm">Hãy gọi đặt món ngay 0939.70.90.20</span>
+                <div className="hidden lg:flex items-center gap-2">
+                  <span className="text-[8px] text-stone-400 font-bold uppercase tracking-tighter mr-1">Đặt qua:</span>
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/0/0b/Grab_Logo.svg" alt="GrabFood" className="h-4 object-contain grayscale hover:grayscale-0 transition-all opacity-70 hover:opacity-100 cursor-pointer" title="Đặt qua GrabFood" />
+                  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_x1P0Y_oOQG8C1rL9oK8iG276K1A4u-5uAg&s" alt="ShopeeFood" className="h-4 object-contain grayscale hover:grayscale-0 transition-all opacity-70 hover:opacity-100 cursor-pointer rounded-sm" title="Đặt qua ShopeeFood" />
+                </div>
+              </div>
             </div>
           )}
         </div>
