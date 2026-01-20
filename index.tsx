@@ -94,11 +94,21 @@ const Nav = ({ isAdmin = false }) => {
                 Xem Ảnh Menu
               </button>
               <div className="w-px h-6 bg-stone-200 hidden lg:block"></div>
-              <div className="hidden lg:flex items-center gap-4">
+              <div className="hidden lg:flex items-center gap-5">
                 <span className="text-red-600 text-[11px] font-black tracking-widest uppercase drop-shadow-sm">Hãy gọi đặt món ngay 0939.70.90.20</span>
-                <div className="flex items-center gap-3 border-l border-stone-200 pl-4 select-none pointer-events-none opacity-70">
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="Grab" className="h-4 w-auto object-contain" />
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Shopee.svg/512px-Shopee.svg.png" alt="Shopee" className="h-4 w-auto object-contain" />
+                <div className="flex items-center gap-4 border-l border-stone-200 pl-5 select-none pointer-events-none">
+                  {/* Logo GrabFood từ link cung cấp */}
+                  <img 
+                    src="https://inkythuatso.com/uploads/images/2021/12/logo-grab-food-inkythuatso-20-15-56-19.jpg" 
+                    alt="GrabFood" 
+                    className="h-7 w-auto object-contain rounded-sm"
+                  />
+                  {/* Logo Shopee */}
+                  <img 
+                    src="https://img.icons8.com/color/96/shopee.png" 
+                    alt="Shopee" 
+                    className="h-7 w-auto object-contain"
+                  />
                 </div>
               </div>
             </div>
@@ -316,7 +326,7 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, supabaseConfig, 
               <h2 className="text-3xl font-black uppercase">Kết nối Database</h2>
               <div className="space-y-4">
                 <input placeholder="Supabase URL" value={localConfig.url} onChange={e => setLocalConfig({...localConfig, url: e.target.value})} className="w-full border-2 p-5 rounded-2xl outline-none focus:border-stone-900 font-mono text-xs" />
-                <input placeholder="Anon Key" value={localConfig.key} onChange={e => setLocalConfig({...localConfig, key: e.target.value})} className="w-full border-2 p-5 rounded-2xl outline-none focus:border-stone-900 font-mono text-xs" />
+                <input placeholder="Anon Key" value={localConfig.key} onChange={e => setLocalConfig({...localConfig, key: setLocalConfig({...localConfig, key: e.target.value})})} className="w-full border-2 p-5 rounded-2xl outline-none focus:border-stone-900 font-mono text-xs" />
                 <button onClick={() => { setSupabaseConfig(localConfig); alert("Đã cập nhật!"); setActiveTab('menu'); }} className="w-full bg-stone-900 text-white py-5 rounded-2xl font-black uppercase hover:bg-stone-800 transition-all">Lưu Cấu Hình</button>
               </div>
               <div className="pt-10 border-t border-stone-100 mt-10">
