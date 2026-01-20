@@ -4,8 +4,8 @@ import ReactDOM from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
 
 // --- CẤU HÌNH CỐ ĐỊNH (QUAN TRỌNG) ---
-const HARDCODED_SUPABASE_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co'; 
-const HARDCODED_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyemZwZWV1b2h6ZnF1emZpZWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3NDY4MDgsImV4cCI6MjA4NDMyMjgwOH0.tyzhzbucriL09bH-ndgXs3ob1-Www97vsfQ6Wsh8d7s'; 
+const HARDCODED_SUPABASE_URL = ''; 
+const HARDCODED_SUPABASE_KEY = ''; 
 
 // --- TYPES ---
 enum Category {
@@ -54,13 +54,13 @@ create table if not exists hero_slides (
   quote text
 );
 
--- 2. Tạo bảng thống kê truy cập
+-- 2. Tạo bảng thống kê truy cập thực tế
 create table if not exists site_visits (
   id uuid default gen_random_uuid() primary key,
   created_at timestamp with time zone default now()
 );
 
--- 3. TẮT BẢO MẬT RLS CHO TẤT CẢ CÁC BẢNG (Dành cho bản demo nhanh)
+-- 3. TẮT BẢO MẬT RLS (Dành cho bản demo nhanh)
 alter table dishes disable row level security;
 alter table hero_slides disable row level security;
 alter table site_visits disable row level security;`;
@@ -136,39 +136,49 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
   const [activeFilter, setActiveFilter] = useState<Category>(Category.All);
   const [currentSlide, setCurrentSlide] = useState(0);
   
-  // Real-time Stats States
+  // Stats States
   const [onlineUsers, setOnlineUsers] = useState(1);
-  const [totalVisitors, setTotalVisitors] = useState(0);
+  const [totalVisitors, setTotalVisitors] = useState(300); // Bắt đầu từ 300 theo yêu cầu
 
   // Handle Real-time Stats
   useEffect(() => {
     if (!supabase) return;
 
-    // 1. Total Visitors Logic (One record per unique browser session)
+    const BASE_COUNT = 300;
+    const VISIT_TIMEOUT = 4 * 60 * 60 * 1000; // 4 tiếng (Ví dụ: 7h đến 11h là tính lượt mới)
+
+    // 1. Logic Tổng lượt khách (Chính xác từ DB + Base 300)
     const trackVisit = async () => {
       try {
-        // Fetch total count first
-        const { count } = await supabase.from('site_visits').select('*', { count: 'exact', head: true });
-        setTotalVisitors(count || 0);
+        // Lấy số lượng bản ghi thực tế từ DB
+        const { count, error: countErr } = await supabase.from('site_visits').select('*', { count: 'exact', head: true });
+        if (!countErr) {
+          setTotalVisitors(BASE_COUNT + (count || 0));
+        }
 
-        // If this is a new visitor (no flag in localStorage), insert new record
-        if (!localStorage.getItem('ut_v4_visited')) {
-          const { error } = await supabase.from('site_visits').insert({});
-          if (!error) {
-            localStorage.setItem('ut_v4_visited', 'true');
+        // Kiểm tra cookie/localStorage
+        const lastVisitStr = localStorage.getItem('ut_last_visit');
+        const now = Date.now();
+        
+        // Nếu chưa từng truy cập HOẶC lần truy cập cuối cách đây hơn 4 tiếng
+        if (!lastVisitStr || (now - parseInt(lastVisitStr)) > VISIT_TIMEOUT) {
+          const { error: insErr } = await supabase.from('site_visits').insert({});
+          if (!insErr) {
+            localStorage.setItem('ut_last_visit', now.toString());
+            // Cập nhật lại số hiển thị ngay lập tức
             setTotalVisitors(prev => prev + 1);
           }
         }
       } catch (err) {
-        console.error("Visit tracking error", err);
+        console.error("Visit tracking error:", err);
       }
     };
 
-    // 2. Online Users Logic (Supabase Presence)
-    const channel = supabase.channel('site_presence', {
+    // 2. Logic Online (Chính xác tuyệt đối qua Presence)
+    const channel = supabase.channel('online_presence', {
       config: {
         presence: {
-          key: Math.random().toString(36).substring(7),
+          key: Math.random().toString(36).substring(7), // Unique key cho mỗi tab/người dùng
         },
       },
     });
@@ -176,11 +186,21 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
     channel
       .on('presence', { event: 'sync' }, () => {
         const state = channel.presenceState();
-        setOnlineUsers(Object.keys(state).length);
+        // Đếm số lượng key duy nhất đang hiện diện
+        setOnlineUsers(Object.keys(state).length || 1);
+      })
+      .on('presence', { event: 'join' }, ({ key, currentPresences }: any) => {
+        console.debug('Khách vừa vào:', key);
+      })
+      .on('presence', { event: 'leave' }, ({ key, leftPresences }: any) => {
+        console.debug('Khách vừa thoát:', key);
       })
       .subscribe(async (status: string) => {
         if (status === 'SUBSCRIBED') {
-          await channel.track({ online_at: new Date().toISOString() });
+          await channel.track({ 
+            online_at: new Date().toISOString(),
+            user_agent: navigator.userAgent 
+          });
         }
       });
 
@@ -319,13 +339,13 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
           <p className="text-stone-500 text-[10px] font-bold uppercase tracking-widest">© 2026 UT TRINH KITCHEN — PREMIUM DINING - EST 2019</p>
         </div>
         
-        {/* Real Visitor Stats Section */}
+        {/* Visitor Stats Section */}
         <div className="max-w-7xl mx-auto mt-12 flex flex-wrap justify-center md:justify-end gap-x-12 gap-y-6">
           <div className="flex items-center gap-3 group">
-            <div className="w-2 h-2 bg-stone-600 rounded-full"></div>
+            <div className="w-2 h-2 bg-stone-700 rounded-full"></div>
             <div className="flex flex-col">
               <span className="text-stone-500 text-[8px] font-black uppercase tracking-widest">Tổng lượt khách truy cập</span>
-              <span className="text-white text-sm font-black tracking-widest tabular-nums group-hover:text-amber-500 transition-colors">
+              <span className="text-white text-sm font-black tracking-[0.2em] tabular-nums group-hover:text-amber-500 transition-colors">
                 {supabase ? totalVisitors.toLocaleString() : '---'}
               </span>
             </div>
@@ -333,8 +353,8 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
           <div className="flex items-center gap-3 group">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
             <div className="flex flex-col">
-              <span className="text-stone-500 text-[8px] font-black uppercase tracking-widest">Số khách đang online</span>
-              <span className="text-green-500 text-sm font-black tracking-widest tabular-nums group-hover:scale-110 transition-transform origin-left">
+              <span className="text-stone-500 text-[8px] font-black uppercase tracking-widest">Khách đang xem trực tuyến</span>
+              <span className="text-green-500 text-sm font-black tracking-[0.2em] tabular-nums group-hover:scale-110 transition-transform origin-left">
                 {supabase ? onlineUsers : '---'}
               </span>
             </div>
@@ -395,9 +415,9 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, supabaseConfig, 
                 
                 <div className="pt-10 border-t border-stone-100 mt-10">
                    <h3 className="text-xs font-black uppercase text-amber-800 mb-4">Hướng dẫn thiết lập Database:</h3>
-                   <p className="text-sm text-stone-500 mb-6">Nếu bạn thấy thông báo "Lỗi đồng bộ", hãy vào mục **SQL Editor** trong Supabase, dán đoạn mã này vào và nhấn **Run**:</p>
+                   <p className="text-sm text-stone-500 mb-6">Nếu bạn chưa thiết lập bảng cho lượt truy cập, hãy nhấn nút bên dưới để xem mã SQL cập nhật:</p>
                    <button onClick={() => setShowSql(!showSql)} className="text-[10px] font-black uppercase tracking-widest text-stone-900 border border-stone-900 px-6 py-3 rounded-xl hover:bg-stone-900 hover:text-white transition-all">
-                     {showSql ? 'Đóng mã SQL' : 'Xem mã SQL Sửa Lỗi'}
+                     {showSql ? 'Đóng mã SQL' : 'Xem mã SQL Cập Nhật Stats'}
                    </button>
                    {showSql && (
                      <div className="mt-6 relative">
