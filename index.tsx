@@ -4,8 +4,8 @@ import ReactDOM from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
 
 // --- CẤU HÌNH CỐ ĐỊNH (QUAN TRỌNG) ---
-const HARDCODED_SUPABASE_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co'; 
-const HARDCODED_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyemZwZWV1b2h6ZnF1emZpZWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3NDY4MDgsImV4cCI6MjA4NDMyMjgwOH0.tyzhzbucriL09bH-ndgXs3ob1-Www97vsfQ6Wsh8d7s'; 
+const HARDCODED_SUPABASE_URL = ''; 
+const HARDCODED_SUPABASE_KEY = ''; 
 
 // --- TYPES ---
 enum Category {
@@ -36,7 +36,7 @@ interface HeroSlide {
 
 const CONFIG_KEY = 'ut-trinh-config-v3';
 
-const SQL_SETUP = `-- 1. Tạo bảng (Nếu chưa có)
+const SQL_SETUP = `-- 1. Tạo bảng Menu và Hero
 create table if not exists dishes (
   id uuid default gen_random_uuid() primary key,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
@@ -54,18 +54,16 @@ create table if not exists hero_slides (
   quote text
 );
 
--- 2. CẬP NHẬT GIÁ TRỊ MẶC ĐỊNH
-alter table dishes alter column id set default gen_random_uuid();
-alter table dishes alter column created_at set default timezone('utc'::text, now());
-alter table dishes alter column created_at set not null;
+-- 2. Tạo bảng thống kê truy cập
+create table if not exists site_visits (
+  id uuid default gen_random_uuid() primary key,
+  created_at timestamp with time zone default now()
+);
 
-alter table hero_slides alter column id set default gen_random_uuid();
-alter table hero_slides alter column created_at set default timezone('utc'::text, now());
-alter table hero_slides alter column created_at set not null;
-
--- 3. TẮT BẢO MẬT RLS
+-- 3. TẮT BẢO MẬT RLS CHO TẤT CẢ CÁC BẢNG (Dành cho bản demo nhanh)
 alter table dishes disable row level security;
-alter table hero_slides disable row level security;`;
+alter table hero_slides disable row level security;
+alter table site_visits disable row level security;`;
 
 // --- COMPONENTS ---
 
@@ -133,37 +131,65 @@ const Nav = ({ isAdmin = false }) => {
   );
 };
 
-const HomePage = ({ menu, heroSlides, isLoading }: any) => {
+const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
   const [selectedDish, setSelectedDish] = useState<Dish | null>(null);
   const [activeFilter, setActiveFilter] = useState<Category>(Category.All);
   const [currentSlide, setCurrentSlide] = useState(0);
   
-  // States for Stats
-  const [onlineUsers, setOnlineUsers] = useState(Math.floor(Math.random() * 15) + 5);
+  // Real-time Stats States
+  const [onlineUsers, setOnlineUsers] = useState(1);
   const [totalVisitors, setTotalVisitors] = useState(0);
 
+  // Handle Real-time Stats
   useEffect(() => {
-    // Simulate total visitors based on a starting point + session persistence
-    const baseVisitors = 15842;
-    const sessionVisits = parseInt(localStorage.getItem('ut_visits') || '0');
-    if (sessionVisits === 0) {
-      localStorage.setItem('ut_visits', '1');
-      setTotalVisitors(baseVisitors + 1);
-    } else {
-      setTotalVisitors(baseVisitors + sessionVisits);
-    }
+    if (!supabase) return;
 
-    // Simulate online users fluctuating
-    const interval = setInterval(() => {
-      setOnlineUsers(prev => {
-        const delta = Math.random() > 0.5 ? 1 : -1;
-        const newVal = prev + delta;
-        return newVal < 1 ? 1 : newVal > 50 ? 49 : newVal;
+    // 1. Total Visitors Logic (One record per unique browser session)
+    const trackVisit = async () => {
+      try {
+        // Fetch total count first
+        const { count } = await supabase.from('site_visits').select('*', { count: 'exact', head: true });
+        setTotalVisitors(count || 0);
+
+        // If this is a new visitor (no flag in localStorage), insert new record
+        if (!localStorage.getItem('ut_v4_visited')) {
+          const { error } = await supabase.from('site_visits').insert({});
+          if (!error) {
+            localStorage.setItem('ut_v4_visited', 'true');
+            setTotalVisitors(prev => prev + 1);
+          }
+        }
+      } catch (err) {
+        console.error("Visit tracking error", err);
+      }
+    };
+
+    // 2. Online Users Logic (Supabase Presence)
+    const channel = supabase.channel('site_presence', {
+      config: {
+        presence: {
+          key: Math.random().toString(36).substring(7),
+        },
+      },
+    });
+
+    channel
+      .on('presence', { event: 'sync' }, () => {
+        const state = channel.presenceState();
+        setOnlineUsers(Object.keys(state).length);
+      })
+      .subscribe(async (status: string) => {
+        if (status === 'SUBSCRIBED') {
+          await channel.track({ online_at: new Date().toISOString() });
+        }
       });
-    }, 5000);
 
-    return () => clearInterval(interval);
-  }, []);
+    trackVisit();
+
+    return () => {
+      channel.unsubscribe();
+    };
+  }, [supabase]);
 
   useEffect(() => {
     if (heroSlides.length <= 1) return;
@@ -293,20 +319,24 @@ const HomePage = ({ menu, heroSlides, isLoading }: any) => {
           <p className="text-stone-500 text-[10px] font-bold uppercase tracking-widest">© 2026 UT TRINH KITCHEN — PREMIUM DINING - EST 2019</p>
         </div>
         
-        {/* Visitor Stats Section */}
+        {/* Real Visitor Stats Section */}
         <div className="max-w-7xl mx-auto mt-12 flex flex-wrap justify-center md:justify-end gap-x-12 gap-y-6">
           <div className="flex items-center gap-3 group">
             <div className="w-2 h-2 bg-stone-600 rounded-full"></div>
             <div className="flex flex-col">
               <span className="text-stone-500 text-[8px] font-black uppercase tracking-widest">Tổng lượt khách truy cập</span>
-              <span className="text-white text-sm font-black tracking-widest tabular-nums group-hover:text-amber-500 transition-colors">{totalVisitors.toLocaleString()}</span>
+              <span className="text-white text-sm font-black tracking-widest tabular-nums group-hover:text-amber-500 transition-colors">
+                {supabase ? totalVisitors.toLocaleString() : '---'}
+              </span>
             </div>
           </div>
           <div className="flex items-center gap-3 group">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
             <div className="flex flex-col">
               <span className="text-stone-500 text-[8px] font-black uppercase tracking-widest">Số khách đang online</span>
-              <span className="text-green-500 text-sm font-black tracking-widest tabular-nums group-hover:scale-110 transition-transform origin-left">{onlineUsers}</span>
+              <span className="text-green-500 text-sm font-black tracking-widest tabular-nums group-hover:scale-110 transition-transform origin-left">
+                {supabase ? onlineUsers : '---'}
+              </span>
             </div>
           </div>
         </div>
@@ -521,7 +551,7 @@ const App = () => {
   if (hash.toLowerCase().includes('acp1122')) {
     return <AdminPanel menu={menu} setMenu={setMenu} heroSlides={heroSlides} setHeroSlides={setHeroSlides} supabaseConfig={supabaseConfig} setSupabaseConfig={setSupabaseConfig} onSave={handleSave} />;
   }
-  return <HomePage menu={menu} heroSlides={heroSlides} isLoading={isLoading} />;
+  return <HomePage menu={menu} heroSlides={heroSlides} isLoading={isLoading} supabase={supabase} />;
 };
 
 ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
