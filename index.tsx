@@ -4,8 +4,8 @@ import ReactDOM from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
 
 // --- CẤU HÌNH CỐ ĐỊNH ---
-const HARDCODED_SUPABASE_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co'; 
-const HARDCODED_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyemZwZWV1b2h6ZnF1emZpZWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3NDY4MDgsImV4cCI6MjA4NDMyMjgwOH0.tyzhzbucriL09bH-ndgXs3ob1-Www97vsfQ6Wsh8d7s'; 
+const HARDCODED_SUPABASE_URL = ''; 
+const HARDCODED_SUPABASE_KEY = ''; 
 
 // --- TYPES ---
 enum Category {
@@ -140,7 +140,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
     if (!supabase) return;
 
     const BASE_START = 300; 
-    // Cập nhật: 1 tiếng sau quay lại mới tính thêm lượt mới (thay vì 5 tiếng)
+    // Cập nhật: 1 tiếng sau quay lại mới tính thêm lượt mới
     const SESSION_TIME = 1 * 60 * 60 * 1000; 
 
     const handleVisits = async () => {
@@ -203,7 +203,10 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
         <div className="absolute inset-0">
           {heroSlides.map((slide: HeroSlide, index: number) => (
             <div key={slide.id} className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}>
-              <img src={slide.image_url} className="w-full h-full object-cover scale-105" />
+              <img 
+                src={slide.image_url} 
+                className={`w-full h-full object-cover transition-transform duration-[7000ms] ease-out ${index === currentSlide ? 'scale-100' : 'scale-120'}`} 
+              />
               <div className="absolute inset-0 bg-stone-900/40 backdrop-blur-[1px]"></div>
             </div>
           ))}
