@@ -4,8 +4,8 @@ import ReactDOM from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
 
 // --- CẤU HÌNH CỐ ĐỊNH ---
-const HARDCODED_SUPABASE_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co'; 
-const HARDCODED_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyemZwZWV1b2h6ZnF1emZpZWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3NDY4MDgsImV4cCI6MjA4NDMyMjgwOH0.tyzhzbucriL09bH-ndgXs3ob1-Www97vsfQ6Wsh8d7s'; 
+const HARDCODED_SUPABASE_URL = ''; 
+const HARDCODED_SUPABASE_KEY = ''; 
 
 // --- TYPES ---
 enum Category {
@@ -35,36 +35,6 @@ interface HeroSlide {
 }
 
 const CONFIG_KEY = 'ut-trinh-config-v3';
-
-// MÃ SQL NÀY CẦN CHẠY TRONG SUPABASE SQL EDITOR ĐỂ TẠO BẢNG
-const SQL_SETUP = `-- 1. Tạo bảng Menu và Hero
-create table if not exists dishes (
-  id uuid default gen_random_uuid() primary key,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  name text,
-  description text,
-  price text,
-  image_url text,
-  category text
-);
-
-create table if not exists hero_slides (
-  id uuid default gen_random_uuid() primary key,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  image_url text,
-  quote text
-);
-
--- 2. TẠO BẢNG site_visits ĐỂ LƯU TỔNG LƯỢT KHÁCH THẬT (DATABASE)
-create table if not exists site_visits (
-  id uuid default gen_random_uuid() primary key,
-  created_at timestamp with time zone default now()
-);
-
--- 3. TẮT RLS ĐỂ PHẦN MỀM CÓ QUYỀN ĐỌC/GHI ĐẾM LƯỢT
-alter table dishes disable row level security;
-alter table hero_slides disable row level security;
-alter table site_visits disable row level security;`;
 
 // --- COMPONENTS ---
 
@@ -173,9 +143,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
       });
 
     handleVisits();
-    return () => {
-      channel.unsubscribe();
-    };
+    return () => { channel.unsubscribe(); };
   }, [supabase]);
 
   useEffect(() => {
@@ -184,26 +152,24 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
     return () => clearInterval(timer);
   }, [heroSlides]);
 
-  // Logic hiển thị ngẫu nhiên và phân trang
-  const processedMenu = useMemo(() => {
+  // Ngẫu nhiên hóa menu mỗi khi filter thay đổi
+  const shuffledMenu = useMemo(() => {
     let filtered = activeFilter === Category.All 
       ? [...menu] 
       : menu.filter((item: Dish) => item.category === activeFilter);
-    
-    // Xáo trộn ngẫu nhiên danh sách mỗi khi filter hoặc menu thay đổi
     return filtered.sort(() => Math.random() - 0.5);
   }, [menu, activeFilter]);
 
+  // Phân trang
+  const totalPages = Math.ceil(shuffledMenu.length / itemsPerPage);
   const displayedDishes = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    return processedMenu.slice(startIndex, startIndex + itemsPerPage);
-  }, [processedMenu, currentPage]);
+    const start = (currentPage - 1) * itemsPerPage;
+    return shuffledMenu.slice(start, start + itemsPerPage);
+  }, [shuffledMenu, currentPage]);
 
-  const totalPages = Math.ceil(processedMenu.length / itemsPerPage);
-
-  const handleFilterChange = (cat: Category) => {
-    setActiveFilter(cat);
-    setCurrentPage(1); // Reset về trang 1 khi đổi danh mục
+  const changePage = (page: number) => {
+    setCurrentPage(page);
+    document.getElementById('menu')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-white"><div className="animate-pulse text-amber-800 font-black tracking-[0.4em] uppercase text-xs">Út Trinh Kitchen...</div></div>;
@@ -239,7 +205,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
           <h2 className="text-5xl md:text-7xl font-black tracking-tighter mb-12 uppercase text-stone-900">Thực Đơn Đặc Sắc</h2>
           <div className="flex flex-wrap justify-center gap-x-10 gap-y-4 border-b border-stone-100 pb-8 max-w-4xl mx-auto">
             {Object.values(Category).map((cat) => (
-              <button key={cat} onClick={() => handleFilterChange(cat)} className={`text-[11px] font-black uppercase tracking-[0.2em] transition-all relative py-2 ${activeFilter === cat ? 'text-amber-800 border-b-2 border-amber-800' : 'text-stone-300 hover:text-stone-900'}`}>{cat}</button>
+              <button key={cat} onClick={() => { setActiveFilter(cat); setCurrentPage(1); }} className={`text-[11px] font-black uppercase tracking-[0.2em] transition-all relative py-2 ${activeFilter === cat ? 'text-amber-800 border-b-2 border-amber-800' : 'text-stone-300 hover:text-stone-900'}`}>{cat}</button>
             ))}
           </div>
         </div>
@@ -262,22 +228,22 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
           ))}
         </div>
 
-        {/* Bộ Phân Trang */}
+        {/* Phân trang UI */}
         {totalPages > 1 && (
-          <div className="mt-32 flex justify-center items-center gap-4">
+          <div className="mt-32 flex justify-center items-center gap-6">
             <button 
               disabled={currentPage === 1}
-              onClick={() => { setCurrentPage(p => p - 1); window.location.hash = '#menu'; }}
-              className={`px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all ${currentPage === 1 ? 'border-stone-100 text-stone-200 cursor-not-allowed' : 'border-stone-900 text-stone-900 hover:bg-stone-900 hover:text-white shadow-md'}`}
+              onClick={() => changePage(currentPage - 1)}
+              className={`text-[10px] font-black uppercase tracking-widest px-8 py-3 rounded-full border transition-all ${currentPage === 1 ? 'border-stone-100 text-stone-300' : 'border-stone-900 text-stone-900 hover:bg-stone-900 hover:text-white'}`}
             >
               Trang Trước
             </button>
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               {[...Array(totalPages)].map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => { setCurrentPage(i + 1); window.location.hash = '#menu'; }}
-                  className={`w-10 h-10 rounded-full flex items-center justify-center text-[11px] font-black transition-all ${currentPage === i + 1 ? 'bg-amber-800 text-white shadow-xl scale-110' : 'bg-white text-stone-400 border border-stone-100 hover:border-amber-800 hover:text-amber-800'}`}
+                <button 
+                  key={i} 
+                  onClick={() => changePage(i + 1)}
+                  className={`w-10 h-10 rounded-full text-[11px] font-black transition-all ${currentPage === i + 1 ? 'bg-amber-800 text-white shadow-xl' : 'text-stone-400 border border-stone-100 hover:text-stone-900'}`}
                 >
                   {i + 1}
                 </button>
@@ -285,10 +251,10 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
             </div>
             <button 
               disabled={currentPage === totalPages}
-              onClick={() => { setCurrentPage(p => p + 1); window.location.hash = '#menu'; }}
-              className={`px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all ${currentPage === totalPages ? 'border-stone-100 text-stone-200 cursor-not-allowed' : 'border-stone-900 text-stone-900 hover:bg-stone-900 hover:text-white shadow-md'}`}
+              onClick={() => changePage(currentPage + 1)}
+              className={`text-[10px] font-black uppercase tracking-widest px-8 py-3 rounded-full border transition-all ${currentPage === totalPages ? 'border-stone-100 text-stone-300' : 'border-stone-900 text-stone-900 hover:bg-stone-900 hover:text-white'}`}
             >
-              Trang Tiếp
+              Trang Sau
             </button>
           </div>
         )}
@@ -323,29 +289,23 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
               <span className="text-amber-500/90 font-bold text-[9px] uppercase tracking-[0.15em] block md:pl-1">158A/5 Trần Vĩnh Kiết, Ninh Kiều, TP Cần Thơ</span>
             </div>
           </div>
-          
           <div className="flex flex-wrap justify-center md:justify-end gap-x-10 gap-y-6">
             <div className="flex items-center gap-3 bg-white/5 px-4 py-2 rounded-xl border border-white/5">
               <div className="w-1.5 h-1.5 bg-stone-600 rounded-full"></div>
               <div className="flex flex-col">
                 <span className="text-stone-500 text-[7px] font-black uppercase tracking-widest">Lượt khách</span>
-                <span className="text-white text-xs font-black tracking-widest tabular-nums">
-                  {supabase ? totalVisitors.toLocaleString() : '---'}
-                </span>
+                <span className="text-white text-xs font-black tracking-widest tabular-nums">{supabase ? totalVisitors.toLocaleString() : '---'}</span>
               </div>
             </div>
             <div className="flex items-center gap-3 bg-green-500/5 px-4 py-2 rounded-xl border border-green-500/10">
               <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
               <div className="flex flex-col">
                 <span className="text-stone-500 text-[7px] font-black uppercase tracking-widest">Online</span>
-                <span className="text-green-500 text-xs font-black tracking-widest tabular-nums">
-                  {supabase ? onlineUsers : '---'}
-                </span>
+                <span className="text-green-500 text-xs font-black tracking-widest tabular-nums">{supabase ? onlineUsers : '---'}</span>
               </div>
             </div>
           </div>
         </div>
-        
         <div className="max-w-7xl mx-auto mt-8 text-center md:text-right">
           <p className="text-stone-500 text-[9px] font-bold uppercase tracking-[0.15em] opacity-60">© 2026 UT TRINH KITCHEN — EST 2019</p>
         </div>
@@ -357,12 +317,11 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
 const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, supabaseConfig, setSupabaseConfig, onSave }: any) => {
   const [activeTab, setActiveTab] = useState<'menu' | 'hero' | 'config'>(supabaseConfig.url ? 'menu' : 'config');
   const [localConfig, setLocalConfig] = useState(supabaseConfig);
-  const [showSql, setShowSql] = useState(false);
 
   return (
     <div className="min-h-screen bg-stone-50 pt-32 pb-20 px-6">
       <Nav isAdmin />
-      <div className="max-w-6xl mx-auto bg-white rounded-[50px] shadow-2xl overflow-hidden">
+      <div className="max-w-6xl mx-auto bg-white rounded-[50px] shadow-2xl overflow-hidden border border-stone-100">
         <div className="flex bg-stone-50 border-b border-stone-200 p-4 gap-4">
           {['menu', 'hero', 'config'].map((tab: any) => (
             <button key={tab} onClick={() => setActiveTab(tab)} className={`flex-1 py-5 rounded-3xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-white shadow-xl text-stone-900' : 'text-stone-400'}`}>{tab === 'menu' ? '🍱 Thực Đơn' : tab === 'hero' ? '🖼️ Ảnh Bìa' : '⚙️ Cấu Hình'}</button>
@@ -383,41 +342,24 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, supabaseConfig, 
 
           {activeTab === 'menu' && (
             <div className="space-y-12">
-              <div className="flex justify-between items-end border-b border-stone-100 pb-8">
+              <div className="flex justify-between items-end">
                 <div>
-                  <h2 className="text-4xl font-black uppercase mb-2">Quản Lý Menu</h2>
-                  <p className="text-stone-400 text-xs font-bold uppercase tracking-widest">
-                    Tổng cộng: <span className="text-amber-800">{menu.length} món ăn</span>
-                  </p>
+                  <h2 className="text-4xl font-black uppercase">Quản Lý Menu</h2>
+                  <p className="text-amber-800 font-black text-xs uppercase tracking-widest mt-2">Tổng số lượng: {menu.length} món ăn</p>
                 </div>
                 <div className="flex gap-4">
-                  <button onClick={onSave} className="bg-stone-900 text-white px-10 py-4 text-[10px] font-black uppercase rounded-2xl shadow-lg hover:scale-105 transition-all">Lưu Vào Cloud</button>
-                  <button onClick={() => setMenu([{ id: Date.now().toString(), name: 'Tên món mới', price: '00.000 VNĐ', description: '', image_url: '', category: Category.MainCourse }, ...menu])} className="bg-amber-800 text-white px-10 py-4 text-[10px] font-black uppercase rounded-2xl shadow-lg hover:scale-105 transition-all">+ Thêm món</button>
+                  <button onClick={onSave} className="bg-stone-900 text-white px-10 py-4 text-[10px] font-black uppercase rounded-2xl shadow-lg">Lưu Vào Cloud</button>
+                  <button onClick={() => setMenu([{ id: Date.now().toString(), name: 'Tên món mới', price: '00.000 VNĐ', description: '', image_url: '', category: Category.MainCourse }, ...menu])} className="bg-amber-800 text-white px-10 py-4 text-[10px] font-black uppercase rounded-2xl shadow-lg">+ Thêm món</button>
                 </div>
               </div>
               <div className="space-y-8">
                 {menu.map((dish: Dish) => (
-                  <div key={dish.id} className="p-8 border border-stone-100 bg-stone-50 rounded-[40px] grid grid-cols-1 md:grid-cols-4 gap-8 relative hover:border-amber-200 transition-all">
-                    <div className="space-y-2">
-                      <label className="text-[8px] font-black uppercase tracking-widest text-stone-400">Tên món</label>
-                      <input placeholder="Tên món" value={dish.name} onChange={e => setMenu(menu.map((d: any) => d.id === dish.id ? {...d, name: e.target.value} : d))} className="w-full bg-white border p-4 rounded-xl outline-none font-bold" />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-[8px] font-black uppercase tracking-widest text-stone-400">Giá hiển thị</label>
-                      <input placeholder="Giá" value={dish.price} onChange={e => setMenu(menu.map((d: any) => d.id === dish.id ? {...d, price: e.target.value} : d))} className="w-full bg-white border p-4 rounded-xl outline-none font-black text-amber-800" />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-[8px] font-black uppercase tracking-widest text-stone-400">Danh mục</label>
-                      <select value={dish.category} onChange={e => setMenu(menu.map((d: any) => d.id === dish.id ? {...d, category: e.target.value as Category} : d))} className="w-full bg-white border p-4 rounded-xl outline-none font-black text-[10px] uppercase">{Object.values(Category).filter(c => c !== Category.All).map(c => <option key={c} value={c}>{c}</option>)}</select>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-[8px] font-black uppercase tracking-widest text-stone-400">Link hình ảnh</label>
-                      <input placeholder="Link ảnh" value={dish.image_url} onChange={e => setMenu(menu.map((d: any) => d.id === dish.id ? {...d, image_url: e.target.value} : d))} className="w-full bg-white border p-4 rounded-xl outline-none font-mono text-[9px]" />
-                    </div>
-                    <div className="md:col-span-4 space-y-2">
-                      <label className="text-[8px] font-black uppercase tracking-widest text-stone-400">Mô tả ngắn</label>
-                      <textarea placeholder="Mô tả" value={dish.description} onChange={e => setMenu(menu.map((d: any) => d.id === dish.id ? {...d, description: e.target.value} : d))} className="w-full bg-white border p-4 rounded-xl outline-none italic text-sm" />
-                    </div>
+                  <div key={dish.id} className="p-8 border border-stone-100 bg-stone-50 rounded-[40px] grid grid-cols-1 md:grid-cols-4 gap-8 relative">
+                    <input placeholder="Tên món" value={dish.name} onChange={e => setMenu(menu.map((d: any) => d.id === dish.id ? {...d, name: e.target.value} : d))} className="w-full bg-white border p-4 rounded-xl outline-none font-bold" />
+                    <input placeholder="Giá" value={dish.price} onChange={e => setMenu(menu.map((d: any) => d.id === dish.id ? {...d, price: e.target.value} : d))} className="w-full bg-white border p-4 rounded-xl outline-none font-black text-amber-800" />
+                    <select value={dish.category} onChange={e => setMenu(menu.map((d: any) => d.id === dish.id ? {...d, category: e.target.value as Category} : d))} className="w-full bg-white border p-4 rounded-xl outline-none font-black text-[10px] uppercase">{Object.values(Category).filter(c => c !== Category.All).map(c => <option key={c} value={c}>{c}</option>)}</select>
+                    <input placeholder="Link ảnh" value={dish.image_url} onChange={e => setMenu(menu.map((d: any) => d.id === dish.id ? {...d, image_url: e.target.value} : d))} className="w-full bg-white border p-4 rounded-xl outline-none font-mono text-[9px]" />
+                    <textarea placeholder="Mô tả" value={dish.description} onChange={e => setMenu(menu.map((d: any) => d.id === dish.id ? {...d, description: e.target.value} : d))} className="md:col-span-4 w-full bg-white border p-4 rounded-xl outline-none italic text-sm" />
                     <button onClick={() => setMenu(menu.filter((d: any) => d.id !== dish.id))} className="absolute top-4 right-4 text-red-300 hover:text-red-500 text-2xl">×</button>
                   </div>
                 ))}
@@ -429,7 +371,7 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, supabaseConfig, 
             <div className="space-y-12">
               <div className="flex justify-between items-center">
                 <h2 className="text-4xl font-black uppercase">Ảnh bìa Slide</h2>
-                <button onClick={() => setHeroSlides([...heroSlides, { id: Date.now().toString(), image_url: '', quote: 'Slogan của slide này...' }])} className="bg-amber-800 text-white px-10 py-4 text-[10px] font-black uppercase rounded-2xl shadow-lg">+ Thêm Slide</button>
+                <button onClick={() => setHeroSlides([...heroSlides, { id: Date.now().toString(), image_url: '', quote: 'Slogan...' }])} className="bg-amber-800 text-white px-10 py-4 text-[10px] font-black uppercase rounded-2xl shadow-lg">+ Thêm Slide</button>
               </div>
               {heroSlides.map((slide: HeroSlide) => (
                 <div key={slide.id} className="p-10 border-2 border-stone-50 bg-stone-50 rounded-[40px] flex flex-col gap-10 relative">
@@ -466,8 +408,8 @@ const App = () => {
 
   const fetchData = useCallback(async () => {
     if (!supabase) {
-      setMenu([{ id: '1', name: 'Món Mẫu: Sườn Rim', price: '125.000 VNĐ', description: 'Vui lòng kết nối Database.', image_url: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=1000', category: Category.MainCourse }]);
-      setHeroSlides([{ id: 'h1', image_url: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=1920', quote: 'Dữ liệu mẫu - Vui lòng cấu hình Database.' }]);
+      setMenu([{ id: '1', name: 'Món Mẫu', price: '125k', description: 'Vui lòng kết nối database.', image_url: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=1000', category: Category.MainCourse }]);
+      setHeroSlides([{ id: 'h1', image_url: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=1920', quote: 'Hương vị cơm nhà ấm áp.' }]);
       setIsLoading(false);
       return;
     }
@@ -476,11 +418,7 @@ const App = () => {
       const { data: slides } = await supabase.from('hero_slides').select('*').order('created_at', { ascending: true });
       if (dishes) setMenu(dishes);
       if (slides) setHeroSlides(slides);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsLoading(false);
-    }
+    } catch (e) { console.error(e); } finally { setIsLoading(false); }
   }, [supabase]);
 
   useEffect(() => {
@@ -495,7 +433,7 @@ const App = () => {
   }, []);
 
   const handleSave = async () => {
-    if (!supabase) return alert("Vui lòng cấu hình Database!");
+    if (!supabase) return alert("Cần database!");
     setIsLoading(true);
     try {
       await supabase.from('dishes').delete().neq('name', '___DELETED___');
@@ -503,19 +441,27 @@ const App = () => {
       const sanitize = (list: any[]) => list.map(({ id, created_at, ...rest }) => rest);
       if (menu.length) await supabase.from('dishes').insert(sanitize(menu));
       if (heroSlides.length) await supabase.from('hero_slides').insert(sanitize(heroSlides));
-      alert("Đã đồng bộ thành công!");
+      alert("Đồng bộ thành công!");
       fetchData();
-    } catch (e) {
-      alert("Lỗi lưu dữ liệu!");
-    } finally {
-      setIsLoading(false);
-    }
+    } catch (e) { alert("Lỗi!"); } finally { setIsLoading(false); }
   };
 
-  if (hash.toLowerCase().includes('acp1122')) {
-    return <AdminPanel menu={menu} setMenu={setMenu} heroSlides={heroSlides} setHeroSlides={setHeroSlides} supabaseConfig={supabaseConfig} setSupabaseConfig={setSupabaseConfig} onSave={handleSave} />;
-  }
-  return <HomePage menu={menu} heroSlides={heroSlides} isLoading={isLoading} supabase={supabase} />;
+  const isACP = hash.toUpperCase().includes('ACP1122');
+
+  return (
+    <>
+      {isACP ? (
+        <AdminPanel 
+          menu={menu} setMenu={setMenu} 
+          heroSlides={heroSlides} setHeroSlides={setHeroSlides} 
+          supabaseConfig={supabaseConfig} setSupabaseConfig={setSupabaseConfig} 
+          onSave={handleSave} 
+        />
+      ) : (
+        <HomePage menu={menu} heroSlides={heroSlides} isLoading={isLoading} supabase={supabase} />
+      )}
+    </>
+  );
 };
 
 ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
