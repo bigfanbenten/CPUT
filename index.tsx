@@ -2,10 +2,11 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import ReactDOM from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
+import { GoogleGenAI } from "@google/genai";
 
 // --- CẤU HÌNH CỐ ĐỊNH ---
-const HARDCODED_SUPABASE_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co'; 
-const HARDCODED_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyemZwZWV1b2h6ZnF1emZpZWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3NDY4MDgsImV4cCI6MjA4NDMyMjgwOH0.tyzhzbucriL09bH-ndgXs3ob1-Www97vsfQ6Wsh8d7s'; 
+const HARDCODED_SUPABASE_URL = ''; 
+const HARDCODED_SUPABASE_KEY = ''; 
 
 // --- TYPES ---
 enum Category {
@@ -35,6 +36,25 @@ interface HeroSlide {
 }
 
 const CONFIG_KEY = 'ut-trinh-config-v3';
+
+// --- HELPERS ---
+const blobToBase64 = (blob: Blob): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result as string;
+      resolve(base64String.split(',')[1]);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+};
+
+const fetchImageAsBase64 = async (url: string): Promise<string> => {
+  const response = await fetch(url);
+  const blob = await response.blob();
+  return await blobToBase64(blob);
+};
 
 // --- COMPONENTS ---
 
@@ -67,16 +87,8 @@ const Nav = ({ isAdmin = false }) => {
               <div className="hidden lg:flex items-center gap-5">
                 <span className="text-red-600 text-[11px] font-black tracking-widest uppercase drop-shadow-sm">Hãy gọi đặt món ngay 0939.70.90.20</span>
                 <div className="flex items-center gap-4 border-l border-stone-200 pl-5 select-none pointer-events-none">
-                  <img 
-                    src="https://inkythuatso.com/uploads/images/2021/12/logo-grab-food-inkythuatso-20-15-56-19.jpg" 
-                    alt="GrabFood" 
-                    className="h-7 w-auto object-contain rounded-sm"
-                  />
-                  <img 
-                    src="https://img.icons8.com/color/96/shopee.png" 
-                    alt="Shopee" 
-                    className="h-7 w-auto object-contain"
-                  />
+                  <img src="https://inkythuatso.com/uploads/images/2021/12/logo-grab-food-inkythuatso-20-15-56-19.jpg" alt="GrabFood" className="h-7 w-auto object-contain rounded-sm" />
+                  <img src="https://img.icons8.com/color/96/shopee.png" alt="Shopee" className="h-7 w-auto object-contain" />
                 </div>
               </div>
             </div>
@@ -114,10 +126,8 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
     const handleVisits = async () => {
       const { count } = await supabase.from('site_visits').select('*', { count: 'exact', head: true });
       setTotalVisitors(BASE_START + (count || 0));
-
       const lastVisit = localStorage.getItem('ut_v5_visit_time');
       const now = Date.now();
-
       if (!lastVisit || (now - parseInt(lastVisit)) > SESSION_TIME) {
         const { error } = await supabase.from('site_visits').insert({});
         if (!error) {
@@ -127,21 +137,13 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
       }
     };
 
-    const channel = supabase.channel('online_tracking_v5', {
-      config: { presence: { key: 'visitor-' + Math.random().toString(36).substring(7) } }
+    const channel = supabase.channel('online_tracking_v5', { config: { presence: { key: 'visitor-' + Math.random().toString(36).substring(7) } } });
+    channel.on('presence', { event: 'sync' }, () => {
+      const state = channel.presenceState();
+      setOnlineUsers(Object.keys(state).length || 1);
+    }).subscribe(async (status: string) => {
+      if (status === 'SUBSCRIBED') await channel.track({ online_at: new Date().toISOString() });
     });
-
-    channel
-      .on('presence', { event: 'sync' }, () => {
-        const state = channel.presenceState();
-        setOnlineUsers(Object.keys(state).length || 1);
-      })
-      .subscribe(async (status: string) => {
-        if (status === 'SUBSCRIBED') {
-          await channel.track({ online_at: new Date().toISOString() });
-        }
-      });
-
     handleVisits();
     return () => { channel.unsubscribe(); };
   }, [supabase]);
@@ -152,15 +154,11 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
     return () => clearInterval(timer);
   }, [heroSlides]);
 
-  // Ngẫu nhiên hóa menu mỗi khi filter thay đổi
   const shuffledMenu = useMemo(() => {
-    let filtered = activeFilter === Category.All 
-      ? [...menu] 
-      : menu.filter((item: Dish) => item.category === activeFilter);
+    let filtered = activeFilter === Category.All ? [...menu] : menu.filter((item: Dish) => item.category === activeFilter);
     return filtered.sort(() => Math.random() - 0.5);
   }, [menu, activeFilter]);
 
-  // Phân trang
   const totalPages = Math.ceil(shuffledMenu.length / itemsPerPage);
   const displayedDishes = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
@@ -183,16 +181,12 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
         <div className="absolute inset-0">
           {heroSlides.map((slide: HeroSlide, index: number) => (
             <div key={slide.id} className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}>
-              <img 
-                src={slide.image_url} 
-                className={`w-full h-full object-cover transition-transform duration-[7000ms] ease-out ${index === currentSlide ? 'scale-100' : 'scale-120'}`} 
-              />
+              <img src={slide.image_url} className={`w-full h-full object-cover transition-transform duration-[7000ms] ease-out ${index === currentSlide ? 'scale-100' : 'scale-120'}`} />
               <div className="absolute inset-0 bg-stone-900/40 backdrop-blur-[1px]"></div>
             </div>
           ))}
           <div className="absolute inset-0 bg-gradient-to-t from-[#fafafa] via-transparent to-transparent z-10"></div>
         </div>
-        
         <div className="relative z-20 text-center px-6 max-w-5xl">
           <span className="text-amber-200 text-[10px] font-black uppercase tracking-[0.8em] mb-8 block">Premium Home Dining</span>
           <h1 className="text-white text-6xl md:text-[120px] font-black tracking-tighter leading-[0.85] mb-10 uppercase">ÚT TRINH<br/><span className="text-amber-500 italic font-medium">KITCHEN</span></h1>
@@ -228,34 +222,15 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
           ))}
         </div>
 
-        {/* Phân trang UI */}
         {totalPages > 1 && (
           <div className="mt-32 flex justify-center items-center gap-6">
-            <button 
-              disabled={currentPage === 1}
-              onClick={() => changePage(currentPage - 1)}
-              className={`text-[10px] font-black uppercase tracking-widest px-8 py-3 rounded-full border transition-all ${currentPage === 1 ? 'border-stone-100 text-stone-300' : 'border-stone-900 text-stone-900 hover:bg-stone-900 hover:text-white'}`}
-            >
-              Trang Trước
-            </button>
+            <button disabled={currentPage === 1} onClick={() => changePage(currentPage - 1)} className={`text-[10px] font-black uppercase tracking-widest px-8 py-3 rounded-full border transition-all ${currentPage === 1 ? 'border-stone-100 text-stone-300' : 'border-stone-900 text-stone-900 hover:bg-stone-900 hover:text-white'}`}>Trang Trước</button>
             <div className="flex gap-3">
               {[...Array(totalPages)].map((_, i) => (
-                <button 
-                  key={i} 
-                  onClick={() => changePage(i + 1)}
-                  className={`w-10 h-10 rounded-full text-[11px] font-black transition-all ${currentPage === i + 1 ? 'bg-amber-800 text-white shadow-xl' : 'text-stone-400 border border-stone-100 hover:text-stone-900'}`}
-                >
-                  {i + 1}
-                </button>
+                <button key={i} onClick={() => changePage(i + 1)} className={`w-10 h-10 rounded-full text-[11px] font-black transition-all ${currentPage === i + 1 ? 'bg-amber-800 text-white shadow-xl' : 'text-stone-400 border border-stone-100 hover:text-stone-900'}`}>{i + 1}</button>
               ))}
             </div>
-            <button 
-              disabled={currentPage === totalPages}
-              onClick={() => changePage(currentPage + 1)}
-              className={`text-[10px] font-black uppercase tracking-widest px-8 py-3 rounded-full border transition-all ${currentPage === totalPages ? 'border-stone-100 text-stone-300' : 'border-stone-900 text-stone-900 hover:bg-stone-900 hover:text-white'}`}
-            >
-              Trang Sau
-            </button>
+            <button disabled={currentPage === totalPages} onClick={() => changePage(currentPage + 1)} className={`text-[10px] font-black uppercase tracking-widest px-8 py-3 rounded-full border transition-all ${currentPage === totalPages ? 'border-stone-100 text-stone-300' : 'border-stone-900 text-stone-900 hover:bg-stone-900 hover:text-white'}`}>Trang Sau</button>
           </div>
         )}
       </main>
@@ -315,16 +290,105 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
 };
 
 const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, supabaseConfig, setSupabaseConfig, onSave }: any) => {
-  const [activeTab, setActiveTab] = useState<'menu' | 'hero' | 'config'>(supabaseConfig.url ? 'menu' : 'config');
+  const [activeTab, setActiveTab] = useState<'menu' | 'hero' | 'config' | 'video'>(supabaseConfig.url ? 'menu' : 'config');
   const [localConfig, setLocalConfig] = useState(supabaseConfig);
+
+  // Video Generation States
+  const [selectedForVideo, setSelectedForVideo] = useState<string[]>([]);
+  const [isVideoGenerating, setIsVideoGenerating] = useState(false);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [videoStatus, setVideoStatus] = useState("");
+
+  const handleCreateVideo = async () => {
+    if (selectedForVideo.length === 0) return alert("Vui lòng chọn ít nhất 1 món!");
+    
+    // Check for API Key selection (required for Veo)
+    // @ts-ignore
+    const hasKey = await window.aistudio.hasSelectedApiKey();
+    if (!hasKey) {
+      alert("Để sử dụng tính năng tạo video chất lượng cao Veo 3.1, bạn cần chọn API Key cá nhân từ dự án có trả phí của mình.");
+      // @ts-ignore
+      await window.aistudio.openSelectKey();
+      // Assume success as per instructions
+    }
+
+    setIsVideoGenerating(true);
+    setVideoStatus("Đang chuẩn bị nguyên liệu hình ảnh...");
+
+    try {
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const selectedDishes = menu.filter((d: Dish) => selectedForVideo.includes(d.id)).slice(0, 3);
+      
+      const referenceImagesPayload: any[] = [];
+      for (const dish of selectedDishes) {
+        setVideoStatus(`Đang xử lý hình ảnh món: ${dish.name}...`);
+        const base64 = await fetchImageAsBase64(dish.image_url);
+        referenceImagesPayload.push({
+          image: { imageBytes: base64, mimeType: 'image/jpeg' },
+          referenceType: "ASSET",
+        });
+      }
+
+      setVideoStatus("Bắt đầu khởi tạo quy trình dựng phim Veo 3.1... Việc này có thể mất 1-3 phút.");
+      
+      let operation = await ai.models.generateVideos({
+        model: 'veo-3.1-generate-preview',
+        prompt: `A high-end cinematic montage of these gourmet Vietnamese dishes being served in a cozy traditional restaurant atmosphere. Slow motion, professional food photography lighting, 4k resolution, steam rising from food.`,
+        config: {
+          numberOfVideos: 1,
+          referenceImages: referenceImagesPayload,
+          resolution: '720p',
+          aspectRatio: '16:9'
+        }
+      });
+
+      const messages = [
+        "Đang tinh chỉnh ánh sáng cho món ăn...",
+        "Đang tạo hiệu ứng khói nóng hổi...",
+        "Đang căn chỉnh góc máy quay điện ảnh...",
+        "Gần xong rồi, video đang được xuất bản chất lượng cao...",
+        "Đang kiểm tra độ sắc nét cuối cùng..."
+      ];
+      let msgIdx = 0;
+
+      while (!operation.done) {
+        setVideoStatus(messages[msgIdx % messages.length]);
+        msgIdx++;
+        await new Promise(resolve => setTimeout(resolve, 10000));
+        operation = await ai.operations.getVideosOperation({ operation: operation });
+      }
+
+      const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
+      if (downloadLink) {
+        const response = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        setVideoUrl(url);
+        setVideoStatus("Hoàn thành! Bạn có thể xem và tải video bên dưới.");
+      }
+    } catch (e: any) {
+      console.error(e);
+      if (e.message?.includes("Requested entity was not found")) {
+        alert("Lỗi xác thực API Key. Vui lòng chọn lại Key có quyền sử dụng Veo.");
+        // @ts-ignore
+        await window.aistudio.openSelectKey();
+      } else {
+        alert("Có lỗi xảy ra trong quá trình tạo video. Vui lòng thử lại sau.");
+      }
+    } finally {
+      setIsVideoGenerating(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-stone-50 pt-32 pb-20 px-6">
       <Nav isAdmin />
       <div className="max-w-6xl mx-auto bg-white rounded-[50px] shadow-2xl overflow-hidden border border-stone-100">
-        <div className="flex bg-stone-50 border-b border-stone-200 p-4 gap-4">
-          {['menu', 'hero', 'config'].map((tab: any) => (
-            <button key={tab} onClick={() => setActiveTab(tab)} className={`flex-1 py-5 rounded-3xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-white shadow-xl text-stone-900' : 'text-stone-400'}`}>{tab === 'menu' ? '🍱 Thực Đơn' : tab === 'hero' ? '🖼️ Ảnh Bìa' : '⚙️ Cấu Hình'}</button>
+        <div className="flex bg-stone-50 border-b border-stone-200 p-4 gap-4 overflow-x-auto">
+          {['menu', 'hero', 'video', 'config'].map((tab: any) => (
+            <button key={tab} onClick={() => setActiveTab(tab)} className={`flex-1 py-5 px-6 rounded-3xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === tab ? 'bg-white shadow-xl text-stone-900' : 'text-stone-400'}`}>
+              {tab === 'menu' ? '🍱 Thực Đơn' : tab === 'hero' ? '🖼️ Ảnh Bìa' : tab === 'video' ? '🎬 Phim Quảng Cáo' : '⚙️ Cấu Hình'}
+            </button>
           ))}
         </div>
 
@@ -337,6 +401,74 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, supabaseConfig, 
                 <input placeholder="Anon Key" value={localConfig.key} onChange={e => setLocalConfig({...localConfig, key: e.target.value})} className="w-full border-2 p-5 rounded-2xl outline-none focus:border-stone-900 font-mono text-xs" />
                 <button onClick={() => { setSupabaseConfig(localConfig); alert("Đã cập nhật!"); setActiveTab('menu'); }} className="w-full bg-stone-900 text-white py-5 rounded-2xl font-black uppercase hover:bg-stone-800 transition-all">Lưu Cấu Hình</button>
               </div>
+            </div>
+          )}
+
+          {activeTab === 'video' && (
+            <div className="space-y-12">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+                <div className="max-w-xl">
+                  <h2 className="text-4xl font-black uppercase">🎬 Dựng Phim Quảng Cáo AI</h2>
+                  <p className="text-stone-500 text-sm mt-4 italic leading-relaxed">Sử dụng mô hình **Google Veo 3.1** để tạo đoạn phim giới thiệu món ăn đẳng cấp. Hãy chọn từ 1-3 món ăn tâm đắc nhất để AI làm tài liệu tham khảo.</p>
+                </div>
+                {!isVideoGenerating && !videoUrl && (
+                  <button onClick={handleCreateVideo} className="bg-amber-800 text-white px-10 py-5 rounded-3xl font-black uppercase text-xs tracking-widest shadow-2xl hover:bg-stone-900 transition-all">Bắt đầu dựng phim</button>
+                )}
+              </div>
+
+              {isVideoGenerating && (
+                <div className="bg-stone-50 rounded-[40px] p-20 flex flex-col items-center justify-center text-center space-y-8 animate-in fade-in duration-1000">
+                  <div className="relative w-24 h-24">
+                    <div className="absolute inset-0 border-4 border-amber-800/20 rounded-full"></div>
+                    <div className="absolute inset-0 border-4 border-amber-800 rounded-full border-t-transparent animate-spin"></div>
+                  </div>
+                  <div className="space-y-3">
+                    <p className="text-xl font-black uppercase tracking-tighter text-stone-900">{videoStatus}</p>
+                    <p className="text-stone-400 text-sm italic">"Chất lượng phim tốt nhất cần sự tỉ mỉ của AI, hãy thư giãn một chút nhé!"</p>
+                  </div>
+                </div>
+              )}
+
+              {videoUrl && (
+                <div className="bg-stone-900 rounded-[40px] p-10 space-y-8 animate-in zoom-in duration-700">
+                  <video src={videoUrl} controls className="w-full aspect-video rounded-[30px] shadow-2xl border border-white/10" autoPlay loop muted />
+                  <div className="flex justify-between items-center">
+                    <p className="text-white/60 text-xs italic">Video đã sẵn sàng để đăng tải lên Facebook, YouTube hoặc TikTok.</p>
+                    <div className="flex gap-4">
+                      <a href={videoUrl} download="ut-trinh-promo.mp4" className="bg-white text-stone-900 px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-amber-500 hover:text-white transition-all">Tải video xuống</a>
+                      <button onClick={() => { setVideoUrl(null); setVideoStatus(""); }} className="text-white/40 hover:text-white text-[10px] font-black uppercase tracking-widest">Tạo video mới</button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {!isVideoGenerating && !videoUrl && (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                  {menu.map((dish: Dish) => (
+                    <div 
+                      key={dish.id} 
+                      onClick={() => {
+                        if (selectedForVideo.includes(dish.id)) {
+                          setSelectedForVideo(selectedForVideo.filter(id => id !== dish.id));
+                        } else if (selectedForVideo.length < 3) {
+                          setSelectedForVideo([...selectedForVideo, dish.id]);
+                        }
+                      }}
+                      className={`relative aspect-square rounded-[30px] overflow-hidden cursor-pointer border-4 transition-all ${selectedForVideo.includes(dish.id) ? 'border-amber-800 scale-95 shadow-inner' : 'border-transparent hover:border-stone-200'}`}
+                    >
+                      <img src={dish.image_url} className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
+                        <span className="text-white text-[9px] font-black uppercase truncate">{dish.name}</span>
+                      </div>
+                      {selectedForVideo.includes(dish.id) && (
+                        <div className="absolute top-3 right-3 bg-amber-800 text-white w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black">
+                          {selectedForVideo.indexOf(dish.id) + 1}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
