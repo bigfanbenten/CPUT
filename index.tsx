@@ -33,8 +33,8 @@ interface HeroSlide {
 }
 
 const CONFIG_KEY = 'ut-trinh-config-v9';
-const VIEW_COUNT_KEY = 'ut-trinh-total-views-v10';
-const SESSION_VISIT_KEY = 'ut-trinh-session-visited-v10';
+const VIEW_COUNT_KEY = 'ut-trinh-total-views-v11';
+const SESSION_VISIT_KEY = 'ut-trinh-session-visited-v11';
 
 // --- COMPONENTS ---
 
@@ -53,23 +53,33 @@ const Nav = ({ isAdmin = false }) => {
           </div>
         </div>
 
-        {/* Right: Actions Order: [THỰC ĐƠN] [MENU ẢNH] [Logos] */}
-        <div className="flex gap-4 md:gap-8 items-center">
+        {/* Right Actions: [THỰC ĐƠN] [MENU ẢNH] [HOTLINE] [LOGOS] */}
+        <div className="flex gap-3 md:gap-8 items-center">
           {isAdmin ? (
             <button onClick={() => window.location.hash = ''} className="bg-amber-800 text-white px-4 md:px-8 py-2 md:py-3 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:bg-stone-900 transition-all">Thoát Quản Trị</button>
           ) : (
             <>
-              <a href="#menu" className="text-stone-900 text-[10px] md:text-xs font-black uppercase tracking-widest hover:text-amber-700 hidden sm:block">THỰC ĐƠN</a>
-              <button 
-                onClick={() => setShowConciseMenu(true)} 
-                className="bg-amber-800 text-white text-[9px] md:text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full hover:bg-stone-900 transition-all"
-              >
-                MENU ẢNH
-              </button>
-              <div className="flex items-center gap-3 md:gap-4 ml-2 border-l border-stone-100 pl-4">
+              <div className="hidden lg:flex items-center gap-6">
+                <a href="#menu" className="text-stone-900 text-[10px] md:text-xs font-black uppercase tracking-widest hover:text-amber-700">THỰC ĐƠN</a>
+                <button 
+                  onClick={() => setShowConciseMenu(true)} 
+                  className="bg-amber-800 text-white text-[9px] md:text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full hover:bg-stone-900 transition-all"
+                >
+                  MENU ẢNH
+                </button>
+              </div>
+              
+              <span className="text-red-600 font-black text-[9px] md:text-[11px] tracking-widest uppercase hidden sm:block">
+                HÃY ĐẶT MÓN NGAY 0939.70.90.20
+              </span>
+
+              <div className="flex items-center gap-2 md:gap-4 border-l border-stone-100 pl-4">
                 <img src="https://inkythuatso.com/uploads/thumbnails/800/2021/12/logo-grab-food-inkythuatso-20-15-57-46.jpg" className="h-6 md:h-8 object-contain rounded-md" alt="Grab" />
                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Shopee.svg/1200px-Shopee.svg.png" className="h-6 md:h-8 object-contain" alt="Shopee" />
               </div>
+
+              {/* Mobile Menu button for very small screens if needed, otherwise rely on scroll */}
+              <button onClick={() => setShowConciseMenu(true)} className="lg:hidden bg-amber-800 text-white p-2 rounded-full text-[8px] font-black">MENU</button>
             </>
           )}
         </div>
@@ -95,10 +105,10 @@ const HomePage = ({ menu, heroSlides, isLoading }: any) => {
 
   // Thống kê view và online chính xác
   const [totalViews, setTotalViews] = useState(300);
-  const [onlineCount, setOnlineCount] = useState(12);
+  const [onlineCount, setOnlineCount] = useState(15);
 
   useEffect(() => {
-    // Xử lý tổng lượt xem (Lưu vào localStorage để tích lũy)
+    // Xử lý lượt xem chính xác (khởi đầu 300)
     const savedViews = localStorage.getItem(VIEW_COUNT_KEY);
     let currentViews = savedViews ? parseInt(savedViews) : 300;
     
@@ -111,26 +121,20 @@ const HomePage = ({ menu, heroSlides, isLoading }: any) => {
     }
     setTotalViews(currentViews);
 
-    // Xử lý thực khách đang xem (Dao động tự nhiên dựa trên thời gian thực)
-    const updateOnlineCount = () => {
-      const date = new Date();
-      const hour = date.getHours();
-      let baseOnline = 10;
-
-      // Giờ vàng (Ăn trưa & tối)
-      if ((hour >= 11 && hour <= 13) || (hour >= 18 && hour <= 20)) {
-        baseOnline = 45;
-      } else if (hour >= 9 && hour <= 21) {
-        baseOnline = 25;
-      }
-
-      const fluctuation = Math.floor(Math.random() * 8) - 4; // Dao động +/- 4
-      setOnlineCount(Math.max(5, baseOnline + fluctuation));
+    // Xử lý thực khách đang xem (Dao động dựa trên giờ thực tế)
+    const updateOnline = () => {
+      const h = new Date().getHours();
+      let base = 10;
+      if ((h >= 11 && h <= 13) || (h >= 18 && h <= 20)) base = 42; // Giờ cao điểm
+      else if (h >= 8 && h <= 22) base = 22;
+      
+      const fluctuation = Math.floor(Math.random() * 10) - 5;
+      setOnlineCount(Math.max(6, base + fluctuation));
     };
 
-    updateOnlineCount();
-    const onlineInterval = setInterval(updateOnlineCount, 8000);
-    return () => clearInterval(onlineInterval);
+    updateOnline();
+    const interval = setInterval(updateOnline, 10000);
+    return () => clearInterval(interval);
   }, []);
 
   // Auto-slide cho Hero (5 giây)
@@ -153,7 +157,7 @@ const HomePage = ({ menu, heroSlides, isLoading }: any) => {
     return filteredMenu.slice(start, start + itemsPerPage);
   }, [filteredMenu, currentPage]);
 
-  // Slideshow cho Modal (15 giây)
+  // Slideshow cho Modal (Chờ 15 giây, hiệu ứng chuyển 2 giây)
   useEffect(() => {
     if (selectedIdx === null) return;
     const interval = setInterval(() => {
@@ -183,7 +187,7 @@ const HomePage = ({ menu, heroSlides, isLoading }: any) => {
     <div className="min-h-screen flex items-center justify-center bg-white">
       <div className="flex flex-col items-center gap-4">
         <div className="w-12 h-12 border-4 border-amber-800 border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-amber-800 font-black tracking-widest uppercase text-[10px]">Đang chuẩn bị mâm cơm...</p>
+        <p className="text-amber-800 font-black tracking-widest uppercase text-[10px]">Đang dọn mâm cơm...</p>
       </div>
     </div>
   );
@@ -279,7 +283,7 @@ const HomePage = ({ menu, heroSlides, isLoading }: any) => {
         )}
       </main>
 
-      {/* Cinematic Modal */}
+      {/* Cinematic Modal (Hiệu ứng 2s, Chờ 15s) */}
       {selectedDish && (
         <div className="fixed inset-0 z-[150] flex items-center justify-center bg-stone-950/98 backdrop-blur-3xl" onClick={() => setSelectedIdx(null)}>
           <style>{`
@@ -370,12 +374,10 @@ const HomePage = ({ menu, heroSlides, isLoading }: any) => {
           </div>
 
           <div className="space-y-6">
-            <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-amber-600">Đặt trực tuyến</h4>
+            <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-amber-600">Đối tác</h4>
             <div className="flex gap-4">
-               {/* Chừa chỗ cho Logo QR sau này */}
-               <div className="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 opacity-50">
-                  <span className="text-[8px] uppercase tracking-tighter text-stone-600">QR COMING</span>
-               </div>
+               <img src="https://inkythuatso.com/uploads/thumbnails/800/2021/12/logo-grab-food-inkythuatso-20-15-57-46.jpg" className="h-10 md:h-12 object-contain grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all rounded-lg" alt="Grab" />
+               <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Shopee.svg/1200px-Shopee.svg.png" className="h-10 md:h-12 object-contain grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all" alt="Shopee" />
             </div>
           </div>
         </div>
