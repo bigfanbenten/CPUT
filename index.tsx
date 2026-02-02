@@ -5,8 +5,8 @@ import { createClient } from '@supabase/supabase-js';
 import { GoogleGenAI } from "@google/genai";
 
 // --- CẤU HÌNH CỐ ĐỊNH ---
-const HARDCODED_SUPABASE_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co'; 
-const HARDCODED_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyemZwZWV1b2h6ZnF1emZpZWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3NDY4MDgsImV4cCI6MjA4NDMyMjgwOH0.tyzhzbucriL09bH-ndgXs3ob1-Www97vsfQ6Wsh8d7s'; 
+const HARDCODED_SUPABASE_URL = ''; 
+const HARDCODED_SUPABASE_KEY = ''; 
 
 // --- TYPES ---
 enum Category {
@@ -160,9 +160,11 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
     return () => clearInterval(timer);
   }, [heroSlides]);
 
+  // Logic Random món ăn mỗi lần tải trang/đổi filter
   const shuffledMenu = useMemo(() => {
     let filtered = activeFilter === Category.All ? [...menu] : menu.filter((item: Dish) => item.category === activeFilter);
-    return filtered.sort((a, b) => (a.created_at || '') < (b.created_at || '') ? 1 : -1);
+    // Fisher-Yates shuffle logic or simple random sort
+    return filtered.sort(() => Math.random() - 0.5);
   }, [menu, activeFilter]);
 
   const totalPages = Math.ceil(shuffledMenu.length / itemsPerPage);
@@ -273,20 +275,31 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
 
           <div className="max-w-6xl w-full bg-white rounded-[40px] md:rounded-[60px] overflow-hidden flex flex-col md:row animate-in zoom-in-95 duration-500 relative" onClick={e => e.stopPropagation()}>
             <div className="flex flex-col md:flex-row h-full">
-              <div className="md:w-1/2 aspect-square md:aspect-auto overflow-hidden bg-stone-100">
-                <img key={selectedDish.id} src={selectedDish.image_url} className="w-full h-full object-cover animate-in fade-in duration-700" />
+              <div className="md:w-1/2 aspect-square md:aspect-auto overflow-hidden bg-stone-100 relative">
+                {/* Hiệu ứng mờ ảo Crossfade: Một layer chứa ảnh cũ mờ đi và layer mới hiện đè lên */}
+                <div className="absolute inset-0 bg-cover bg-center opacity-30 blur-lg transition-all duration-1000" style={{ backgroundImage: `url(${selectedDish.image_url})` }}></div>
+                <img 
+                  key={selectedDish.id} 
+                  src={selectedDish.image_url} 
+                  className="w-full h-full object-cover relative z-10 animate-in fade-in duration-1000 ease-in-out" 
+                />
               </div>
-              <div className="md:w-1/2 p-10 md:p-20 flex flex-col justify-center relative bg-white">
+              <div className="md:w-1/2 p-10 md:p-20 flex flex-col justify-center relative bg-white overflow-hidden">
                 <button onClick={() => setSelectedIdx(null)} className="absolute top-6 right-6 md:top-8 md:right-8 text-stone-300 hover:text-stone-900 text-4xl transition-colors">×</button>
-                <div className="space-y-6 md:space-y-10">
+                <div className="space-y-6 md:space-y-10 relative z-20">
                   <span className="text-[10px] font-black uppercase tracking-[0.4em] text-amber-800">Khám Phá Thực Đơn</span>
-                  <h2 key={`name-${selectedDish.id}`} className="text-4xl md:text-7xl font-black tracking-tighter uppercase text-stone-900 leading-none animate-in slide-in-from-bottom-4 duration-500">{selectedDish.name}</h2>
-                  <div className="text-3xl md:text-4xl font-black text-amber-800 tabular-nums">{selectedDish.price}</div>
-                  <p key={`desc-${selectedDish.id}`} className="text-stone-500 text-lg md:text-xl leading-relaxed italic font-light animate-in fade-in duration-700 delay-150">"{selectedDish.description || 'Món ăn từ nguyên liệu tươi sạch nhất.'}"</p>
+                  <div className="overflow-hidden">
+                    <h2 key={`name-${selectedDish.id}`} className="text-4xl md:text-7xl font-black tracking-tighter uppercase text-stone-900 leading-none animate-in slide-in-from-bottom-8 duration-700">{selectedDish.name}</h2>
+                  </div>
+                  <div key={`price-${selectedDish.id}`} className="text-3xl md:text-4xl font-black text-amber-800 tabular-nums animate-in fade-in duration-1000 delay-300">{selectedDish.price}</div>
+                  <p key={`desc-${selectedDish.id}`} className="text-stone-500 text-lg md:text-xl leading-relaxed italic font-light animate-in fade-in duration-1000 delay-500">"{selectedDish.description || 'Món ăn từ nguyên liệu tươi sạch nhất.'}"</p>
                   <div className="pt-4 flex items-center gap-4">
                     <span className="text-[9px] font-black uppercase bg-stone-900 text-white px-5 py-2 rounded-full">{selectedDish.category}</span>
                     <div className="h-px flex-1 bg-stone-100"></div>
-                    <span className="text-[9px] font-black text-stone-300 uppercase tracking-widest italic">Tự chuyển sau 10s</span>
+                    <div className="flex flex-col items-end">
+                      <span className="text-[8px] font-black text-amber-800 uppercase tracking-widest animate-pulse">Auto-Switch</span>
+                      <span className="text-[9px] font-black text-stone-300 uppercase tracking-widest italic">Chuyển món sau 10s</span>
+                    </div>
                   </div>
                 </div>
               </div>
