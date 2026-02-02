@@ -149,9 +149,11 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
     return () => clearInterval(interval);
   }, [heroSlides]);
 
+  // Xử lý danh sách món ăn với chức năng RANDOM (ngẫu nhiên)
   const filteredMenu = useMemo(() => {
     let list = activeFilter === Category.All ? [...menu] : menu.filter(d => d.category === activeFilter);
-    return list;
+    // Shuffle ngẫu nhiên mỗi khi đổi filter hoặc tải lại trang
+    return list.sort(() => Math.random() - 0.5);
   }, [menu, activeFilter]);
 
   // Hiệu ứng tự động chuyển món trong Modal mỗi 10 giây
