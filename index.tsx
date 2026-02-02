@@ -5,8 +5,8 @@ import { createClient } from '@supabase/supabase-js';
 import { GoogleGenAI } from "@google/genai";
 
 // --- CẤU HÌNH CỐ ĐỊNH ---
-const HARDCODED_SUPABASE_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co'; 
-const HARDCODED_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyemZwZWV1b2h6ZnF1emZpZWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3NDY4MDgsImV4cCI6MjA4NDMyMjgwOH0.tyzhzbucriL09bH-ndgXs3ob1-Www97vsfQ6Wsh8d7s'; 
+const HARDCODED_SUPABASE_URL = ''; 
+const HARDCODED_SUPABASE_KEY = ''; 
 
 // --- TYPES ---
 enum Category {
@@ -35,7 +35,7 @@ interface HeroSlide {
   quote: string;
 }
 
-const CONFIG_KEY = 'ut-trinh-config-v3';
+const CONFIG_KEY = 'ut-trinh-config-v4';
 
 // --- HELPERS ---
 const blobToBase64 = (blob: Blob): Promise<string> => {
@@ -58,7 +58,7 @@ const fetchImageAsBase64 = async (url: string): Promise<string> => {
     return await blobToBase64(blob);
   } catch (err) {
     console.error("CORS/Fetch error:", url, err);
-    throw new Error(`Không thể tải ảnh: ${url}. Hãy đảm bảo link ảnh công khai và hỗ trợ CORS.`);
+    throw new Error(`Không thể tải ảnh: ${url}.`);
   }
 };
 
@@ -91,10 +91,9 @@ const Nav = ({ isAdmin = false }) => {
               </button>
               <div className="w-px h-6 bg-stone-200 hidden lg:block"></div>
               <div className="hidden lg:flex items-center gap-5">
-                <span className="text-red-600 text-[11px] font-black tracking-widest uppercase drop-shadow-sm">Hãy gọi đặt món ngay 0939.70.90.20</span>
+                <span className="text-red-600 text-[11px] font-black tracking-widest uppercase drop-shadow-sm">Hãy gọi ngay 0939.70.90.20</span>
                 <div className="flex items-center gap-4 border-l border-stone-200 pl-5 select-none pointer-events-none">
                   <img src="https://inkythuatso.com/uploads/images/2021/12/logo-grab-food-inkythuatso-20-15-56-19.jpg" alt="GrabFood" className="h-7 w-auto object-contain rounded-sm" />
-                  <img src="https://img.icons8.com/color/96/shopee.png" alt="Shopee" className="h-7 w-auto object-contain" />
                 </div>
               </div>
             </div>
@@ -127,31 +126,11 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
   useEffect(() => {
     if (!supabase) return;
     const BASE_START = 300; 
-    const SESSION_TIME = 1 * 60 * 60 * 1000; 
-
     const handleVisits = async () => {
       const { count } = await supabase.from('site_visits').select('*', { count: 'exact', head: true });
       setTotalVisitors(BASE_START + (count || 0));
-      const lastVisit = localStorage.getItem('ut_v5_visit_time');
-      const now = Date.now();
-      if (!lastVisit || (now - parseInt(lastVisit)) > SESSION_TIME) {
-        const { error } = await supabase.from('site_visits').insert({});
-        if (!error) {
-          localStorage.setItem('ut_v5_visit_time', now.toString());
-          setTotalVisitors(prev => prev + 1);
-        }
-      }
     };
-
-    const channel = supabase.channel('online_tracking_v5', { config: { presence: { key: 'visitor-' + Math.random().toString(36).substring(7) } } });
-    channel.on('presence', { event: 'sync' }, () => {
-      const state = channel.presenceState();
-      setOnlineUsers(Object.keys(state).length || 1);
-    }).subscribe(async (status: string) => {
-      if (status === 'SUBSCRIBED') await channel.track({ online_at: new Date().toISOString() });
-    });
     handleVisits();
-    return () => { channel.unsubscribe(); };
   }, [supabase]);
 
   useEffect(() => {
@@ -160,7 +139,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
     return () => clearInterval(timer);
   }, [heroSlides]);
 
-  // Logic Random món ăn mỗi lần tải trang/đổi filter để đảm bảo sự mới mẻ
+  // Siêu ngẫu nhiên: Xáo trộn danh sách món ăn mỗi khi tải trang hoặc đổi danh mục
   const shuffledMenu = useMemo(() => {
     let filtered = activeFilter === Category.All ? [...menu] : menu.filter((item: Dish) => item.category === activeFilter);
     return filtered.sort(() => Math.random() - 0.5);
@@ -177,14 +156,14 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
     document.getElementById('menu')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // Logic tự động chuyển món (Slideshow) mỗi 10 giây
+  // Slideshow 15 giây chuyển món
   useEffect(() => {
     if (selectedIdx === null) return;
     const interval = setInterval(() => {
       setSelectedIdx((prev) => (prev !== null ? (prev + 1) % shuffledMenu.length : null));
-    }, 10000);
+    }, 15000);
     return () => clearInterval(interval);
-  }, [selectedIdx, shuffledMenu]);
+  }, [selectedIdx, shuffledMenu.length]);
 
   const handleNext = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -263,37 +242,67 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
       </main>
 
       {selectedDish && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-stone-950/90 backdrop-blur-xl p-4 md:p-6" onClick={() => setSelectedIdx(null)}>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-stone-950/95 backdrop-blur-2xl p-0 md:p-10 lg:p-20" onClick={() => setSelectedIdx(null)}>
           {/* Nút điều hướng Trái */}
           <button 
             onClick={handlePrev}
-            className="absolute left-4 md:left-10 z-[110] bg-white/10 hover:bg-amber-800 text-white w-12 h-12 md:w-20 md:h-20 rounded-full flex items-center justify-center border border-white/20 transition-all text-2xl active:scale-90"
+            className="absolute left-6 md:left-12 z-[110] bg-white/5 hover:bg-amber-800 text-white w-14 h-14 md:w-24 md:h-24 rounded-full flex items-center justify-center border border-white/10 transition-all text-3xl active:scale-90"
           >
             ←
           </button>
 
-          <div className="max-w-6xl w-full bg-white rounded-[40px] md:rounded-[60px] overflow-hidden flex flex-col md:row animate-in zoom-in-95 duration-700 relative" onClick={e => e.stopPropagation()}>
-            <div className="flex flex-col md:flex-row h-full">
-              <div className="md:w-1/2 aspect-square md:aspect-auto overflow-hidden bg-stone-100 relative">
-                {/* Hiệu ứng mờ ảo Crossfade 2s: Layer ảnh nền mờ ảo hòa quyện */}
-                <div key={`bg-${selectedDish.id}`} className="absolute inset-0 bg-cover bg-center opacity-40 blur-2xl transition-all duration-[2000ms] animate-in fade-in" style={{ backgroundImage: `url(${selectedDish.image_url})` }}></div>
+          <div className="w-full h-full md:max-w-7xl md:h-auto bg-white rounded-none md:rounded-[80px] overflow-hidden flex flex-col md:flex-row shadow-2xl animate-in zoom-in-95 fade-in duration-1000 relative" onClick={e => e.stopPropagation()}>
+            <div className="flex flex-col md:flex-row w-full min-h-screen md:min-h-[70vh]">
+              {/* Image Section with Crossfade & Zoom */}
+              <div className="w-full md:w-1/2 aspect-square md:aspect-auto overflow-hidden bg-black relative">
+                {/* Background layer: blurry old image during transition */}
+                <div 
+                  className="absolute inset-0 bg-cover bg-center opacity-20 blur-3xl"
+                  style={{ backgroundImage: `url(${selectedDish.image_url})` }}
+                ></div>
+                
+                {/* Main image with Key for re-rendering triggers animation */}
                 <img 
-                  key={selectedDish.id} 
+                  key={`img-${selectedDish.id}`} 
                   src={selectedDish.image_url} 
-                  className="w-full h-full object-cover relative z-10 animate-in fade-in zoom-in-110 duration-[2000ms] ease-in-out" 
+                  className="w-full h-full object-cover relative z-10 animate-in fade-in zoom-in-110 duration-[2000ms] ease-out shadow-inner" 
                 />
               </div>
-              <div className="md:w-1/2 p-10 md:p-20 flex flex-col justify-center relative bg-white overflow-hidden">
-                <button onClick={() => setSelectedIdx(null)} className="absolute top-6 right-6 md:top-8 md:right-8 text-stone-300 hover:text-stone-900 text-4xl transition-colors active:scale-90">×</button>
-                <div className="space-y-6 md:space-y-10 relative z-20">
-                  <span className="text-[10px] font-black uppercase tracking-[0.4em] text-amber-800 animate-in fade-in duration-[2000ms]">Khám Phá Thực Đơn</span>
+
+              {/* Text Content with Professional Staggered Animation */}
+              <div className="w-full md:w-1/2 p-12 md:p-24 flex flex-col justify-center bg-white relative">
+                <button onClick={() => setSelectedIdx(null)} className="absolute top-10 right-10 md:top-12 md:right-12 text-stone-300 hover:text-stone-900 text-5xl transition-all active:scale-90">×</button>
+                
+                <div className="space-y-8 md:space-y-12">
                   <div className="overflow-hidden">
-                    <h2 key={`name-${selectedDish.id}`} className="text-4xl md:text-7xl font-black tracking-tighter uppercase text-stone-900 leading-none animate-in slide-in-from-bottom-12 duration-[2000ms]">{selectedDish.name}</h2>
+                    <span className="text-[11px] font-black uppercase tracking-[0.5em] text-amber-800 animate-in slide-in-from-bottom-4 duration-[1500ms]">Premium Collection</span>
                   </div>
-                  <div key={`price-${selectedDish.id}`} className="text-3xl md:text-4xl font-black text-amber-800 tabular-nums animate-in fade-in duration-[2000ms] delay-500">{selectedDish.price}</div>
-                  <p key={`desc-${selectedDish.id}`} className="text-stone-500 text-lg md:text-xl leading-relaxed italic font-light animate-in fade-in duration-[2000ms] delay-700">"{selectedDish.description || 'Món ăn từ nguyên liệu tươi sạch nhất.'}"</p>
-                  <div className="pt-4 flex items-center gap-4 animate-in fade-in duration-[2000ms]">
-                    <span className="text-[9px] font-black uppercase bg-stone-900 text-white px-5 py-2 rounded-full">{selectedDish.category}</span>
+                  
+                  <div className="overflow-hidden">
+                    <h2 
+                      key={`name-${selectedDish.id}`} 
+                      className="text-5xl md:text-8xl font-black tracking-tighter uppercase text-stone-900 leading-[0.9] animate-in slide-in-from-bottom-20 duration-[2000ms] ease-out"
+                    >
+                      {selectedDish.name}
+                    </h2>
+                  </div>
+
+                  <div 
+                    key={`price-${selectedDish.id}`} 
+                    className="text-4xl md:text-6xl font-black text-amber-800 tabular-nums animate-in fade-in duration-[2000ms] delay-500"
+                  >
+                    {selectedDish.price}
+                  </div>
+
+                  <p 
+                    key={`desc-${selectedDish.id}`} 
+                    className="text-stone-500 text-xl md:text-2xl leading-relaxed italic font-light animate-in fade-in duration-[2000ms] delay-1000"
+                  >
+                    "{dishDescription(selectedDish)}"
+                  </p>
+
+                  <div className="pt-8 flex items-center gap-6 animate-in fade-in duration-[2000ms] delay-1000">
+                    <span className="text-[10px] font-black uppercase bg-stone-900 text-white px-7 py-3 rounded-full shadow-lg">{selectedDish.category}</span>
                     <div className="h-px flex-1 bg-stone-100"></div>
                   </div>
                 </div>
@@ -304,157 +313,60 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
           {/* Nút điều hướng Phải */}
           <button 
             onClick={handleNext}
-            className="absolute right-4 md:right-10 z-[110] bg-white/10 hover:bg-amber-800 text-white w-12 h-12 md:w-20 md:h-20 rounded-full flex items-center justify-center border border-white/20 transition-all text-2xl active:scale-90"
+            className="absolute right-6 md:right-12 z-[110] bg-white/5 hover:bg-amber-800 text-white w-14 h-14 md:w-24 md:h-24 rounded-full flex items-center justify-center border border-white/10 transition-all text-3xl active:scale-90"
           >
             →
           </button>
         </div>
       )}
 
-      <footer className="py-16 px-12 bg-stone-900 text-white mt-40">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-12 border-b border-white/5 pb-16">
-          <div className="text-center md:text-left space-y-3">
-            <div className="inline-block bg-white/5 backdrop-blur-md px-5 py-2 rounded-xl border border-white/10 shadow-xl">
-              <span className="font-black tracking-[0.4em] uppercase text-xl block">ÚT TRINH</span>
+      <footer className="py-20 px-12 bg-stone-900 text-white mt-40">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-12 border-b border-white/5 pb-20">
+          <div className="text-center md:text-left space-y-4">
+            <div className="inline-block bg-white/5 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/10 shadow-xl">
+              <span className="font-black tracking-[0.5em] uppercase text-2xl block">ÚT TRINH</span>
             </div>
             <div className="flex flex-col gap-2">
-              <div className="inline-block bg-amber-500/10 backdrop-blur-md px-3 py-1.5 rounded-lg border border-amber-500/20 w-fit mx-auto md:mx-0">
-                <span className="text-amber-500 font-black tracking-[0.25em] text-[10px] uppercase block">HƯƠNG VỊ QUÊ NHÀ</span>
+              <div className="inline-block bg-amber-500/10 backdrop-blur-md px-4 py-2 rounded-lg border border-amber-500/20 w-fit mx-auto md:mx-0">
+                <span className="text-amber-500 font-black tracking-[0.3em] text-[11px] uppercase block">HƯƠNG VỊ QUÊ NHÀ</span>
               </div>
-              <span className="text-amber-500/90 font-bold text-[9px] uppercase tracking-[0.15em] block md:pl-1">158A/5 Trần Vĩnh Kiết, Ninh Kiều, TP Cần Thơ</span>
+              <span className="text-amber-500/70 font-medium text-[10px] uppercase tracking-[0.2em] block md:pl-1">158A/5 Trần Vĩnh Kiết, Ninh Kiều, Cần Thơ</span>
             </div>
           </div>
-          <div className="flex flex-wrap justify-center md:justify-end gap-x-10 gap-y-6">
-            <div className="flex items-center gap-3 bg-white/5 px-4 py-2 rounded-xl border border-white/5">
-              <div className="w-1.5 h-1.5 bg-stone-600 rounded-full"></div>
-              <div className="flex flex-col">
-                <span className="text-stone-500 text-[7px] font-black uppercase tracking-widest">Lượt khách</span>
-                <span className="text-white text-xs font-black tracking-widest tabular-nums">{supabase ? totalVisitors.toLocaleString() : '---'}</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 bg-green-500/5 px-4 py-2 rounded-xl border border-green-500/10">
-              <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
-              <div className="flex flex-col">
-                <span className="text-stone-500 text-[7px] font-black uppercase tracking-widest">Online</span>
-                <span className="text-green-500 text-xs font-black tracking-widest tabular-nums">{supabase ? onlineUsers : '---'}</span>
-              </div>
-            </div>
+          <div className="flex flex-wrap justify-center md:justify-end gap-x-12 gap-y-8">
+             <div className="flex flex-col text-right">
+                <span className="text-stone-500 text-[8px] font-black uppercase tracking-widest mb-1">Lượt truy cập</span>
+                <span className="text-white text-xl font-black tabular-nums">{totalVisitors.toLocaleString()}</span>
+             </div>
+             <div className="flex flex-col text-right">
+                <span className="text-stone-500 text-[8px] font-black uppercase tracking-widest mb-1">Đang xem</span>
+                <span className="text-green-500 text-xl font-black tabular-nums">{onlineUsers}</span>
+             </div>
           </div>
         </div>
-        <div className="max-w-7xl mx-auto mt-8 text-center md:text-right">
-          <p className="text-stone-500 text-[9px] font-bold uppercase tracking-[0.15em] opacity-60">© 2026 UT TRINH KITCHEN — EST 2019</p>
+        <div className="max-w-7xl mx-auto mt-10 flex flex-col md:flex-row justify-between text-stone-500 text-[10px] font-bold uppercase tracking-[0.2em] opacity-60">
+          <p>© 2026 UT TRINH KITCHEN — EST 2019</p>
+          <p>Handcrafted for Premium Dining</p>
         </div>
       </footer>
     </div>
   );
 };
 
+const dishDescription = (dish: Dish) => dish.description || 'Sự kết hợp hoàn hảo giữa nguyên liệu tươi sạch và bí quyết gia truyền từ Út Trinh Kitchen.';
+
 const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, supabaseConfig, setSupabaseConfig, onSave }: any) => {
   const [activeTab, setActiveTab] = useState<'menu' | 'hero' | 'config' | 'video'>(supabaseConfig.url ? 'menu' : 'config');
   const [localConfig, setLocalConfig] = useState(supabaseConfig);
-
-  // Video Generation States
-  const [selectedForVideo, setSelectedForVideo] = useState<string[]>([]);
-  const [isVideoGenerating, setIsVideoGenerating] = useState(false);
-  const [videoUrl, setVideoUrl] = useState<string | null>(null);
-  const [videoStatus, setVideoStatus] = useState("");
-  const [videoError, setVideoError] = useState<string | null>(null);
-
-  const handleCreateVideo = async () => {
-    if (selectedForVideo.length === 0) return alert("Vui lòng chọn ít nhất 1 món!");
-    setVideoError(null);
-    setVideoUrl(null);
-    
-    // @ts-ignore
-    const hasKey = await window.aistudio.hasSelectedApiKey();
-    if (!hasKey) {
-      alert("Để sử dụng Veo 3.1, bạn CẦN chọn một API Key từ dự án Google Cloud có bật Billing.\nTham khảo: ai.google.dev/gemini-api/docs/billing");
-      // @ts-ignore
-      await window.aistudio.openSelectKey();
-    }
-
-    setIsVideoGenerating(true);
-    setVideoStatus("Đang chuẩn bị dữ liệu hình ảnh...");
-
-    try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-      const selectedDishes = menu.filter((d: Dish) => selectedForVideo.includes(d.id)).slice(0, 3);
-      
-      const referenceImagesPayload: any[] = [];
-      for (const dish of selectedDishes) {
-        setVideoStatus(`Đang nạp dữ liệu món: ${dish.name}...`);
-        const base64 = await fetchImageAsBase64(dish.image_url);
-        referenceImagesPayload.push({
-          image: { imageBytes: base64, mimeType: 'image/jpeg' },
-          referenceType: "ASSET",
-        });
-      }
-
-      setVideoStatus("Đang gửi yêu cầu dựng phim tới Veo 3.1... Quá trình này có thể mất 1-3 phút.");
-      
-      let operation = await ai.models.generateVideos({
-        model: 'veo-3.1-generate-preview',
-        prompt: `A professional cinematic montage of these gourmet Vietnamese home-cooked dishes. Steam is rising from the food. Warm morning sunlight, slow-motion panning shots, high-end restaurant photography style. Elegant and appetizing.`,
-        config: {
-          numberOfVideos: 1,
-          resolution: '720p',
-          aspectRatio: '16:9',
-          referenceImages: referenceImagesPayload
-        }
-      });
-
-      const feedbackMessages = [
-        "Đang xử lý hiệu ứng ánh sáng...",
-        "Đang render chuyển động mượt mà...",
-        "Đang tinh chỉnh độ sắc nét của món ăn...",
-        "Sắp hoàn thành rồi, đang xuất bản video...",
-        "Đang kiểm tra chất lượng phim cuối cùng..."
-      ];
-      let msgCounter = 0;
-
-      while (!operation.done) {
-        setVideoStatus(feedbackMessages[msgCounter % feedbackMessages.length]);
-        msgCounter++;
-        await new Promise(resolve => setTimeout(resolve, 10000));
-        const aiPoll = new GoogleGenAI({ apiKey: process.env.API_KEY });
-        operation = await aiPoll.operations.getVideosOperation({ operation: operation });
-      }
-
-      const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
-      if (downloadLink) {
-        setVideoStatus("Đang tải phim về máy...");
-        const response = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
-        if (!response.ok) throw new Error("Không thể tải tập tin video.");
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        setVideoUrl(url);
-        setVideoStatus("Phim đã dựng xong! Bạn có thể xem hoặc tải xuống.");
-      } else {
-        throw new Error("Không nhận được link tải video từ AI.");
-      }
-    } catch (e: any) {
-      console.error("Video Gen Error:", e);
-      let errMsg = "Có lỗi xảy ra: " + e.message;
-      if (e.message?.includes("Requested entity was not found") || e.message?.includes("404")) {
-        errMsg = "API Key không hợp lệ hoặc dự án chưa bật Billing (Thanh toán). Vui lòng chọn lại Key đúng.";
-        // @ts-ignore
-        await window.aistudio.openSelectKey();
-      }
-      setVideoError(errMsg);
-      setVideoStatus("");
-    } finally {
-      setIsVideoGenerating(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-stone-50 pt-32 pb-20 px-6">
       <Nav isAdmin />
       <div className="max-w-6xl mx-auto bg-white rounded-[50px] shadow-2xl overflow-hidden border border-stone-100">
         <div className="flex bg-stone-50 border-b border-stone-200 p-4 gap-4 overflow-x-auto">
-          {['menu', 'hero', 'video', 'config'].map((tab: any) => (
+          {['menu', 'hero', 'config'].map((tab: any) => (
             <button key={tab} onClick={() => setActiveTab(tab)} className={`flex-1 py-5 px-6 rounded-3xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === tab ? 'bg-white shadow-xl text-stone-900' : 'text-stone-400'}`}>
-              {tab === 'menu' ? '🍱 Thực Đơn' : tab === 'hero' ? '🖼️ Ảnh Bìa' : tab === 'video' ? '🎬 Phim Quảng Cáo' : '⚙️ Cấu Hình'}
+              {tab === 'menu' ? '🍱 Thực Đơn' : tab === 'hero' ? '🖼️ Ảnh Bìa' : '⚙️ Cấu Hình'}
             </button>
           ))}
         </div>
@@ -462,7 +374,7 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, supabaseConfig, 
         <div className="p-10 md:p-16">
           {activeTab === 'config' && (
             <div className="max-w-xl mx-auto py-12 space-y-8">
-              <h2 className="text-3xl font-black uppercase">Kết nối Database</h2>
+              <h2 className="text-3xl font-black uppercase">Database</h2>
               <div className="space-y-4">
                 <input placeholder="Supabase URL" value={localConfig.url} onChange={e => setLocalConfig({...localConfig, url: e.target.value})} className="w-full border-2 p-5 rounded-2xl outline-none focus:border-stone-900 font-mono text-xs" />
                 <input placeholder="Anon Key" value={localConfig.key} onChange={e => setLocalConfig({...localConfig, key: e.target.value})} className="w-full border-2 p-5 rounded-2xl outline-none focus:border-stone-900 font-mono text-xs" />
@@ -471,95 +383,13 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, supabaseConfig, 
             </div>
           )}
 
-          {activeTab === 'video' && (
-            <div className="space-y-12">
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-                <div className="max-w-xl">
-                  <h2 className="text-4xl font-black uppercase">🎬 Dựng Phim Quảng Cáo AI</h2>
-                  <p className="text-stone-500 text-sm mt-4 italic leading-relaxed">
-                    Sử dụng mô hình **Google Veo 3.1** chuyên nghiệp. 
-                    <br/>Lưu ý: Bạn phải sử dụng API Key từ dự án có bật <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" className="text-amber-800 underline font-bold">Billing</a>.
-                  </p>
-                </div>
-                {!isVideoGenerating && !videoUrl && (
-                  <button onClick={handleCreateVideo} className="bg-amber-800 text-white px-10 py-5 rounded-3xl font-black uppercase text-xs tracking-widest shadow-2xl hover:bg-stone-900 transition-all">Bắt đầu dựng phim</button>
-                )}
-              </div>
-
-              {videoError && (
-                <div className="p-8 bg-red-50 border border-red-100 rounded-[30px] flex flex-col items-center gap-4 text-center">
-                  <p className="text-red-800 font-bold text-sm uppercase tracking-widest">Lỗi Hệ Thống</p>
-                  <p className="text-red-600 text-sm italic">{videoError}</p>
-                  <button onClick={() => setVideoError(null)} className="text-[10px] font-black uppercase tracking-widest text-red-400 hover:text-red-900 underline">Thử lại</button>
-                </div>
-              )}
-
-              {isVideoGenerating && (
-                <div className="bg-stone-50 rounded-[40px] p-20 flex flex-col items-center justify-center text-center space-y-8 animate-in fade-in duration-1000">
-                  <div className="relative w-24 h-24">
-                    <div className="absolute inset-0 border-4 border-amber-800/20 rounded-full"></div>
-                    <div className="absolute inset-0 border-4 border-amber-800 rounded-full border-t-transparent animate-spin"></div>
-                  </div>
-                  <div className="space-y-3">
-                    <p className="text-xl font-black uppercase tracking-tighter text-stone-900">{videoStatus}</p>
-                    <p className="text-stone-400 text-sm italic">AI đang chế biến từng khung hình cho bạn...</p>
-                  </div>
-                </div>
-              )}
-
-              {videoUrl && (
-                <div className="bg-stone-900 rounded-[40px] p-10 space-y-8 animate-in zoom-in duration-700">
-                  <video src={videoUrl} controls className="w-full aspect-video rounded-[30px] shadow-2xl border border-white/10" autoPlay loop muted />
-                  <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-                    <p className="text-white/60 text-xs italic">Video đã sẵn sàng để đăng tải. Chúc quán Út Trinh ngày càng đông khách!</p>
-                    <div className="flex gap-4">
-                      <a href={videoUrl} download="quang-cao-ut-trinh.mp4" className="bg-white text-stone-900 px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-amber-500 hover:text-white transition-all">Tải phim xuống</a>
-                      <button onClick={() => { setVideoUrl(null); setVideoStatus(""); setVideoError(null); }} className="text-white/40 hover:text-white text-[10px] font-black uppercase tracking-widest">Tạo phim mới</button>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {!isVideoGenerating && !videoUrl && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                  {menu.map((dish: Dish) => (
-                    <div 
-                      key={dish.id} 
-                      onClick={() => {
-                        if (selectedForVideo.includes(dish.id)) {
-                          setSelectedForVideo(selectedForVideo.filter(id => id !== dish.id));
-                        } else if (selectedForVideo.length < 3) {
-                          setSelectedForVideo([...selectedForVideo, dish.id]);
-                        }
-                      }}
-                      className={`relative aspect-square rounded-[30px] overflow-hidden cursor-pointer border-4 transition-all ${selectedForVideo.includes(dish.id) ? 'border-amber-800 scale-95 shadow-inner' : 'border-transparent hover:border-stone-200'}`}
-                    >
-                      <img src={dish.image_url} className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
-                        <span className="text-white text-[9px] font-black uppercase truncate">{dish.name}</span>
-                      </div>
-                      {selectedForVideo.includes(dish.id) && (
-                        <div className="absolute top-3 right-3 bg-amber-800 text-white w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black">
-                          {selectedForVideo.indexOf(dish.id) + 1}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
           {activeTab === 'menu' && (
             <div className="space-y-12">
               <div className="flex justify-between items-end">
-                <div>
-                  <h2 className="text-4xl font-black uppercase">Quản Lý Menu</h2>
-                  <p className="text-amber-800 font-black text-xs uppercase tracking-widest mt-2">Tổng số lượng: {menu.length} món ăn</p>
-                </div>
+                <h2 className="text-4xl font-black uppercase">Thực Đơn</h2>
                 <div className="flex gap-4">
-                  <button onClick={onSave} className="bg-stone-900 text-white px-10 py-4 text-[10px] font-black uppercase rounded-2xl shadow-lg">Lưu Vào Cloud</button>
-                  <button onClick={() => setMenu([{ id: Date.now().toString(), name: 'Tên món mới', price: '00.000 VNĐ', description: '', image_url: '', category: Category.MainCourse }, ...menu])} className="bg-amber-800 text-white px-10 py-4 text-[10px] font-black uppercase rounded-2xl shadow-lg">+ Thêm món</button>
+                  <button onClick={onSave} className="bg-stone-900 text-white px-10 py-4 text-[10px] font-black uppercase rounded-2xl shadow-lg">Đồng Bộ Cloud</button>
+                  <button onClick={() => setMenu([{ id: Date.now().toString(), name: 'Món Mới', price: '0 VNĐ', description: '', image_url: '', category: Category.MainCourse }, ...menu])} className="bg-amber-800 text-white px-10 py-4 text-[10px] font-black uppercase rounded-2xl shadow-lg">+ Thêm món</button>
                 </div>
               </div>
               <div className="space-y-8">
@@ -580,20 +410,20 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, supabaseConfig, 
           {activeTab === 'hero' && (
             <div className="space-y-12">
               <div className="flex justify-between items-center">
-                <h2 className="text-4xl font-black uppercase">Ảnh bìa Slide</h2>
-                <button onClick={() => setHeroSlides([...heroSlides, { id: Date.now().toString(), image_url: '', quote: 'Slogan...' }])} className="bg-amber-800 text-white px-10 py-4 text-[10px] font-black uppercase rounded-2xl shadow-lg">+ Thêm Slide</button>
+                <h2 className="text-4xl font-black uppercase">Ảnh Bìa</h2>
+                <button onClick={() => setHeroSlides([...heroSlides, { id: Date.now().toString(), image_url: '', quote: '' }])} className="bg-amber-800 text-white px-10 py-4 text-[10px] font-black uppercase rounded-2xl shadow-lg">+ Thêm Slide</button>
               </div>
               {heroSlides.map((slide: HeroSlide) => (
                 <div key={slide.id} className="p-10 border-2 border-stone-50 bg-stone-50 rounded-[40px] flex flex-col gap-10 relative">
-                  <div className="aspect-[21/9] w-full bg-stone-200 rounded-[30px] overflow-hidden shadow-inner">{slide.image_url && <img src={slide.image_url} className="w-full h-full object-cover" />}</div>
+                  <div className="aspect-[21/9] w-full bg-stone-200 rounded-[30px] overflow-hidden">{slide.image_url && <img src={slide.image_url} className="w-full h-full object-cover" />}</div>
                   <div className="grid md:grid-cols-2 gap-10">
-                     <input placeholder="Link ảnh nền" value={slide.image_url} onChange={e => setHeroSlides(heroSlides.map((s: any) => s.id === slide.id ? {...s, image_url: e.target.value} : s))} className="w-full border p-5 rounded-2xl outline-none font-mono text-xs" />
-                     <input placeholder="Câu slogan" value={slide.quote} onChange={e => setHeroSlides(heroSlides.map((s: any) => s.id === slide.id ? {...s, quote: e.target.value} : s))} className="w-full border p-5 rounded-2xl outline-none italic font-medium" />
+                     <input placeholder="Link ảnh" value={slide.image_url} onChange={e => setHeroSlides(heroSlides.map((s: any) => s.id === slide.id ? {...s, image_url: e.target.value} : s))} className="w-full border p-5 rounded-2xl outline-none font-mono text-xs" />
+                     <input placeholder="Slogan" value={slide.quote} onChange={e => setHeroSlides(heroSlides.map((s: any) => s.id === slide.id ? {...s, quote: e.target.value} : s))} className="w-full border p-5 rounded-2xl outline-none italic font-medium" />
                   </div>
-                  <button onClick={() => setHeroSlides(heroSlides.filter((s: any) => s.id !== slide.id))} className="text-[10px] font-black uppercase text-red-300 hover:text-red-500 underline self-center">Xóa slide này</button>
+                  <button onClick={() => setHeroSlides(heroSlides.filter((s: any) => s.id !== slide.id))} className="text-[10px] font-black uppercase text-red-300 hover:text-red-500 underline self-center">Xóa slide</button>
                 </div>
               ))}
-              <button onClick={onSave} className="w-full bg-stone-900 text-white py-8 rounded-[35px] font-black uppercase tracking-[0.3em] hover:bg-black transition-all shadow-2xl">Lưu Tất Cả Thay Đổi</button>
+              <button onClick={onSave} className="w-full bg-stone-900 text-white py-8 rounded-[35px] font-black uppercase tracking-[0.3em] hover:bg-black transition-all">Lưu Tất Cả</button>
             </div>
           )}
         </div>
@@ -618,21 +448,21 @@ const App = () => {
 
   const fetchData = useCallback(async () => {
     if (!supabase) {
-      setMenu([{ id: '1', name: 'Món Mẫu', price: '125k', description: 'Vui lòng kết nối database.', image_url: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=1000', category: Category.MainCourse }]);
+      setMenu([{ id: '1', name: 'Món Mẫu', price: '125k', description: 'Cơm gia đình truyền thống.', image_url: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=1000', category: Category.MainCourse }]);
       setHeroSlides([{ id: 'h1', image_url: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=1920', quote: 'Hương vị cơm nhà ấm áp.' }]);
       setIsLoading(false);
       return;
     }
     try {
-      const { data: dishes } = await supabase.from('dishes').select('*').order('created_at', { ascending: false });
-      const { data: slides } = await supabase.from('hero_slides').select('*').order('created_at', { ascending: true });
+      const { data: dishes } = await supabase.from('dishes').select('*');
+      const { data: slides } = await supabase.from('hero_slides').select('*');
       if (dishes) setMenu(dishes);
       if (slides) setHeroSlides(slides);
     } catch (e) { console.error(e); } finally { setIsLoading(false); }
   }, [supabase]);
 
   useEffect(() => {
-    if (!HARDCODED_SUPABASE_URL) localStorage.setItem(CONFIG_KEY, JSON.stringify(supabaseConfig));
+    localStorage.setItem(CONFIG_KEY, JSON.stringify(supabaseConfig));
     fetchData();
   }, [supabaseConfig, fetchData]);
 
@@ -646,8 +476,8 @@ const App = () => {
     if (!supabase) return alert("Cần database!");
     setIsLoading(true);
     try {
-      await supabase.from('dishes').delete().neq('name', '___DELETED___');
-      await supabase.from('hero_slides').delete().neq('image_url', '___DELETED___');
+      await supabase.from('dishes').delete().neq('id', '0');
+      await supabase.from('hero_slides').delete().neq('id', '0');
       const sanitize = (list: any[]) => list.map(({ id, created_at, ...rest }) => rest);
       if (menu.length) await supabase.from('dishes').insert(sanitize(menu));
       if (heroSlides.length) await supabase.from('hero_slides').insert(sanitize(heroSlides));
