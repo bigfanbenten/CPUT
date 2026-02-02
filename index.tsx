@@ -42,13 +42,17 @@ const Nav = ({ isAdmin = false }) => {
 
   return (
     <>
-      <nav className="fixed top-0 w-full z-[80] bg-white/95 backdrop-blur-xl border-b border-stone-100 px-4 md:px-20 h-20 md:h-24 flex items-center justify-between transition-all">
-        {/* Left: Logo */}
-        <div className="flex items-center gap-3 cursor-pointer group" onClick={() => window.location.hash = ''}>
-          <div className="w-10 h-10 bg-stone-900 flex items-center justify-center text-white font-black text-xl rounded-sm group-hover:bg-amber-800 transition-colors shrink-0">Ú</div>
-          <div className="flex flex-col md:flex-row md:items-baseline gap-0 md:gap-2 whitespace-nowrap">
-            <span className="text-sm md:text-2xl font-black text-amber-700 uppercase tracking-tighter">CƠM PHẦN</span>
-            <span className="text-sm md:text-2xl font-black text-stone-900 uppercase tracking-tighter">ÚT TRINH</span>
+      <nav className="fixed top-0 w-full z-[80] bg-white/95 backdrop-blur-xl border-b border-stone-100 px-4 md:px-20 h-24 md:h-32 flex items-center justify-between transition-all">
+        {/* Left: Logo Section */}
+        <div className="flex items-center gap-4 md:gap-6 cursor-pointer group" onClick={() => window.location.hash = ''}>
+          <img 
+            src="https://i.postimg.cc/5tdmrBLb/6d45d4f.png" 
+            alt="Logo Út Trinh" 
+            className="w-16 h-16 md:w-24 md:h-24 object-contain shrink-0 group-hover:scale-105 transition-transform duration-500"
+          />
+          <div className="flex flex-col md:flex-row md:items-center gap-0 md:gap-4 whitespace-nowrap">
+            <span className="text-base md:text-4xl font-black text-amber-700 uppercase tracking-tighter leading-none">CƠM PHẦN</span>
+            <span className="text-base md:text-4xl font-black text-stone-900 uppercase tracking-tighter leading-none">ÚT TRINH</span>
           </div>
         </div>
 
@@ -73,8 +77,8 @@ const Nav = ({ isAdmin = false }) => {
               </span>
 
               <div className="flex items-center gap-3 md:gap-4 border-l border-stone-100 pl-4">
-                <img src="https://inkythuatso.com/uploads/thumbnails/800/2021/12/logo-grab-food-inkythuatso-20-15-57-46.jpg" className="h-6 md:h-8 object-contain rounded-sm" alt="Grab" />
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Shopee.svg/1200px-Shopee.svg.png" className="h-6 md:h-8 object-contain" alt="Shopee" />
+                <img src="https://inkythuatso.com/uploads/thumbnails/800/2021/12/logo-grab-food-inkythuatso-20-15-57-46.jpg" className="h-8 md:h-12 object-contain rounded-sm" alt="Grab" />
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Shopee.svg/1200px-Shopee.svg.png" className="h-8 md:h-12 object-contain" alt="Shopee" />
               </div>
 
               <button onClick={() => setShowConciseMenu(true)} className="xl:hidden bg-amber-800 text-white px-4 py-2 rounded-full text-[8px] font-black uppercase">MENU</button>
@@ -106,7 +110,6 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
   const [onlineCount, setOnlineCount] = useState(1);
 
   useEffect(() => {
-    // 1. Tổng lượt xem: Khởi đầu 300, tăng 1 mỗi khi mở trình duyệt mới (Session based)
     const savedViews = localStorage.getItem(VIEW_COUNT_KEY);
     let currentViews = savedViews ? parseInt(savedViews) : 300;
     
@@ -118,8 +121,6 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
     }
     setTotalViews(currentViews);
 
-    // 2. Thực khách đang xem: Dùng Supabase Realtime Presence
-    // Đây là cách thực tế nhất để đếm số lượng người đang kết nối vào kênh này
     const channel = supabase.channel('online-users', {
       config: { presence: { key: 'user' } }
     });
@@ -127,13 +128,11 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
     channel
       .on('presence', { event: 'sync' }, () => {
         const state = channel.presenceState();
-        // Lấy danh sách ID người dùng đang online thực tế
         const count = Object.keys(state).length;
         setOnlineCount(count > 0 ? count : 1);
       })
       .subscribe(async (status: string) => {
         if (status === 'SUBSCRIBED') {
-          // Gắn nhãn cho người dùng hiện tại để Supabase đếm
           await channel.track({ 
             online_at: new Date().toISOString(), 
             user_id: Math.random().toString(36).substr(2, 9) 
@@ -146,7 +145,6 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
     };
   }, [supabase]);
 
-  // Hero auto-slide
   useEffect(() => {
     if (!heroSlides.length) return;
     const interval = setInterval(() => setCurrentSlide(prev => (prev + 1) % heroSlides.length), 5000);
@@ -184,7 +182,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
             <div className="absolute inset-0 bg-gradient-to-b from-stone-900/60 via-stone-900/20 to-stone-950/80"></div>
           </div>
         ))}
-        <div className="relative z-20 text-center px-6 max-w-5xl">
+        <div className="relative z-20 text-center px-6 max-w-5xl pt-24">
           <span className="text-amber-400 text-[10px] md:text-xs font-black uppercase tracking-[0.6em] mb-6 block animate-pulse">Tinh hoa ẩm thực Việt</span>
           <h1 className="text-white text-5xl md:text-[130px] font-black tracking-tighter leading-none mb-8 drop-shadow-2xl">ÚT TRINH<br/><span className="text-amber-500 italic">KITCHEN</span></h1>
           <p className="text-white/90 text-lg md:text-3xl font-light italic leading-relaxed">"{heroSlides[currentSlide]?.quote || 'Nơi lưu giữ hương vị cơm nhà truyền thống'}"</p>
@@ -262,16 +260,16 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
       <footer className="bg-stone-950 text-white pt-32 pb-16 px-10 relative">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-16 items-start mb-24">
           <div className="space-y-8">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white text-stone-950 flex items-center justify-center font-black text-xl rounded-sm">Ú</div>
-              <span className="text-xl font-black tracking-tighter">ÚT TRINH</span>
+            <div className="flex items-center gap-4">
+              <img src="https://i.postimg.cc/5tdmrBLb/6d45d4f.png" alt="Logo Út Trinh" className="w-16 h-16 md:w-20 md:h-20 object-contain" />
+              <span className="text-2xl font-black tracking-tighter">ÚT TRINH</span>
             </div>
             <p className="text-stone-500 text-sm italic font-light leading-relaxed">"Hương vị quê nhà, đậm đà tình thân."</p>
           </div>
           <div className="space-y-6">
             <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-amber-600">Liên hệ</h4>
             <div className="space-y-4 text-stone-400 text-sm">
-              <p className="font-bold text-white">158A/5 Trần Vĩnh Kiết, Cần Thơ</p>
+              <p className="font-bold text-white">158A/5 Trần Vĩnh Kiết, P.Tân An, Quận Ninh Kiều, Cần Thơ</p>
               <p className="tabular-nums font-black text-2xl text-white">0939.70.90.20</p>
               <p className="text-stone-500">Mở cửa: 09:00 AM - 06:30 PM</p>
             </div>
@@ -294,8 +292,8 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
           <div className="space-y-6">
             <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-amber-600">Đối tác</h4>
             <div className="flex gap-4">
-               <img src="https://inkythuatso.com/uploads/thumbnails/800/2021/12/logo-grab-food-inkythuatso-20-15-57-46.jpg" className="h-8 object-contain rounded-sm" alt="Grab" />
-               <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Shopee.svg/1200px-Shopee.svg.png" className="h-8 object-contain" alt="Shopee" />
+               <img src="https://inkythuatso.com/uploads/thumbnails/800/2021/12/logo-grab-food-inkythuatso-20-15-57-46.jpg" className="h-10 md:h-14 object-contain rounded-sm" alt="Grab" />
+               <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Shopee.svg/1200px-Shopee.svg.png" className="h-10 md:h-14 object-contain" alt="Shopee" />
             </div>
           </div>
         </div>
