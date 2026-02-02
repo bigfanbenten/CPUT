@@ -154,6 +154,15 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
     return list;
   }, [menu, activeFilter]);
 
+  // Hiệu ứng tự động chuyển món trong Modal mỗi 10 giây
+  useEffect(() => {
+    if (selectedIdx === null || filteredMenu.length <= 1) return;
+    const interval = setInterval(() => {
+      setSelectedIdx(prev => (prev !== null ? (prev + 1) % filteredMenu.length : null));
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [selectedIdx, filteredMenu.length]);
+
   const totalPages = Math.ceil(filteredMenu.length / itemsPerPage);
   const paginatedMenu = useMemo(() => filteredMenu.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage), [filteredMenu, currentPage]);
 
@@ -235,20 +244,35 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
         )}
       </main>
 
-      {/* Dish Modal */}
+      {/* Dish Modal with Auto-Slide and Fade-in Animation */}
       {selectedDish && (
         <div className="fixed inset-0 z-[150] flex items-center justify-center bg-stone-950/98 backdrop-blur-3xl" onClick={() => setSelectedIdx(null)}>
-          <div className="w-full h-full md:w-[90vw] md:h-[85vh] bg-white md:rounded-[60px] overflow-hidden flex flex-col md:flex-row shadow-2xl relative" onClick={e => e.stopPropagation()}>
+          <div 
+            key={selectedDish.id}
+            className="w-full h-full md:w-[90vw] md:h-[85vh] bg-white md:rounded-[60px] overflow-hidden flex flex-col md:flex-row shadow-2xl relative transition-all duration-1000 animate-[fadeIn_0.8s_ease-out]" 
+            onClick={e => e.stopPropagation()}
+          >
+            <style>
+              {`@keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }`}
+            </style>
             <button onClick={() => setSelectedIdx(null)} className="absolute top-8 right-8 z-[190] text-stone-300 hover:text-stone-900 text-5xl transition-all">×</button>
-            <div className="w-full h-[40vh] md:h-auto md:w-[55%] bg-black">
-              <img src={selectedDish.image_url} className="w-full h-full object-cover" />
+            <div className="w-full h-[40vh] md:h-auto md:w-[55%] bg-black overflow-hidden">
+              <img src={selectedDish.image_url} className="w-full h-full object-cover animate-[scaleSlow_10s_linear_infinite]" />
+              <style>{`@keyframes scaleSlow { from { transform: scale(1); } to { transform: scale(1.1); } }`}</style>
             </div>
             <div className="flex-1 p-12 md:p-20 flex flex-col justify-center bg-white space-y-8">
-              <span className="text-amber-800 font-black uppercase tracking-[0.5em] text-[10px]">Út Trinh Kitchen</span>
-              <h2 className="text-4xl md:text-7xl font-black uppercase tracking-tighter leading-none text-stone-900">{selectedDish.name}</h2>
-              <div className="text-4xl md:text-6xl font-black text-amber-800 tabular-nums">{selectedDish.price}</div>
-              <p className="text-stone-500 text-lg md:text-xl italic font-light leading-relaxed max-w-lg">"{selectedDish.description || 'Món ăn truyền thống chuẩn vị mẹ nấu.'}"</p>
-              <div className="pt-4"><span className="bg-stone-950 text-white px-8 py-3 rounded-full text-[9px] font-black uppercase tracking-[0.3em]">{selectedDish.category}</span></div>
+              <span className="text-amber-800 font-black uppercase tracking-[0.5em] text-[10px] animate-[slideIn_0.6s_ease-out]">Út Trinh Kitchen</span>
+              <h2 className="text-4xl md:text-7xl font-black uppercase tracking-tighter leading-none text-stone-900 animate-[slideIn_0.7s_ease-out]">{selectedDish.name}</h2>
+              <div className="text-4xl md:text-6xl font-black text-amber-800 tabular-nums animate-[slideIn_0.8s_ease-out]">{selectedDish.price}</div>
+              <p className="text-stone-500 text-lg md:text-xl italic font-light leading-relaxed max-w-lg animate-[slideIn_0.9s_ease-out]">"{selectedDish.description || 'Món ăn truyền thống chuẩn vị mẹ nấu.'}"</p>
+              <div className="pt-4 animate-[slideIn_1s_ease-out]"><span className="bg-stone-950 text-white px-8 py-3 rounded-full text-[9px] font-black uppercase tracking-[0.3em]">{selectedDish.category}</span></div>
+              <style>{`@keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }`}</style>
+            </div>
+            
+            {/* Auto-play progress bar */}
+            <div className="absolute bottom-0 left-0 h-1 bg-amber-800/30 w-full">
+              <div key={`progress-${selectedDish.id}`} className="h-full bg-amber-800 animate-[progress_10s_linear_forwards]"></div>
+              <style>{`@keyframes progress { from { width: 0%; } to { width: 100%; } }`}</style>
             </div>
           </div>
         </div>
