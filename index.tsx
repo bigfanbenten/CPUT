@@ -5,8 +5,8 @@ import { createClient } from '@supabase/supabase-js';
 import { GoogleGenAI } from "@google/genai";
 
 // --- CẤU HÌNH CỐ ĐỊNH ---
-const HARDCODED_SUPABASE_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co'; 
-const HARDCODED_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyemZwZWV1b2h6ZnF1emZpZWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3NDY4MDgsImV4cCI6MjA4NDMyMjgwOH0.tyzhzbucriL09bH-ndgXs3ob1-Www97vsfQ6Wsh8d7s'; 
+const HARDCODED_SUPABASE_URL = ''; 
+const HARDCODED_SUPABASE_KEY = ''; 
 
 // --- TYPES ---
 enum Category {
@@ -160,10 +160,9 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
     return () => clearInterval(timer);
   }, [heroSlides]);
 
-  // Logic Random món ăn mỗi lần tải trang/đổi filter
+  // Logic Random món ăn mỗi lần tải trang/đổi filter để đảm bảo sự mới mẻ
   const shuffledMenu = useMemo(() => {
     let filtered = activeFilter === Category.All ? [...menu] : menu.filter((item: Dish) => item.category === activeFilter);
-    // Fisher-Yates shuffle logic or simple random sort
     return filtered.sort(() => Math.random() - 0.5);
   }, [menu, activeFilter]);
 
@@ -178,7 +177,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
     document.getElementById('menu')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // Logic tự động chuyển món (Slideshow)
+  // Logic tự động chuyển món (Slideshow) mỗi 10 giây
   useEffect(() => {
     if (selectedIdx === null) return;
     const interval = setInterval(() => {
@@ -268,38 +267,34 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
           {/* Nút điều hướng Trái */}
           <button 
             onClick={handlePrev}
-            className="absolute left-4 md:left-10 z-[110] bg-white/10 hover:bg-amber-800 text-white w-12 h-12 md:w-20 md:h-20 rounded-full flex items-center justify-center border border-white/20 transition-all text-2xl"
+            className="absolute left-4 md:left-10 z-[110] bg-white/10 hover:bg-amber-800 text-white w-12 h-12 md:w-20 md:h-20 rounded-full flex items-center justify-center border border-white/20 transition-all text-2xl active:scale-90"
           >
             ←
           </button>
 
-          <div className="max-w-6xl w-full bg-white rounded-[40px] md:rounded-[60px] overflow-hidden flex flex-col md:row animate-in zoom-in-95 duration-500 relative" onClick={e => e.stopPropagation()}>
+          <div className="max-w-6xl w-full bg-white rounded-[40px] md:rounded-[60px] overflow-hidden flex flex-col md:row animate-in zoom-in-95 duration-700 relative" onClick={e => e.stopPropagation()}>
             <div className="flex flex-col md:flex-row h-full">
               <div className="md:w-1/2 aspect-square md:aspect-auto overflow-hidden bg-stone-100 relative">
-                {/* Hiệu ứng mờ ảo Crossfade: Một layer chứa ảnh cũ mờ đi và layer mới hiện đè lên */}
-                <div className="absolute inset-0 bg-cover bg-center opacity-30 blur-lg transition-all duration-1000" style={{ backgroundImage: `url(${selectedDish.image_url})` }}></div>
+                {/* Hiệu ứng mờ ảo Crossfade 2s: Layer ảnh nền mờ ảo hòa quyện */}
+                <div key={`bg-${selectedDish.id}`} className="absolute inset-0 bg-cover bg-center opacity-40 blur-2xl transition-all duration-[2000ms] animate-in fade-in" style={{ backgroundImage: `url(${selectedDish.image_url})` }}></div>
                 <img 
                   key={selectedDish.id} 
                   src={selectedDish.image_url} 
-                  className="w-full h-full object-cover relative z-10 animate-in fade-in duration-1000 ease-in-out" 
+                  className="w-full h-full object-cover relative z-10 animate-in fade-in zoom-in-110 duration-[2000ms] ease-in-out" 
                 />
               </div>
               <div className="md:w-1/2 p-10 md:p-20 flex flex-col justify-center relative bg-white overflow-hidden">
-                <button onClick={() => setSelectedIdx(null)} className="absolute top-6 right-6 md:top-8 md:right-8 text-stone-300 hover:text-stone-900 text-4xl transition-colors">×</button>
+                <button onClick={() => setSelectedIdx(null)} className="absolute top-6 right-6 md:top-8 md:right-8 text-stone-300 hover:text-stone-900 text-4xl transition-colors active:scale-90">×</button>
                 <div className="space-y-6 md:space-y-10 relative z-20">
-                  <span className="text-[10px] font-black uppercase tracking-[0.4em] text-amber-800">Khám Phá Thực Đơn</span>
+                  <span className="text-[10px] font-black uppercase tracking-[0.4em] text-amber-800 animate-in fade-in duration-[2000ms]">Khám Phá Thực Đơn</span>
                   <div className="overflow-hidden">
-                    <h2 key={`name-${selectedDish.id}`} className="text-4xl md:text-7xl font-black tracking-tighter uppercase text-stone-900 leading-none animate-in slide-in-from-bottom-8 duration-700">{selectedDish.name}</h2>
+                    <h2 key={`name-${selectedDish.id}`} className="text-4xl md:text-7xl font-black tracking-tighter uppercase text-stone-900 leading-none animate-in slide-in-from-bottom-12 duration-[2000ms]">{selectedDish.name}</h2>
                   </div>
-                  <div key={`price-${selectedDish.id}`} className="text-3xl md:text-4xl font-black text-amber-800 tabular-nums animate-in fade-in duration-1000 delay-300">{selectedDish.price}</div>
-                  <p key={`desc-${selectedDish.id}`} className="text-stone-500 text-lg md:text-xl leading-relaxed italic font-light animate-in fade-in duration-1000 delay-500">"{selectedDish.description || 'Món ăn từ nguyên liệu tươi sạch nhất.'}"</p>
-                  <div className="pt-4 flex items-center gap-4">
+                  <div key={`price-${selectedDish.id}`} className="text-3xl md:text-4xl font-black text-amber-800 tabular-nums animate-in fade-in duration-[2000ms] delay-500">{selectedDish.price}</div>
+                  <p key={`desc-${selectedDish.id}`} className="text-stone-500 text-lg md:text-xl leading-relaxed italic font-light animate-in fade-in duration-[2000ms] delay-700">"{selectedDish.description || 'Món ăn từ nguyên liệu tươi sạch nhất.'}"</p>
+                  <div className="pt-4 flex items-center gap-4 animate-in fade-in duration-[2000ms]">
                     <span className="text-[9px] font-black uppercase bg-stone-900 text-white px-5 py-2 rounded-full">{selectedDish.category}</span>
                     <div className="h-px flex-1 bg-stone-100"></div>
-                    <div className="flex flex-col items-end">
-                      <span className="text-[8px] font-black text-amber-800 uppercase tracking-widest animate-pulse">Auto-Switch</span>
-                      <span className="text-[9px] font-black text-stone-300 uppercase tracking-widest italic">Chuyển món sau 10s</span>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -309,7 +304,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
           {/* Nút điều hướng Phải */}
           <button 
             onClick={handleNext}
-            className="absolute right-4 md:right-10 z-[110] bg-white/10 hover:bg-amber-800 text-white w-12 h-12 md:w-20 md:h-20 rounded-full flex items-center justify-center border border-white/20 transition-all text-2xl"
+            className="absolute right-4 md:right-10 z-[110] bg-white/10 hover:bg-amber-800 text-white w-12 h-12 md:w-20 md:h-20 rounded-full flex items-center justify-center border border-white/20 transition-all text-2xl active:scale-90"
           >
             →
           </button>
