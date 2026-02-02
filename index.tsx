@@ -1,14 +1,12 @@
 
-import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import ReactDOM from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
-import { GoogleGenAI } from "@google/genai";
 
-// --- CẤU HÌNH CỐ ĐỊNH ---
-const HARDCODED_SUPABASE_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co'; 
-const HARDCODED_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyemZwZWV1b2h6ZnF1emZpZWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3NDY4MDgsImV4cCI6MjA4NDMyMjgwOH0.tyzhzbucriL09bH-ndgXs3ob1-Www97vsfQ6Wsh8d7s'; 
+// --- CẤU HÌNH ---
+const HARDCODED_SUPABASE_URL = ''; 
+const HARDCODED_SUPABASE_KEY = ''; 
 
-// --- TYPES ---
 enum Category {
   All = 'Tất Cả',
   MainCourse = 'Món Chính',
@@ -20,7 +18,6 @@ enum Category {
 
 interface Dish {
   id: string;
-  created_at?: string;
   name: string;
   description: string;
   price: string;
@@ -30,37 +27,11 @@ interface Dish {
 
 interface HeroSlide {
   id: string;
-  created_at?: string;
   image_url: string;
   quote: string;
 }
 
-const CONFIG_KEY = 'ut-trinh-config-v4';
-
-// --- HELPERS ---
-const blobToBase64 = (blob: Blob): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64String = reader.result as string;
-      resolve(base64String.split(',')[1]);
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-};
-
-const fetchImageAsBase64 = async (url: string): Promise<string> => {
-  try {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error("Network response was not ok");
-    const blob = await response.blob();
-    return await blobToBase64(blob);
-  } catch (err) {
-    console.error("CORS/Fetch error:", url, err);
-    throw new Error(`Không thể tải ảnh: ${url}.`);
-  }
-};
+const CONFIG_KEY = 'ut-trinh-config-v5';
 
 // --- COMPONENTS ---
 
@@ -69,44 +40,35 @@ const Nav = ({ isAdmin = false }) => {
 
   return (
     <>
-      <nav className="fixed top-0 w-full z-40 bg-white/90 backdrop-blur-xl border-b border-stone-100 px-6 md:px-20 h-24 flex items-center justify-between transition-all">
-        <div className="flex items-center gap-4 cursor-pointer group" onClick={() => window.location.hash = ''}>
-          <div className="w-12 h-12 bg-stone-900 flex items-center justify-center text-white font-black text-2xl rounded-sm group-hover:bg-amber-800 transition-colors shrink-0">Ú</div>
-          <div className="flex items-baseline gap-2 whitespace-nowrap">
-            <span className="text-xl md:text-2xl font-black text-amber-700 uppercase tracking-tighter">CƠM PHẦN</span>
-            <span className="text-xl md:text-2xl font-black text-stone-900 uppercase tracking-tighter">ÚT TRINH</span>
+      <nav className="fixed top-0 w-full z-40 bg-white/90 backdrop-blur-xl border-b border-stone-100 px-4 md:px-20 h-20 md:h-24 flex items-center justify-between transition-all">
+        <div className="flex items-center gap-3 cursor-pointer group" onClick={() => window.location.hash = ''}>
+          <div className="w-10 h-10 bg-stone-900 flex items-center justify-center text-white font-black text-xl rounded-sm group-hover:bg-amber-800 transition-colors shrink-0">Ú</div>
+          <div className="flex flex-col md:flex-row md:items-baseline gap-0 md:gap-2 whitespace-nowrap">
+            <span className="text-sm md:text-2xl font-black text-amber-700 uppercase tracking-tighter">CƠM PHẦN</span>
+            <span className="text-sm md:text-2xl font-black text-stone-900 uppercase tracking-tighter">ÚT TRINH</span>
           </div>
         </div>
-        <div className="flex gap-4 md:gap-8 items-center">
+        <div className="flex gap-2 md:gap-8 items-center">
           {isAdmin ? (
-            <button onClick={() => window.location.hash = ''} className="bg-amber-800 text-white px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-stone-900 transition-all shadow-md">Thoát Quản Trị</button>
+            <button onClick={() => window.location.hash = ''} className="bg-amber-800 text-white px-4 md:px-8 py-2 md:py-3 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest">Thoát</button>
           ) : (
-            <div className="flex gap-4 md:gap-8 items-center">
-              <a href="#menu" className="text-stone-900 text-[10px] font-black uppercase tracking-widest hover:text-amber-700 transition-colors hidden sm:block">Thực Đơn</a>
+            <div className="flex gap-3 md:gap-8 items-center">
               <button 
                 onClick={() => setShowConciseMenu(true)} 
-                className="text-amber-800 text-[10px] font-black uppercase tracking-widest hover:text-stone-900 transition-colors bg-amber-50 px-4 py-2 rounded-full border border-amber-100 whitespace-nowrap"
+                className="text-amber-800 text-[9px] md:text-[10px] font-black uppercase tracking-widest bg-amber-50 px-3 md:px-5 py-2 rounded-full border border-amber-100"
               >
-                Xem Ảnh Menu
+                Menu Ảnh
               </button>
-              <div className="w-px h-6 bg-stone-200 hidden lg:block"></div>
-              <div className="hidden lg:flex items-center gap-5">
-                <span className="text-red-600 text-[11px] font-black tracking-widest uppercase drop-shadow-sm">Hãy gọi ngay 0939.70.90.20</span>
-                <div className="flex items-center gap-4 border-l border-stone-200 pl-5 select-none pointer-events-none">
-                  <img src="https://inkythuatso.com/uploads/images/2021/12/logo-grab-food-inkythuatso-20-15-56-19.jpg" alt="GrabFood" className="h-7 w-auto object-contain rounded-sm" />
-                </div>
-              </div>
+              <span className="text-red-600 text-[9px] md:text-[11px] font-black tracking-widest uppercase hidden sm:block">HOTLINE: 0939.70.90.20</span>
             </div>
           )}
         </div>
       </nav>
 
       {showConciseMenu && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-stone-950/90 backdrop-blur-2xl p-4" onClick={() => setShowConciseMenu(false)}>
-          <div className="relative max-w-4xl w-full h-full flex items-center justify-center" onClick={e => e.stopPropagation()}>
-            <img src="https://i.postimg.cc/FRJy6Vds/3083583a-d289-482f-9d4e-09d3f06f8893.jpg" className="max-h-[90vh] object-contain rounded-[30px] border-4 border-white/10 shadow-2xl" alt="Menu" />
-            <button onClick={() => setShowConciseMenu(false)} className="absolute top-0 right-0 text-white bg-white/10 p-4 rounded-full">×</button>
-          </div>
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-stone-950/95 backdrop-blur-2xl p-4" onClick={() => setShowConciseMenu(false)}>
+          <img src="https://i.postimg.cc/FRJy6Vds/3083583a-d289-482f-9d4e-09d3f06f8893.jpg" className="max-h-[90vh] object-contain rounded-2xl shadow-2xl" alt="Menu" />
+          <button className="absolute top-5 right-5 text-white text-4xl">×</button>
         </div>
       )}
     </>
@@ -120,314 +82,208 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
   
-  const [onlineUsers, setOnlineUsers] = useState(1);
-  const [totalVisitors, setTotalVisitors] = useState(300);
+  // Lưu giữ ảnh cũ để làm hiệu ứng crossfade
+  const [prevImageUrl, setPrevImageUrl] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!supabase) return;
-    const BASE_START = 300; 
-    const handleVisits = async () => {
-      const { count } = await supabase.from('site_visits').select('*', { count: 'exact', head: true });
-      setTotalVisitors(BASE_START + (count || 0));
-    };
-    handleVisits();
-  }, [supabase]);
-
-  useEffect(() => {
-    if (heroSlides.length <= 1) return;
-    const timer = setInterval(() => setCurrentSlide(p => (p + 1) % heroSlides.length), 6000);
-    return () => clearInterval(timer);
-  }, [heroSlides]);
-
-  // Siêu ngẫu nhiên: Xáo trộn danh sách món ăn mỗi khi tải trang hoặc đổi danh mục
+  // Xáo trộn món ăn ngẫu nhiên mỗi lần load hoặc đổi filter
   const shuffledMenu = useMemo(() => {
     let filtered = activeFilter === Category.All ? [...menu] : menu.filter((item: Dish) => item.category === activeFilter);
     return filtered.sort(() => Math.random() - 0.5);
   }, [menu, activeFilter]);
 
-  const totalPages = Math.ceil(shuffledMenu.length / itemsPerPage);
   const displayedDishes = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     return shuffledMenu.slice(start, start + itemsPerPage);
   }, [shuffledMenu, currentPage]);
 
-  const changePage = (page: number) => {
-    setCurrentPage(page);
-    document.getElementById('menu')?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  // Slideshow 15 giây chuyển món
+  // Slideshow 15 giây
   useEffect(() => {
     if (selectedIdx === null) return;
     const interval = setInterval(() => {
+      setPrevImageUrl(shuffledMenu[selectedIdx].image_url);
       setSelectedIdx((prev) => (prev !== null ? (prev + 1) % shuffledMenu.length : null));
     }, 15000);
     return () => clearInterval(interval);
-  }, [selectedIdx, shuffledMenu.length]);
+  }, [selectedIdx, shuffledMenu]);
 
-  const handleNext = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (selectedIdx !== null) setSelectedIdx((selectedIdx + 1) % shuffledMenu.length);
+  const handleNext = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (selectedIdx !== null) {
+      setPrevImageUrl(shuffledMenu[selectedIdx].image_url);
+      setSelectedIdx((selectedIdx + 1) % shuffledMenu.length);
+    }
   };
 
-  const handlePrev = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (selectedIdx !== null) setSelectedIdx((selectedIdx - 1 + shuffledMenu.length) % shuffledMenu.length);
+  const handlePrev = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (selectedIdx !== null) {
+      setPrevImageUrl(shuffledMenu[selectedIdx].image_url);
+      setSelectedIdx((selectedIdx - 1 + shuffledMenu.length) % shuffledMenu.length);
+    }
   };
 
-  if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-white"><div className="animate-pulse text-amber-800 font-black tracking-[0.4em] uppercase text-xs">Út Trinh Kitchen...</div></div>;
+  if (isLoading) return (
+    <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-12 h-12 border-4 border-amber-800 border-t-transparent rounded-full animate-spin"></div>
+        <div className="text-amber-800 font-black tracking-widest uppercase text-[10px]">Đang dọn món...</div>
+      </div>
+    </div>
+  );
 
-  const activeSlide = heroSlides[currentSlide] || { image_url: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=1920', quote: 'Hương vị cơm nhà ấm áp.' };
   const selectedDish = selectedIdx !== null ? shuffledMenu[selectedIdx] : null;
 
   return (
     <div className="min-h-screen bg-[#fafafa]">
       <Nav />
-      <header className="relative h-[90vh] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0">
-          {heroSlides.map((slide: HeroSlide, index: number) => (
-            <div key={slide.id} className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}>
-              <img src={slide.image_url} className={`w-full h-full object-cover transition-transform duration-[7000ms] ease-out ${index === currentSlide ? 'scale-100' : 'scale-120'}`} />
-              <div className="absolute inset-0 bg-stone-900/40 backdrop-blur-[1px]"></div>
-            </div>
-          ))}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#fafafa] via-transparent to-transparent z-10"></div>
-        </div>
-        <div className="relative z-20 text-center px-6 max-w-5xl">
-          <span className="text-amber-200 text-[10px] font-black uppercase tracking-[0.8em] mb-8 block">Premium Home Dining</span>
-          <h1 className="text-white text-6xl md:text-[120px] font-black tracking-tighter leading-[0.85] mb-10 uppercase">ÚT TRINH<br/><span className="text-amber-500 italic font-medium">KITCHEN</span></h1>
-          <p className="text-white/95 text-xl md:text-3xl font-light italic max-w-3xl mx-auto leading-relaxed">"{activeSlide.quote}"</p>
+      
+      {/* Hero Header */}
+      <header className="relative h-[80vh] md:h-[90vh] flex items-center justify-center overflow-hidden">
+        {heroSlides.map((slide: HeroSlide, index: number) => (
+          <div key={slide.id} className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100' : 'opacity-0'}`}>
+            <img src={slide.image_url} className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-stone-900/40"></div>
+          </div>
+        ))}
+        <div className="relative z-20 text-center px-6">
+          <h1 className="text-white text-5xl md:text-[100px] font-black tracking-tighter leading-none mb-6">ÚT TRINH<br/><span className="text-amber-500 italic">KITCHEN</span></h1>
+          <p className="text-white/90 text-lg md:text-2xl font-light italic">Hương vị cơm nhà - Đậm đà tình thân</p>
         </div>
       </header>
 
-      <main id="menu" className="max-w-7xl mx-auto py-32 px-6">
-        <div className="text-center mb-24">
-          <h2 className="text-5xl md:text-7xl font-black tracking-tighter mb-12 uppercase text-stone-900">Thực Đơn Đặc Sắc</h2>
-          <div className="flex flex-wrap justify-center gap-x-10 gap-y-4 border-b border-stone-100 pb-8 max-w-4xl mx-auto">
+      {/* Main Menu Grid */}
+      <main id="menu" className="max-w-7xl mx-auto py-20 px-6">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl md:text-6xl font-black tracking-tighter mb-8 uppercase">Thực Đơn Hôm Nay</h2>
+          <div className="flex flex-wrap justify-center gap-4 md:gap-8 border-b pb-6">
             {Object.values(Category).map((cat) => (
-              <button key={cat} onClick={() => { setActiveFilter(cat); setCurrentPage(1); }} className={`text-[11px] font-black uppercase tracking-[0.2em] transition-all relative py-2 ${activeFilter === cat ? 'text-amber-800 border-b-2 border-amber-800' : 'text-stone-300 hover:text-stone-900'}`}>{cat}</button>
+              <button 
+                key={cat} 
+                onClick={() => { setActiveFilter(cat); setCurrentPage(1); }}
+                className={`text-[10px] font-black uppercase tracking-widest pb-2 border-b-2 transition-all ${activeFilter === cat ? 'border-amber-800 text-amber-800' : 'border-transparent text-stone-400'}`}
+              >
+                {cat}
+              </button>
             ))}
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-24">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
           {displayedDishes.map((dish: Dish) => (
-            <div key={dish.id} onClick={() => setSelectedIdx(shuffledMenu.findIndex(d => d.id === dish.id))} className="group cursor-pointer bg-white rounded-[40px] overflow-hidden p-5 border border-stone-50 hover:shadow-2xl hover:-translate-y-2 transition-all duration-700">
-              <div className="relative aspect-square overflow-hidden rounded-[32px] mb-8">
-                <img src={dish.image_url} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[1.5s]" />
+            <div 
+              key={dish.id} 
+              onClick={() => {
+                setPrevImageUrl(null); // Reset prev image when opening first time
+                setSelectedIdx(shuffledMenu.findIndex(d => d.id === dish.id));
+              }}
+              className="bg-white rounded-[32px] overflow-hidden border border-stone-100 hover:shadow-2xl transition-all cursor-pointer group p-4"
+            >
+              <div className="aspect-square rounded-[24px] overflow-hidden mb-6">
+                <img src={dish.image_url} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
               </div>
-              <div className="px-2 space-y-4 pb-4">
-                <div className="flex justify-between items-start gap-4">
-                  <h3 className="text-2xl font-black uppercase tracking-tighter group-hover:text-amber-800 transition-colors leading-tight">{dish.name}</h3>
-                  <span className="text-amber-800 font-black text-xl tracking-tighter shrink-0">{dish.price}</span>
+              <div className="px-2 pb-2">
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="font-black text-xl uppercase tracking-tighter leading-tight">{dish.name}</h3>
+                  <span className="text-amber-800 font-black">{dish.price}</span>
                 </div>
-                <p className="text-stone-400 text-sm italic line-clamp-2">"{dish.description || 'Hương vị truyền thống đậm đà bản sắc Việt.'}"</p>
-                <div><span className="text-[9px] font-black uppercase bg-stone-900 text-white px-4 py-1.5 rounded-full">{dish.category}</span></div>
+                <p className="text-stone-400 text-sm line-clamp-2 italic">"{dish.description || 'Món ngon mỗi ngày tại Út Trinh Kitchen.'}"</p>
               </div>
             </div>
           ))}
         </div>
-
-        {totalPages > 1 && (
-          <div className="mt-32 flex justify-center items-center gap-6">
-            <button disabled={currentPage === 1} onClick={() => changePage(currentPage - 1)} className={`text-[10px] font-black uppercase tracking-widest px-8 py-3 rounded-full border transition-all ${currentPage === 1 ? 'border-stone-100 text-stone-300' : 'border-stone-900 text-stone-900 hover:bg-stone-900 hover:text-white'}`}>Trang Trước</button>
-            <div className="flex gap-3">
-              {[...Array(totalPages)].map((_, i) => (
-                <button key={i} onClick={() => changePage(i + 1)} className={`w-10 h-10 rounded-full text-[11px] font-black transition-all ${currentPage === i + 1 ? 'bg-amber-800 text-white shadow-xl' : 'text-stone-400 border border-stone-100 hover:text-stone-900'}`}>{i + 1}</button>
-              ))}
-            </div>
-            <button disabled={currentPage === totalPages} onClick={() => changePage(currentPage + 1)} className={`text-[10px] font-black uppercase tracking-widest px-8 py-3 rounded-full border transition-all ${currentPage === totalPages ? 'border-stone-100 text-stone-300' : 'border-stone-900 text-stone-900 hover:bg-stone-900 hover:text-white'}`}>Trang Sau</button>
-          </div>
-        )}
       </main>
 
+      {/* Cinematic Modal */}
       {selectedDish && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-stone-950/95 backdrop-blur-2xl p-0 md:p-10 lg:p-20" onClick={() => setSelectedIdx(null)}>
-          {/* Nút điều hướng Trái */}
-          <button 
-            onClick={handlePrev}
-            className="absolute left-6 md:left-12 z-[110] bg-white/5 hover:bg-amber-800 text-white w-14 h-14 md:w-24 md:h-24 rounded-full flex items-center justify-center border border-white/10 transition-all text-3xl active:scale-90"
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-stone-950/98 backdrop-blur-2xl transition-all"
+          onClick={() => setSelectedIdx(null)}
+        >
+          {/* Nút điều hướng (Luôn nổi lên trên cùng, kích thước lớn cho mobile) */}
+          <div className="absolute inset-x-4 md:inset-x-10 flex justify-between items-center pointer-events-none z-[120]">
+            <button 
+              onClick={handlePrev}
+              className="w-14 h-14 md:w-20 md:h-20 bg-white/10 border border-white/20 text-white rounded-full flex items-center justify-center text-3xl hover:bg-amber-800 transition-all pointer-events-auto active:scale-90"
+            >
+              ←
+            </button>
+            <button 
+              onClick={handleNext}
+              className="w-14 h-14 md:w-20 md:h-20 bg-white/10 border border-white/20 text-white rounded-full flex items-center justify-center text-3xl hover:bg-amber-800 transition-all pointer-events-auto active:scale-90"
+            >
+              →
+            </button>
+          </div>
+
+          <div 
+            className="w-full h-full md:w-[90vw] md:h-[80vh] bg-white md:rounded-[60px] overflow-hidden flex flex-col md:flex-row shadow-2xl relative"
+            onClick={e => e.stopPropagation()}
           >
-            ←
-          </button>
+            {/* Close Button */}
+            <button onClick={() => setSelectedIdx(null)} className="absolute top-6 right-6 md:top-10 md:right-10 z-[130] text-stone-300 hover:text-stone-900 text-4xl">×</button>
 
-          <div className="w-full h-full md:max-w-7xl md:h-auto bg-white rounded-none md:rounded-[80px] overflow-hidden flex flex-col md:flex-row shadow-2xl animate-in zoom-in-95 fade-in duration-1000 relative" onClick={e => e.stopPropagation()}>
-            <div className="flex flex-col md:flex-row w-full min-h-screen md:min-h-[70vh]">
-              {/* Image Section with Crossfade & Zoom */}
-              <div className="w-full md:w-1/2 aspect-square md:aspect-auto overflow-hidden bg-black relative">
-                {/* Background layer: blurry old image during transition */}
-                <div 
-                  className="absolute inset-0 bg-cover bg-center opacity-20 blur-3xl"
-                  style={{ backgroundImage: `url(${selectedDish.image_url})` }}
-                ></div>
-                
-                {/* Main image with Key for re-rendering triggers animation */}
+            {/* Vùng hình ảnh với hiệu ứng Crossfade & Zoom */}
+            <div className="w-full h-[50vh] md:h-auto md:w-1/2 relative bg-black overflow-hidden">
+              {/* Layer 1: Ảnh cũ (Mờ dần đi) */}
+              {prevImageUrl && (
                 <img 
-                  key={`img-${selectedDish.id}`} 
-                  src={selectedDish.image_url} 
-                  className="w-full h-full object-cover relative z-10 animate-in fade-in zoom-in-110 duration-[2000ms] ease-out shadow-inner" 
+                  key={`prev-${prevImageUrl}`}
+                  src={prevImageUrl} 
+                  className="absolute inset-0 w-full h-full object-cover blur-xl opacity-30" 
                 />
-              </div>
+              )}
+              
+              {/* Layer 2: Ảnh mới (Hiện lên mượt mà + Zoom out chậm) */}
+              <style>{`
+                @keyframes cinematic-zoom {
+                  from { transform: scale(1.2); opacity: 0; filter: blur(10px); }
+                  to { transform: scale(1); opacity: 1; filter: blur(0); }
+                }
+                .animate-cinematic {
+                  animation: cinematic-zoom 2s ease-out forwards;
+                }
+                @keyframes text-slide-up {
+                  from { transform: translateY(30px); opacity: 0; }
+                  to { transform: translateY(0); opacity: 1; }
+                }
+                .animate-text-cinematic {
+                  animation: text-slide-up 1.5s ease-out forwards;
+                }
+              `}</style>
+              
+              <img 
+                key={`main-${selectedDish.id}`} 
+                src={selectedDish.image_url} 
+                className="w-full h-full object-cover animate-cinematic relative z-10" 
+              />
+            </div>
 
-              {/* Text Content with Professional Staggered Animation */}
-              <div className="w-full md:w-1/2 p-12 md:p-24 flex flex-col justify-center bg-white relative">
-                <button onClick={() => setSelectedIdx(null)} className="absolute top-10 right-10 md:top-12 md:right-12 text-stone-300 hover:text-stone-900 text-5xl transition-all active:scale-90">×</button>
-                
-                <div className="space-y-8 md:space-y-12">
-                  <div className="overflow-hidden">
-                    <span className="text-[11px] font-black uppercase tracking-[0.5em] text-amber-800 animate-in slide-in-from-bottom-4 duration-[1500ms]">Premium Collection</span>
-                  </div>
-                  
-                  <div className="overflow-hidden">
-                    <h2 
-                      key={`name-${selectedDish.id}`} 
-                      className="text-5xl md:text-8xl font-black tracking-tighter uppercase text-stone-900 leading-[0.9] animate-in slide-in-from-bottom-20 duration-[2000ms] ease-out"
-                    >
-                      {selectedDish.name}
-                    </h2>
-                  </div>
-
-                  <div 
-                    key={`price-${selectedDish.id}`} 
-                    className="text-4xl md:text-6xl font-black text-amber-800 tabular-nums animate-in fade-in duration-[2000ms] delay-500"
-                  >
-                    {selectedDish.price}
-                  </div>
-
-                  <p 
-                    key={`desc-${selectedDish.id}`} 
-                    className="text-stone-500 text-xl md:text-2xl leading-relaxed italic font-light animate-in fade-in duration-[2000ms] delay-1000"
-                  >
-                    "{dishDescription(selectedDish)}"
-                  </p>
-
-                  <div className="pt-8 flex items-center gap-6 animate-in fade-in duration-[2000ms] delay-1000">
-                    <span className="text-[10px] font-black uppercase bg-stone-900 text-white px-7 py-3 rounded-full shadow-lg">{selectedDish.category}</span>
-                    <div className="h-px flex-1 bg-stone-100"></div>
+            {/* Vùng nội dung */}
+            <div className="flex-1 p-8 md:p-20 flex flex-col justify-center bg-white">
+              <div className="max-w-xl">
+                <div key={`info-${selectedDish.id}`} className="animate-text-cinematic space-y-6 md:space-y-10">
+                  <span className="text-amber-800 font-black uppercase tracking-[0.4em] text-[10px] md:text-xs">Thực đơn đặc biệt</span>
+                  <h2 className="text-4xl md:text-7xl font-black uppercase tracking-tighter leading-none text-stone-900">{selectedDish.name}</h2>
+                  <div className="text-3xl md:text-5xl font-black text-amber-800 tabular-nums">{selectedDish.price}</div>
+                  <p className="text-stone-500 text-lg md:text-xl italic font-light leading-relaxed">"{selectedDish.description || 'Món ăn truyền thống hòa quyện cùng phong cách chế biến hiện đại.'}"</p>
+                  <div className="pt-6">
+                    <span className="bg-stone-900 text-white px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest">{selectedDish.category}</span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-
-          {/* Nút điều hướng Phải */}
-          <button 
-            onClick={handleNext}
-            className="absolute right-6 md:right-12 z-[110] bg-white/5 hover:bg-amber-800 text-white w-14 h-14 md:w-24 md:h-24 rounded-full flex items-center justify-center border border-white/10 transition-all text-3xl active:scale-90"
-          >
-            →
-          </button>
         </div>
       )}
 
-      <footer className="py-20 px-12 bg-stone-900 text-white mt-40">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-12 border-b border-white/5 pb-20">
-          <div className="text-center md:text-left space-y-4">
-            <div className="inline-block bg-white/5 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/10 shadow-xl">
-              <span className="font-black tracking-[0.5em] uppercase text-2xl block">ÚT TRINH</span>
-            </div>
-            <div className="flex flex-col gap-2">
-              <div className="inline-block bg-amber-500/10 backdrop-blur-md px-4 py-2 rounded-lg border border-amber-500/20 w-fit mx-auto md:mx-0">
-                <span className="text-amber-500 font-black tracking-[0.3em] text-[11px] uppercase block">HƯƠNG VỊ QUÊ NHÀ</span>
-              </div>
-              <span className="text-amber-500/70 font-medium text-[10px] uppercase tracking-[0.2em] block md:pl-1">158A/5 Trần Vĩnh Kiết, Ninh Kiều, Cần Thơ</span>
-            </div>
-          </div>
-          <div className="flex flex-wrap justify-center md:justify-end gap-x-12 gap-y-8">
-             <div className="flex flex-col text-right">
-                <span className="text-stone-500 text-[8px] font-black uppercase tracking-widest mb-1">Lượt truy cập</span>
-                <span className="text-white text-xl font-black tabular-nums">{totalVisitors.toLocaleString()}</span>
-             </div>
-             <div className="flex flex-col text-right">
-                <span className="text-stone-500 text-[8px] font-black uppercase tracking-widest mb-1">Đang xem</span>
-                <span className="text-green-500 text-xl font-black tabular-nums">{onlineUsers}</span>
-             </div>
-          </div>
-        </div>
-        <div className="max-w-7xl mx-auto mt-10 flex flex-col md:flex-row justify-between text-stone-500 text-[10px] font-bold uppercase tracking-[0.2em] opacity-60">
-          <p>© 2026 UT TRINH KITCHEN — EST 2019</p>
-          <p>Handcrafted for Premium Dining</p>
+      <footer className="bg-stone-900 text-white py-20 px-6 mt-20">
+        <div className="max-w-7xl mx-auto text-center space-y-6">
+          <div className="text-2xl font-black tracking-widest">ÚT TRINH KITCHEN</div>
+          <p className="text-stone-500 text-sm italic">Địa chỉ: 158A/5 Trần Vĩnh Kiết, Ninh Kiều, TP Cần Thơ</p>
+          <div className="text-amber-500 font-bold">Hotline: 0939.70.90.20</div>
+          <div className="pt-10 border-t border-white/5 text-[10px] uppercase tracking-widest text-stone-600">© 2026 Crafted with Love</div>
         </div>
       </footer>
-    </div>
-  );
-};
-
-const dishDescription = (dish: Dish) => dish.description || 'Sự kết hợp hoàn hảo giữa nguyên liệu tươi sạch và bí quyết gia truyền từ Út Trinh Kitchen.';
-
-const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, supabaseConfig, setSupabaseConfig, onSave }: any) => {
-  const [activeTab, setActiveTab] = useState<'menu' | 'hero' | 'config' | 'video'>(supabaseConfig.url ? 'menu' : 'config');
-  const [localConfig, setLocalConfig] = useState(supabaseConfig);
-
-  return (
-    <div className="min-h-screen bg-stone-50 pt-32 pb-20 px-6">
-      <Nav isAdmin />
-      <div className="max-w-6xl mx-auto bg-white rounded-[50px] shadow-2xl overflow-hidden border border-stone-100">
-        <div className="flex bg-stone-50 border-b border-stone-200 p-4 gap-4 overflow-x-auto">
-          {['menu', 'hero', 'config'].map((tab: any) => (
-            <button key={tab} onClick={() => setActiveTab(tab)} className={`flex-1 py-5 px-6 rounded-3xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === tab ? 'bg-white shadow-xl text-stone-900' : 'text-stone-400'}`}>
-              {tab === 'menu' ? '🍱 Thực Đơn' : tab === 'hero' ? '🖼️ Ảnh Bìa' : '⚙️ Cấu Hình'}
-            </button>
-          ))}
-        </div>
-
-        <div className="p-10 md:p-16">
-          {activeTab === 'config' && (
-            <div className="max-w-xl mx-auto py-12 space-y-8">
-              <h2 className="text-3xl font-black uppercase">Database</h2>
-              <div className="space-y-4">
-                <input placeholder="Supabase URL" value={localConfig.url} onChange={e => setLocalConfig({...localConfig, url: e.target.value})} className="w-full border-2 p-5 rounded-2xl outline-none focus:border-stone-900 font-mono text-xs" />
-                <input placeholder="Anon Key" value={localConfig.key} onChange={e => setLocalConfig({...localConfig, key: e.target.value})} className="w-full border-2 p-5 rounded-2xl outline-none focus:border-stone-900 font-mono text-xs" />
-                <button onClick={() => { setSupabaseConfig(localConfig); alert("Đã cập nhật!"); setActiveTab('menu'); }} className="w-full bg-stone-900 text-white py-5 rounded-2xl font-black uppercase hover:bg-stone-800 transition-all">Lưu Cấu Hình</button>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'menu' && (
-            <div className="space-y-12">
-              <div className="flex justify-between items-end">
-                <h2 className="text-4xl font-black uppercase">Thực Đơn</h2>
-                <div className="flex gap-4">
-                  <button onClick={onSave} className="bg-stone-900 text-white px-10 py-4 text-[10px] font-black uppercase rounded-2xl shadow-lg">Đồng Bộ Cloud</button>
-                  <button onClick={() => setMenu([{ id: Date.now().toString(), name: 'Món Mới', price: '0 VNĐ', description: '', image_url: '', category: Category.MainCourse }, ...menu])} className="bg-amber-800 text-white px-10 py-4 text-[10px] font-black uppercase rounded-2xl shadow-lg">+ Thêm món</button>
-                </div>
-              </div>
-              <div className="space-y-8">
-                {menu.map((dish: Dish) => (
-                  <div key={dish.id} className="p-8 border border-stone-100 bg-stone-50 rounded-[40px] grid grid-cols-1 md:grid-cols-4 gap-8 relative">
-                    <input placeholder="Tên món" value={dish.name} onChange={e => setMenu(menu.map((d: any) => d.id === dish.id ? {...d, name: e.target.value} : d))} className="w-full bg-white border p-4 rounded-xl outline-none font-bold" />
-                    <input placeholder="Giá" value={dish.price} onChange={e => setMenu(menu.map((d: any) => d.id === dish.id ? {...d, price: e.target.value} : d))} className="w-full bg-white border p-4 rounded-xl outline-none font-black text-amber-800" />
-                    <select value={dish.category} onChange={e => setMenu(menu.map((d: any) => d.id === dish.id ? {...d, category: e.target.value as Category} : d))} className="w-full bg-white border p-4 rounded-xl outline-none font-black text-[10px] uppercase">{Object.values(Category).filter(c => c !== Category.All).map(c => <option key={c} value={c}>{c}</option>)}</select>
-                    <input placeholder="Link ảnh" value={dish.image_url} onChange={e => setMenu(menu.map((d: any) => d.id === dish.id ? {...d, image_url: e.target.value} : d))} className="w-full bg-white border p-4 rounded-xl outline-none font-mono text-[9px]" />
-                    <textarea placeholder="Mô tả" value={dish.description} onChange={e => setMenu(menu.map((d: any) => d.id === dish.id ? {...d, description: e.target.value} : d))} className="md:col-span-4 w-full bg-white border p-4 rounded-xl outline-none italic text-sm" />
-                    <button onClick={() => setMenu(menu.filter((d: any) => d.id !== dish.id))} className="absolute top-4 right-4 text-red-300 hover:text-red-500 text-2xl">×</button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'hero' && (
-            <div className="space-y-12">
-              <div className="flex justify-between items-center">
-                <h2 className="text-4xl font-black uppercase">Ảnh Bìa</h2>
-                <button onClick={() => setHeroSlides([...heroSlides, { id: Date.now().toString(), image_url: '', quote: '' }])} className="bg-amber-800 text-white px-10 py-4 text-[10px] font-black uppercase rounded-2xl shadow-lg">+ Thêm Slide</button>
-              </div>
-              {heroSlides.map((slide: HeroSlide) => (
-                <div key={slide.id} className="p-10 border-2 border-stone-50 bg-stone-50 rounded-[40px] flex flex-col gap-10 relative">
-                  <div className="aspect-[21/9] w-full bg-stone-200 rounded-[30px] overflow-hidden">{slide.image_url && <img src={slide.image_url} className="w-full h-full object-cover" />}</div>
-                  <div className="grid md:grid-cols-2 gap-10">
-                     <input placeholder="Link ảnh" value={slide.image_url} onChange={e => setHeroSlides(heroSlides.map((s: any) => s.id === slide.id ? {...s, image_url: e.target.value} : s))} className="w-full border p-5 rounded-2xl outline-none font-mono text-xs" />
-                     <input placeholder="Slogan" value={slide.quote} onChange={e => setHeroSlides(heroSlides.map((s: any) => s.id === slide.id ? {...s, quote: e.target.value} : s))} className="w-full border p-5 rounded-2xl outline-none italic font-medium" />
-                  </div>
-                  <button onClick={() => setHeroSlides(heroSlides.filter((s: any) => s.id !== slide.id))} className="text-[10px] font-black uppercase text-red-300 hover:text-red-500 underline self-center">Xóa slide</button>
-                </div>
-              ))}
-              <button onClick={onSave} className="w-full bg-stone-900 text-white py-8 rounded-[35px] font-black uppercase tracking-[0.3em] hover:bg-black transition-all">Lưu Tất Cả</button>
-            </div>
-          )}
-        </div>
-      </div>
     </div>
   );
 };
@@ -448,8 +304,11 @@ const App = () => {
 
   const fetchData = useCallback(async () => {
     if (!supabase) {
-      setMenu([{ id: '1', name: 'Món Mẫu', price: '125k', description: 'Cơm gia đình truyền thống.', image_url: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=1000', category: Category.MainCourse }]);
-      setHeroSlides([{ id: 'h1', image_url: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=1920', quote: 'Hương vị cơm nhà ấm áp.' }]);
+      setMenu([
+        { id: '1', name: 'Món Cá Kho Tộ', price: '125.000 VNĐ', description: 'Cá kho đậm đà, chuẩn vị miền Tây.', image_url: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=800', category: Category.MainCourse },
+        { id: '2', name: 'Canh Chua Cá Hú', price: '95.000 VNĐ', description: 'Canh chua thanh mát giải nhiệt mùa hè.', image_url: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800', category: Category.Soup }
+      ]);
+      setHeroSlides([{ id: 'h1', image_url: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1920', quote: 'Tinh hoa ẩm thực Việt' }]);
       setIsLoading(false);
       return;
     }
@@ -462,9 +321,8 @@ const App = () => {
   }, [supabase]);
 
   useEffect(() => {
-    localStorage.setItem(CONFIG_KEY, JSON.stringify(supabaseConfig));
     fetchData();
-  }, [supabaseConfig, fetchData]);
+  }, [fetchData]);
 
   useEffect(() => {
     const h = () => setHash(window.location.hash);
@@ -483,7 +341,7 @@ const App = () => {
       if (heroSlides.length) await supabase.from('hero_slides').insert(sanitize(heroSlides));
       alert("Đồng bộ thành công!");
       fetchData();
-    } catch (e) { alert("Lỗi!"); } finally { setIsLoading(false); }
+    } catch (e) { alert("Lỗi đồng bộ!"); } finally { setIsLoading(false); }
   };
 
   const isACP = hash.toUpperCase().includes('ACP1122');
@@ -491,12 +349,45 @@ const App = () => {
   return (
     <>
       {isACP ? (
-        <AdminPanel 
-          menu={menu} setMenu={setMenu} 
-          heroSlides={heroSlides} setHeroSlides={setHeroSlides} 
-          supabaseConfig={supabaseConfig} setSupabaseConfig={setSupabaseConfig} 
-          onSave={handleSave} 
-        />
+        <div className="p-10 bg-white min-h-screen pt-32">
+          <Nav isAdmin />
+          <div className="max-w-4xl mx-auto space-y-10">
+            <div className="flex justify-between items-center">
+              <h2 className="text-3xl font-black">QUẢN TRỊ VIÊN</h2>
+              <button onClick={handleSave} className="bg-amber-800 text-white px-8 py-3 rounded-xl font-bold">LƯU CLOUD</button>
+            </div>
+            <div className="grid gap-6">
+              {menu.map((d, i) => (
+                <div key={d.id} className="p-6 border rounded-2xl flex flex-col gap-4 bg-stone-50">
+                   <div className="grid grid-cols-2 gap-4">
+                      <input className="border p-3 rounded-lg" value={d.name} onChange={e => {
+                        const newMenu = [...menu];
+                        newMenu[i].name = e.target.value;
+                        setMenu(newMenu);
+                      }} />
+                      <input className="border p-3 rounded-lg" value={d.price} onChange={e => {
+                        const newMenu = [...menu];
+                        newMenu[i].price = e.target.value;
+                        setMenu(newMenu);
+                      }} />
+                   </div>
+                   <input className="border p-3 rounded-lg w-full" value={d.image_url} placeholder="Link ảnh" onChange={e => {
+                        const newMenu = [...menu];
+                        newMenu[i].image_url = e.target.value;
+                        setMenu(newMenu);
+                   }} />
+                   <textarea className="border p-3 rounded-lg" value={d.description} onChange={e => {
+                        const newMenu = [...menu];
+                        newMenu[i].description = e.target.value;
+                        setMenu(newMenu);
+                   }} />
+                   <button onClick={() => setMenu(menu.filter(m => m.id !== d.id))} className="text-red-500 font-bold self-end text-sm">Xóa món này</button>
+                </div>
+              ))}
+              <button onClick={() => setMenu([...menu, {id: Date.now().toString(), name: 'Món mới', price: '0đ', description: '', image_url: '', category: Category.MainCourse}])} className="border-2 border-dashed p-6 rounded-2xl text-stone-400 font-bold">+ Thêm món mới</button>
+            </div>
+          </div>
+        </div>
       ) : (
         <HomePage menu={menu} heroSlides={heroSlides} isLoading={isLoading} supabase={supabase} />
       )}
