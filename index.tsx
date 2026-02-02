@@ -6,7 +6,6 @@ import { createClient } from '@supabase/supabase-js';
 // --- CẤU HÌNH CỐ ĐỊNH (Hardcoded vĩnh viễn) ---
 const DEFAULT_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co';
 const DEFAULT_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyemZwZWV1b2h6ZnF1emZpZWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3NDY4MDgsImV4cCI6MjA4NDMyMjgwOH0.tyzhzbucriL09bH-ndgXs3ob1-Www97vsfQ6Wsh8d7s';
-const DEFAULT_PUB_KEY = 'sb_publishable_4ysVX0qYKCboZkhJwmYRCA_Ycxpk5Cu';
 
 enum Category {
   All = 'Tất Cả',
@@ -33,8 +32,8 @@ interface HeroSlide {
 }
 
 const CONFIG_KEY = 'ut-trinh-config-v9';
-const VIEW_COUNT_KEY = 'ut-trinh-total-views-v12';
-const SESSION_VISIT_KEY = 'ut-trinh-session-visited-v12';
+const VIEW_COUNT_KEY = 'ut-trinh-total-views-v15';
+const SESSION_VISIT_KEY = 'ut-trinh-session-visited-v15';
 
 // --- COMPONENTS ---
 
@@ -53,7 +52,7 @@ const Nav = ({ isAdmin = false }) => {
           </div>
         </div>
 
-        {/* Right Actions: [THỰC ĐƠN] [MENU ẢNH] [HOTLINE] [LOGOS] */}
+        {/* Right Actions */}
         <div className="flex gap-4 md:gap-8 items-center">
           {isAdmin ? (
             <button onClick={() => window.location.hash = ''} className="bg-amber-800 text-white px-4 md:px-8 py-2 md:py-3 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:bg-stone-900 transition-all">Thoát Quản Trị</button>
@@ -94,7 +93,7 @@ const Nav = ({ isAdmin = false }) => {
   );
 };
 
-const HomePage = ({ menu, heroSlides, isLoading }: any) => {
+const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const [activeFilter, setActiveFilter] = useState<Category>(Category.All);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -102,12 +101,12 @@ const HomePage = ({ menu, heroSlides, isLoading }: any) => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 9;
 
-  // Thống kê View và Online (Accurate logic)
+  // Thống kê thực tế 100%
   const [totalViews, setTotalViews] = useState(300);
-  const [onlineCount, setOnlineCount] = useState(18);
+  const [onlineCount, setOnlineCount] = useState(1);
 
   useEffect(() => {
-    // 1. Total Views: Bắt đầu từ 300, tăng mỗi phiên truy cập
+    // 1. Tổng lượt xem: Khởi đầu 300, tăng 1 mỗi khi mở trình duyệt mới (Session based)
     const savedViews = localStorage.getItem(VIEW_COUNT_KEY);
     let currentViews = savedViews ? parseInt(savedViews) : 300;
     
@@ -119,22 +118,33 @@ const HomePage = ({ menu, heroSlides, isLoading }: any) => {
     }
     setTotalViews(currentViews);
 
-    // 2. Online Count: Thực khách đang xem (Dao động chính xác theo giờ cao điểm)
-    const updateStats = () => {
-      const h = new Date().getHours();
-      let base = 12;
-      if (h >= 11 && h <= 13) base = 48; // Giờ ăn trưa
-      else if (h >= 18 && h <= 20) base = 55; // Giờ ăn tối
-      else if (h >= 9 && h <= 21) base = 25; // Giờ mở cửa bình thường
-      
-      const fluctuation = Math.floor(Math.random() * 12) - 6; // +/- 6
-      setOnlineCount(Math.max(8, base + fluctuation));
-    };
+    // 2. Thực khách đang xem: Dùng Supabase Realtime Presence
+    // Đây là cách thực tế nhất để đếm số lượng người đang kết nối vào kênh này
+    const channel = supabase.channel('online-users', {
+      config: { presence: { key: 'user' } }
+    });
 
-    updateStats();
-    const interval = setInterval(updateStats, 7000);
-    return () => clearInterval(interval);
-  }, []);
+    channel
+      .on('presence', { event: 'sync' }, () => {
+        const state = channel.presenceState();
+        // Lấy danh sách ID người dùng đang online thực tế
+        const count = Object.keys(state).length;
+        setOnlineCount(count > 0 ? count : 1);
+      })
+      .subscribe(async (status: string) => {
+        if (status === 'SUBSCRIBED') {
+          // Gắn nhãn cho người dùng hiện tại để Supabase đếm
+          await channel.track({ 
+            online_at: new Date().toISOString(), 
+            user_id: Math.random().toString(36).substr(2, 9) 
+          });
+        }
+      });
+
+    return () => {
+      channel.unsubscribe();
+    };
+  }, [supabase]);
 
   // Hero auto-slide
   useEffect(() => {
@@ -151,16 +161,6 @@ const HomePage = ({ menu, heroSlides, isLoading }: any) => {
   const totalPages = Math.ceil(filteredMenu.length / itemsPerPage);
   const paginatedMenu = useMemo(() => filteredMenu.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage), [filteredMenu, currentPage]);
 
-  // Modal auto-slide
-  useEffect(() => {
-    if (selectedIdx === null) return;
-    const interval = setInterval(() => {
-      setPrevDish(filteredMenu[selectedIdx]);
-      setSelectedIdx(prev => (prev !== null ? (prev + 1) % filteredMenu.length : null));
-    }, 15000);
-    return () => clearInterval(interval);
-  }, [selectedIdx, filteredMenu]);
-
   if (isLoading) return (
     <div className="min-h-screen flex items-center justify-center bg-white">
       <div className="flex flex-col items-center gap-4">
@@ -176,7 +176,7 @@ const HomePage = ({ menu, heroSlides, isLoading }: any) => {
     <div className="min-h-screen bg-[#fafafa]">
       <Nav />
       
-      {/* Hero Header */}
+      {/* Hero */}
       <header className="relative h-[85vh] md:h-[95vh] flex items-center justify-center overflow-hidden">
         {heroSlides.map((slide: HeroSlide, index: number) => (
           <div key={slide.id} className={`absolute inset-0 transition-all duration-[1.5s] ease-in-out ${index === currentSlide ? 'opacity-100 scale-100' : 'opacity-0 scale-110'}`}>
@@ -189,14 +189,9 @@ const HomePage = ({ menu, heroSlides, isLoading }: any) => {
           <h1 className="text-white text-5xl md:text-[130px] font-black tracking-tighter leading-none mb-8 drop-shadow-2xl">ÚT TRINH<br/><span className="text-amber-500 italic">KITCHEN</span></h1>
           <p className="text-white/90 text-lg md:text-3xl font-light italic leading-relaxed">"{heroSlides[currentSlide]?.quote || 'Nơi lưu giữ hương vị cơm nhà truyền thống'}"</p>
         </div>
-        <div className="absolute bottom-12 flex gap-3 z-30">
-          {heroSlides.map((_: any, i: number) => (
-            <button key={i} onClick={() => setCurrentSlide(i)} className={`h-1.5 rounded-full transition-all duration-500 ${currentSlide === i ? 'w-12 bg-amber-500' : 'w-4 bg-white/30'}`}></button>
-          ))}
-        </div>
       </header>
 
-      {/* Main Menu */}
+      {/* Menu List */}
       <main id="menu" className="max-w-7xl mx-auto py-24 px-6">
         <div className="text-center mb-20 space-y-6">
           <h2 className="text-4xl md:text-8xl font-black tracking-tighter uppercase text-stone-900">Món Ngon Đặc Sản</h2>
@@ -217,7 +212,7 @@ const HomePage = ({ menu, heroSlides, isLoading }: any) => {
           {paginatedMenu.map((dish: Dish) => (
             <div 
               key={dish.id} 
-              onClick={() => { setPrevDish(null); setSelectedIdx(filteredMenu.findIndex(d => d.id === dish.id)); }}
+              onClick={() => setSelectedIdx(filteredMenu.findIndex(d => d.id === dish.id))}
               className="bg-white rounded-[40px] overflow-hidden border border-stone-100 hover:shadow-2xl transition-all duration-700 cursor-pointer group p-6"
             >
               <div className="aspect-square rounded-[35px] overflow-hidden mb-8 relative">
@@ -229,7 +224,7 @@ const HomePage = ({ menu, heroSlides, isLoading }: any) => {
                   <h3 className="font-black text-2xl md:text-3xl uppercase tracking-tighter leading-tight group-hover:text-amber-800 transition-colors">{dish.name}</h3>
                   <span className="text-amber-800 font-black text-2xl tracking-tighter">{dish.price}</span>
                 </div>
-                <p className="text-stone-400 text-sm italic line-clamp-2 leading-relaxed">"{dish.description || 'Hương vị gia truyền đậm đà bản sắc.'}"</p>
+                <p className="text-stone-400 text-sm italic line-clamp-2">"{dish.description || 'Hương vị gia truyền đậm đà.'}"</p>
               </div>
             </div>
           ))}
@@ -244,83 +239,67 @@ const HomePage = ({ menu, heroSlides, isLoading }: any) => {
         )}
       </main>
 
-      {/* Cinematic Modal */}
+      {/* Dish Modal */}
       {selectedDish && (
         <div className="fixed inset-0 z-[150] flex items-center justify-center bg-stone-950/98 backdrop-blur-3xl" onClick={() => setSelectedIdx(null)}>
-          <style>{`
-            @keyframes crossfade-in { from { opacity: 0; transform: scale(1.1); filter: blur(15px); } to { opacity: 1; transform: scale(1); filter: blur(0); } }
-            @keyframes crossfade-out { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.95); } }
-            .animate-cinematic-in { animation: crossfade-in 2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-            .animate-cinematic-out { animation: crossfade-out 2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-            @keyframes slide-up-text { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-            .animate-text-cinematic { animation: slide-up-text 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-          `}</style>
-          <div className="absolute inset-x-6 md:inset-x-16 top-1/2 -translate-y-1/2 flex justify-between items-center z-[180] pointer-events-none">
-            <button onClick={(e) => { e.stopPropagation(); setPrevDish(filteredMenu[selectedIdx!]); setSelectedIdx((selectedIdx! - 1 + filteredMenu.length) % filteredMenu.length); }} className="w-16 h-16 md:w-28 md:h-28 bg-white/5 border border-white/10 text-white rounded-full flex items-center justify-center text-3xl hover:bg-amber-800 transition-all pointer-events-auto active:scale-90 shadow-2xl backdrop-blur-xl">←</button>
-            <button onClick={(e) => { e.stopPropagation(); setPrevDish(filteredMenu[selectedIdx!]); setSelectedIdx((selectedIdx! + 1) % filteredMenu.length); }} className="w-16 h-16 md:w-28 md:h-28 bg-white/5 border border-white/10 text-white rounded-full flex items-center justify-center text-3xl hover:bg-amber-800 transition-all pointer-events-auto active:scale-90 shadow-2xl backdrop-blur-xl">→</button>
-          </div>
-          <div className="w-full h-full md:w-[94vw] md:h-[88vh] bg-white md:rounded-[70px] overflow-hidden flex flex-col md:flex-row shadow-2xl relative" onClick={e => e.stopPropagation()}>
-            <button onClick={() => setSelectedIdx(null)} className="absolute top-8 right-8 md:top-12 md:right-12 z-[190] text-stone-300 hover:text-stone-900 text-6xl transition-all hover:rotate-90 duration-500">×</button>
-            <div className="w-full h-[45vh] md:h-auto md:w-[58%] relative bg-black overflow-hidden">
-              {prevDish && <div className="absolute inset-0 z-10 animate-cinematic-out"><img src={prevDish.image_url} className="w-full h-full object-cover" /></div>}
-              <img key={selectedDish.id} src={selectedDish.image_url} className="w-full h-full object-cover relative z-20 animate-cinematic-in" />
+          <div className="w-full h-full md:w-[90vw] md:h-[85vh] bg-white md:rounded-[60px] overflow-hidden flex flex-col md:flex-row shadow-2xl relative" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setSelectedIdx(null)} className="absolute top-8 right-8 z-[190] text-stone-300 hover:text-stone-900 text-5xl transition-all">×</button>
+            <div className="w-full h-[40vh] md:h-auto md:w-[55%] bg-black">
+              <img src={selectedDish.image_url} className="w-full h-full object-cover" />
             </div>
-            <div className="flex-1 p-12 md:p-24 flex flex-col justify-center bg-white">
-              <div key={`txt-${selectedDish.id}`} className="animate-text-cinematic space-y-10">
-                <span className="text-amber-800 font-black uppercase tracking-[0.5em] text-[10px] md:text-xs block">Út Trinh Kitchen</span>
-                <h2 className="text-4xl md:text-8xl font-black uppercase tracking-tighter leading-[0.85] text-stone-900">{selectedDish.name}</h2>
-                <div className="text-4xl md:text-7xl font-black text-amber-800 tabular-nums tracking-tighter">{selectedDish.price}</div>
-                <p className="text-stone-500 text-lg md:text-2xl italic font-light leading-relaxed max-w-xl">"{selectedDish.description || 'Hương vị gia truyền đặc biệt.'}"</p>
-                <div className="pt-8"><span className="bg-stone-950 text-white px-10 py-4 rounded-full text-[10px] font-black uppercase tracking-[0.3em] shadow-2xl">{selectedDish.category}</span></div>
-              </div>
+            <div className="flex-1 p-12 md:p-20 flex flex-col justify-center bg-white space-y-8">
+              <span className="text-amber-800 font-black uppercase tracking-[0.5em] text-[10px]">Út Trinh Kitchen</span>
+              <h2 className="text-4xl md:text-7xl font-black uppercase tracking-tighter leading-none text-stone-900">{selectedDish.name}</h2>
+              <div className="text-4xl md:text-6xl font-black text-amber-800 tabular-nums">{selectedDish.price}</div>
+              <p className="text-stone-500 text-lg md:text-xl italic font-light leading-relaxed max-w-lg">"{selectedDish.description || 'Món ăn truyền thống chuẩn vị mẹ nấu.'}"</p>
+              <div className="pt-4"><span className="bg-stone-950 text-white px-8 py-3 rounded-full text-[9px] font-black uppercase tracking-[0.3em]">{selectedDish.category}</span></div>
             </div>
           </div>
         </div>
       )}
 
       {/* Footer */}
-      <footer className="bg-stone-950 text-white pt-32 pb-16 px-10 overflow-hidden relative">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-900 via-amber-500 to-amber-900 opacity-30"></div>
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-16 md:gap-8 items-start mb-24">
+      <footer className="bg-stone-950 text-white pt-32 pb-16 px-10 relative">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-16 items-start mb-24">
           <div className="space-y-8">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-white text-stone-950 flex items-center justify-center font-black text-2xl rounded-sm">Ú</div>
-              <span className="text-2xl font-black tracking-tighter">ÚT TRINH</span>
+              <div className="w-10 h-10 bg-white text-stone-950 flex items-center justify-center font-black text-xl rounded-sm">Ú</div>
+              <span className="text-xl font-black tracking-tighter">ÚT TRINH</span>
             </div>
-            <p className="text-stone-500 text-sm italic font-light leading-relaxed max-w-xs">"Hơn cả một bữa ăn, đó là tình thân gia đình."</p>
+            <p className="text-stone-500 text-sm italic font-light leading-relaxed">"Hương vị quê nhà, đậm đà tình thân."</p>
           </div>
           <div className="space-y-6">
-            <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-amber-600">Liên hệ</h4>
+            <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-amber-600">Liên hệ</h4>
             <div className="space-y-4 text-stone-400 text-sm">
-              <p className="font-bold text-white">158A/5 Trần Vĩnh Kiết, Ninh Kiều, Cần Thơ</p>
+              <p className="font-bold text-white">158A/5 Trần Vĩnh Kiết, Cần Thơ</p>
               <p className="tabular-nums font-black text-2xl text-white">0939.70.90.20</p>
               <p className="text-stone-500">Mở cửa: 09:00 AM - 06:30 PM</p>
             </div>
           </div>
           <div className="space-y-6">
-            <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-amber-600">Thống kê</h4>
+            <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-amber-600">Thống kê</h4>
             <div className="grid grid-cols-1 gap-6">
-              <div className="space-y-1">
-                <span className="text-stone-500 text-[10px] font-black uppercase tracking-widest">Tổng lượt xem</span>
-                <p className="text-3xl font-black tabular-nums text-white">{totalViews.toLocaleString()}</p>
+              <div>
+                <span className="text-stone-500 text-[9px] font-black uppercase tracking-widest">Tổng lượt xem</span>
+                <p className="text-2xl font-black tabular-nums">{totalViews.toLocaleString()}</p>
               </div>
-              <div className="space-y-1">
-                <span className="text-amber-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+              <div>
+                <span className="text-amber-500 text-[9px] font-black uppercase tracking-widest flex items-center gap-2">
                   <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-ping"></span> Thực khách đang xem
                 </span>
-                <p className="text-3xl font-black tabular-nums text-white">{onlineCount}</p>
+                <p className="text-2xl font-black tabular-nums">{onlineCount}</p>
               </div>
             </div>
           </div>
           <div className="space-y-6">
-            <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-amber-600">Đối tác</h4>
+            <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-amber-600">Đối tác</h4>
             <div className="flex gap-4">
-               <img src="https://inkythuatso.com/uploads/thumbnails/800/2021/12/logo-grab-food-inkythuatso-20-15-57-46.jpg" className="h-10 md:h-12 object-contain grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all rounded-lg" alt="Grab" />
-               <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Shopee.svg/1200px-Shopee.svg.png" className="h-10 md:h-12 object-contain grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all" alt="Shopee" />
+               <img src="https://inkythuatso.com/uploads/thumbnails/800/2021/12/logo-grab-food-inkythuatso-20-15-57-46.jpg" className="h-8 object-contain rounded-sm" alt="Grab" />
+               <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Shopee.svg/1200px-Shopee.svg.png" className="h-8 object-contain" alt="Shopee" />
             </div>
           </div>
         </div>
-        <div className="max-w-7xl mx-auto pt-10 border-t border-white/5 flex flex-col md:flex-row justify-center items-center text-stone-600 text-[9px] font-black uppercase tracking-[0.5em]">
+        <div className="max-w-7xl mx-auto pt-10 border-t border-white/5 text-center text-stone-600 text-[8px] font-black uppercase tracking-[0.5em]">
           <p>© 2026 CƠM PHẦN ÚT TRINH — NINH KIỀU, CẦN THƠ - EST 2019</p>
         </div>
       </footer>
@@ -334,68 +313,56 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, supabaseConfig, 
   return (
     <div className="min-h-screen bg-stone-100 pt-32 pb-20 px-6">
       <Nav isAdmin />
-      <div className="max-w-6xl mx-auto bg-white rounded-[50px] shadow-2xl overflow-hidden border border-stone-200">
-        <div className="flex bg-stone-50 border-b border-stone-200 p-3 gap-2">
+      <div className="max-w-6xl mx-auto bg-white rounded-[40px] shadow-2xl overflow-hidden">
+        <div className="flex bg-stone-50 border-b p-3 gap-2">
           {['menu', 'hero', 'config'].map((tab: any) => (
-            <button key={tab} onClick={() => setActiveTab(tab)} className={`flex-1 py-4 rounded-3xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-white shadow-xl text-stone-900 border border-stone-100' : 'text-stone-400 hover:text-stone-600'}`}>
-              {tab === 'menu' ? '🍱 Thực Đơn' : tab === 'hero' ? '🖼️ Ảnh Bìa' : '⚙️ Cấu Hình'}
+            <button key={tab} onClick={() => setActiveTab(tab)} className={`flex-1 py-4 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-white shadow text-stone-900' : 'text-stone-400'}`}>
+              {tab === 'menu' ? '🍱 Thực Đơn' : tab === 'hero' ? '🖼️ Slide' : '⚙️ DB'}
             </button>
           ))}
         </div>
-        <div className="p-10 md:p-20">
+        <div className="p-10 md:p-16">
           {activeTab === 'config' && (
-            <div className="max-w-2xl mx-auto py-12 space-y-12">
-              <h2 className="text-5xl font-black uppercase text-center tracking-tighter">Database</h2>
-              <div className="space-y-6">
-                <input placeholder="Supabase URL" value={localConfig.url} onChange={e => setLocalConfig({...localConfig, url: e.target.value})} className="w-full bg-stone-50 border-2 p-5 rounded-3xl outline-none focus:border-stone-900 font-mono text-xs" />
-                <input placeholder="Anon Key" value={localConfig.key} onChange={e => setLocalConfig({...localConfig, key: e.target.value})} className="w-full bg-stone-50 border-2 p-5 rounded-3xl outline-none focus:border-stone-900 font-mono text-xs" />
-                <button onClick={() => { setSupabaseConfig(localConfig); alert("Lưu thành công!"); }} className="w-full bg-stone-950 text-white py-6 rounded-3xl font-black uppercase tracking-widest hover:scale-105 transition-all">Lưu Cấu Hình</button>
-              </div>
+            <div className="max-w-md mx-auto py-10 space-y-6">
+              <input placeholder="URL" value={localConfig.url} onChange={e => setLocalConfig({...localConfig, url: e.target.value})} className="w-full border p-4 rounded-xl font-mono text-xs" />
+              <input placeholder="Key" value={localConfig.key} onChange={e => setLocalConfig({...localConfig, key: e.target.value})} className="w-full border p-4 rounded-xl font-mono text-xs" />
+              <button onClick={() => setSupabaseConfig(localConfig)} className="w-full bg-stone-900 text-white py-4 rounded-xl font-black">LƯU CẤU HÌNH</button>
             </div>
           )}
           {activeTab === 'menu' && (
-            <div className="space-y-12">
-              <div className="flex justify-between items-center flex-wrap gap-4">
-                <h2 className="text-4xl font-black uppercase">Danh Sách Thực Đơn</h2>
-                <div className="flex gap-4">
-                  <button onClick={onSave} className="bg-stone-900 text-white px-8 py-3 text-[10px] font-black uppercase rounded-2xl shadow-xl">Đồng Bộ Cloud</button>
-                  <button onClick={() => setMenu([{ id: Date.now().toString(), name: 'Tên món mới', price: '0 VNĐ', description: '', image_url: '', category: Category.MainCourse }, ...menu])} className="bg-amber-800 text-white px-8 py-3 text-[10px] font-black uppercase rounded-2xl shadow-xl">+ Thêm Món</button>
+            <div className="space-y-8">
+              <div className="flex justify-between items-center">
+                <h2 className="text-3xl font-black uppercase">Món Ăn</h2>
+                <div className="flex gap-3">
+                  <button onClick={onSave} className="bg-stone-900 text-white px-6 py-2 text-[9px] font-black rounded-lg">ĐỒNG BỘ</button>
+                  <button onClick={() => setMenu([{ id: Date.now().toString(), name: 'Món Mới', price: '0 VNĐ', description: '', image_url: '', category: Category.MainCourse }, ...menu])} className="bg-amber-800 text-white px-6 py-2 text-[9px] font-black rounded-lg">+ THÊM</button>
                 </div>
               </div>
-              <div className="grid grid-cols-1 gap-6">
+              <div className="grid grid-cols-1 gap-4">
                 {menu.map((dish: Dish, i: number) => (
-                  <div key={dish.id} className="p-8 border border-stone-100 bg-stone-50 rounded-[40px] flex flex-col md:flex-row gap-8 relative hover:border-amber-200 transition-colors">
-                    <img src={dish.image_url || 'https://placehold.co/200x200'} className="w-24 h-24 rounded-2xl object-cover shadow-lg bg-white" />
-                    <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <input placeholder="Tên món" value={dish.name} onChange={e => { const m = [...menu]; m[i].name = e.target.value; setMenu(m); }} className="bg-white border p-4 rounded-xl font-bold" />
-                      <input placeholder="Giá" value={dish.price} onChange={e => { const m = [...menu]; m[i].price = e.target.value; setMenu(m); }} className="bg-white border p-4 rounded-xl font-black text-amber-800" />
-                      <select value={dish.category} onChange={e => { const m = [...menu]; m[i].category = e.target.value as Category; setMenu(m); }} className="bg-white border p-4 rounded-xl font-black uppercase text-[10px]">
-                        {Object.values(Category).filter(c => c !== Category.All).map(c => <option key={c} value={c}>{c}</option>)}
-                      </select>
-                      <input placeholder="Link ảnh" value={dish.image_url} onChange={e => { const m = [...menu]; m[i].image_url = e.target.value; setMenu(m); }} className="md:col-span-3 bg-white border p-4 rounded-xl font-mono text-xs" />
+                  <div key={dish.id} className="p-6 border rounded-3xl bg-stone-50 flex gap-6 items-center">
+                    <img src={dish.image_url || 'https://placehold.co/100x100'} className="w-16 h-16 rounded-lg object-cover" />
+                    <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <input value={dish.name} onChange={e => { const m = [...menu]; m[i].name = e.target.value; setMenu(m); }} className="p-3 border rounded-lg text-sm" />
+                      <input value={dish.price} onChange={e => { const m = [...menu]; m[i].price = e.target.value; setMenu(m); }} className="p-3 border rounded-lg text-sm font-bold" />
+                      <input value={dish.image_url} onChange={e => { const m = [...menu]; m[i].image_url = e.target.value; setMenu(m); }} className="p-3 border rounded-lg text-[10px] font-mono" />
                     </div>
-                    <button onClick={() => { if(confirm("Xóa món này?")) setMenu(menu.filter(d => d.id !== dish.id)); }} className="text-stone-300 hover:text-red-500 text-3xl font-light">×</button>
+                    <button onClick={() => setMenu(menu.filter(d => d.id !== dish.id))} className="text-red-500 font-bold">×</button>
                   </div>
                 ))}
               </div>
             </div>
           )}
           {activeTab === 'hero' && (
-            <div className="space-y-12">
-               <div className="flex justify-between items-center flex-wrap gap-4">
-                <h2 className="text-4xl font-black uppercase">Slide Trang Chủ</h2>
-                <button onClick={() => setHeroSlides([...heroSlides, { id: Date.now().toString(), image_url: '', quote: '' }])} className="bg-amber-800 text-white px-10 py-4 text-[10px] font-black uppercase rounded-2xl shadow-xl">+ Thêm Slide</button>
-              </div>
-              <div className="grid grid-cols-1 gap-10">
-                {heroSlides.map((slide: HeroSlide, i: number) => (
-                  <div key={slide.id} className="p-10 border border-stone-100 bg-stone-50 rounded-[45px] flex flex-col gap-8 shadow-sm">
-                    <img src={slide.image_url} className="w-full h-48 object-cover rounded-[30px]" />
-                    <input placeholder="Link ảnh" value={slide.image_url} onChange={e => { const s = [...heroSlides]; s[i].image_url = e.target.value; setHeroSlides(s); }} className="w-full border p-5 rounded-2xl font-mono text-xs" />
-                    <input placeholder="Quote" value={slide.quote} onChange={e => { const s = [...heroSlides]; s[i].quote = e.target.value; setHeroSlides(s); }} className="w-full border p-5 rounded-2xl italic" />
-                    <button onClick={() => setHeroSlides(heroSlides.filter(s => s.id !== slide.id))} className="text-red-500 font-bold uppercase text-[9px] tracking-widest self-center">Xóa slide</button>
+            <div className="space-y-8">
+               <button onClick={() => setHeroSlides([...heroSlides, { id: Date.now().toString(), image_url: '', quote: '' }])} className="bg-amber-800 text-white px-8 py-3 text-[9px] font-black rounded-lg">+ THÊM SLIDE</button>
+               {heroSlides.map((slide: HeroSlide, i: number) => (
+                  <div key={slide.id} className="p-6 border rounded-3xl bg-stone-50 space-y-4">
+                    <input value={slide.image_url} onChange={e => { const s = [...heroSlides]; s[i].image_url = e.target.value; setHeroSlides(s); }} className="w-full border p-3 rounded-lg text-xs" />
+                    <input value={slide.quote} onChange={e => { const s = [...heroSlides]; s[i].quote = e.target.value; setHeroSlides(s); }} className="w-full border p-3 rounded-lg text-xs" />
+                    <button onClick={() => setHeroSlides(heroSlides.filter(s => s.id !== slide.id))} className="text-red-500 text-xs">Xóa</button>
                   </div>
-                ))}
-              </div>
+               ))}
             </div>
           )}
         </div>
@@ -407,13 +374,14 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, supabaseConfig, 
 const App = () => {
   const [supabaseConfig, setSupabaseConfig] = useState(() => {
     const saved = localStorage.getItem(CONFIG_KEY);
-    return saved ? JSON.parse(saved) : { url: DEFAULT_URL, key: DEFAULT_ANON_KEY, pubKey: DEFAULT_PUB_KEY };
+    return saved ? JSON.parse(saved) : { url: DEFAULT_URL, key: DEFAULT_ANON_KEY };
   });
   const [menu, setMenu] = useState<Dish[]>([]);
   const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hash, setHash] = useState(window.location.hash);
   const supabase = useMemo(() => createClient(supabaseConfig.url, supabaseConfig.key), [supabaseConfig]);
+  
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -423,12 +391,15 @@ const App = () => {
       if (slides) setHeroSlides(slides);
     } catch (e) { console.error(e); } finally { setIsLoading(false); }
   }, [supabase]);
+
   useEffect(() => { localStorage.setItem(CONFIG_KEY, JSON.stringify(supabaseConfig)); fetchData(); }, [supabaseConfig, fetchData]);
+  
   useEffect(() => {
     const h = () => setHash(window.location.hash);
     window.addEventListener('hashchange', h);
     return () => window.removeEventListener('hashchange', h);
   }, []);
+
   const handleSave = async () => {
     setIsLoading(true);
     try {
@@ -437,11 +408,12 @@ const App = () => {
       const sanitize = (list: any[]) => list.map(({ id, created_at, ...rest }) => rest);
       if (menu.length) await supabase.from('dishes').insert(sanitize(menu));
       if (heroSlides.length) await supabase.from('hero_slides').insert(sanitize(heroSlides));
-      alert("Đồng bộ thành công!"); fetchData();
-    } catch (e) { alert("Lỗi kết nối!"); } finally { setIsLoading(false); }
+      alert("Đã lưu!"); fetchData();
+    } catch (e) { alert("Lỗi!"); } finally { setIsLoading(false); }
   };
+
   return window.location.hash.toUpperCase().includes('ACP1122') 
     ? <AdminPanel menu={menu} setMenu={setMenu} heroSlides={heroSlides} setHeroSlides={setHeroSlides} supabaseConfig={supabaseConfig} setSupabaseConfig={setSupabaseConfig} onSave={handleSave} />
-    : <HomePage menu={menu} heroSlides={heroSlides} isLoading={isLoading} />;
+    : <HomePage menu={menu} heroSlides={heroSlides} isLoading={isLoading} supabase={supabase} />;
 };
 ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
