@@ -204,7 +204,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
                 VÀ BÁN LẠI VÀO NGÀY <span className="text-red-600 font-black">MÙNG 6 TẾT</span>
               </p>
               <div className="pt-6">
-                <p className="text-stone-400 text-sm md:text-lg italic font-medium">
+                <p className="text-amber-600 text-sm md:text-lg italic font-black uppercase tracking-wide">
                   XIN CHÚC BẠN VÀ GIA ĐÌNH SỨC KHỎE VÀ PHÁT TÀI.
                 </p>
               </div>
@@ -425,7 +425,7 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave }: any) =
                       <img src={dish.image_url || 'https://placehold.co/400x400?text=No+Image'} className="w-full h-full object-cover" alt="Preview" />
                     </div>
 
-                    <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 w-full">
+                    <div className="flex-1 grid grid-cols-1 md:flex-cols-2 lg:grid-cols-3 gap-5 w-full">
                       {/* Name */}
                       <div className="space-y-1.5">
                         <label className="text-[9px] font-black text-stone-500 uppercase tracking-widest ml-1">Tên món ăn</label>
