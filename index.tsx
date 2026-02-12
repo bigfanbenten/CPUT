@@ -34,6 +34,7 @@ interface HeroSlide {
 const CONFIG_KEY = 'ut-trinh-config-v9';
 const VIEW_COUNT_KEY = 'ut-trinh-total-views-v15';
 const SESSION_VISIT_KEY = 'ut-trinh-session-visited-v15';
+const SHOPEE_LOGO = 'https://i.postimg.cc/Wzj6yWrp/pngtree-shopefood-logo-png-image-6472274.png';
 
 // --- COMPONENTS ---
 
@@ -78,7 +79,7 @@ const Nav = ({ isAdmin = false }) => {
 
               <div className="flex items-center gap-3 md:gap-4 border-l border-stone-100 pl-4">
                 <img src="https://inkythuatso.com/uploads/thumbnails/800/2021/12/logo-grab-food-inkythuatso-20-15-57-46.jpg" className="h-8 md:h-12 object-contain rounded-sm" alt="Grab" />
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Shopee.svg/1200px-Shopee.svg.png" className="h-8 md:h-12 object-contain" alt="Shopee" />
+                <img src={SHOPEE_LOGO} className="h-8 md:h-12 object-contain" alt="Shopee" />
               </div>
 
               <button onClick={() => setShowConciseMenu(true)} className="xl:hidden bg-amber-800 text-white px-4 py-2 rounded-full text-[8px] font-black uppercase">MENU</button>
@@ -102,6 +103,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
   const [activeFilter, setActiveFilter] = useState<Category>(Category.All);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const [showTetPopup, setShowTetPopup] = useState(true); // Mặc định hiện popup khi truy cập
   const itemsPerPage = 9;
 
   const [totalViews, setTotalViews] = useState(300);
@@ -183,6 +185,46 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
     <div className="min-h-screen bg-[#fafafa]">
       <Nav />
       
+      {/* Tet Holiday Popup */}
+      {showTetPopup && (
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-stone-950/70 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-[40px] shadow-2xl max-w-2xl w-full p-10 md:p-16 relative overflow-hidden text-center border-t-[12px] border-red-600 animate-[popIn_0.5s_ease-out]">
+            <button 
+              onClick={() => setShowTetPopup(false)} 
+              className="absolute top-8 right-8 text-stone-400 hover:text-stone-900 text-4xl transition-all"
+            >
+              ×
+            </button>
+            <div className="space-y-8">
+              <span className="text-red-600 font-black text-xs md:text-sm tracking-[0.6em] uppercase block">Thông báo quan trọng</span>
+              <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter text-stone-900 leading-tight">LỊCH NGHỈ TẾT</h2>
+              <div className="w-16 h-1 bg-amber-500 mx-auto rounded-full"></div>
+              <p className="text-stone-600 text-lg md:text-2xl font-bold leading-relaxed">
+                XIN CHÀO BẠN, QUÁN NGHỈ BÁN VÀO NGÀY <span className="text-red-600 font-black">26 TẾT</span> !<br/>
+                VÀ BÁN LẠI VÀO NGÀY <span className="text-red-600 font-black">MÙNG 6 TẾT</span>
+              </p>
+              <div className="pt-6">
+                <p className="text-stone-400 text-sm md:text-lg italic font-medium">
+                  XIN CHÚC BẠN VÀ GIA ĐÌNH SỨC KHỎE VÀ PHÁT TÀI.
+                </p>
+              </div>
+              <button 
+                onClick={() => setShowTetPopup(false)}
+                className="bg-stone-900 text-white px-12 py-4 rounded-full text-[10px] font-black uppercase tracking-[0.3em] hover:bg-red-600 transition-all shadow-xl"
+              >
+                ĐÃ HIỂU
+              </button>
+            </div>
+          </div>
+          <style>{`
+            @keyframes popIn { 
+              from { opacity: 0; transform: scale(0.9) translateY(20px); } 
+              to { opacity: 1; transform: scale(1) translateY(0); } 
+            }
+          `}</style>
+        </div>
+      )}
+
       {/* Hero */}
       <header className="relative h-[85vh] md:h-[95vh] flex items-center justify-center overflow-hidden">
         {heroSlides.map((slide: HeroSlide, index: number) => (
@@ -317,7 +359,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
             <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-amber-600">Đối tác</h4>
             <div className="flex gap-4">
                <img src="https://inkythuatso.com/uploads/thumbnails/800/2021/12/logo-grab-food-inkythuatso-20-15-57-46.jpg" className="h-10 md:h-14 object-contain rounded-sm" alt="Grab" />
-               <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Shopee.svg/1200px-Shopee.svg.png" className="h-10 md:h-14 object-contain" alt="Shopee" />
+               <img src={SHOPEE_LOGO} className="h-10 md:h-14 object-contain" alt="Shopee" />
             </div>
           </div>
         </div>
