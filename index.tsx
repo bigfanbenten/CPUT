@@ -661,7 +661,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
                     <UtensilsCrossed size={40} />
                   </div>
                   <div className="space-y-2">
-                    <h3 className="text-3xl font-black uppercase tracking-tighter text-stone-900">MÓN BẠN ĐÃ CHỌN</h3>
+                    <h3 className="text-3xl font-black uppercase tracking-tighter text-stone-900">BẠN CÓ MUỐN CHỌN ?</h3>
                     <p className="text-stone-500 italic text-lg">
                       {quickSelectPath.map(i => i.name).join(' - ')}
                     </p>
@@ -694,8 +694,14 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
             </div>
             
             {quickSelectPath.length > 0 && (
-              <div className="p-4 bg-stone-50 border-t border-stone-100 flex justify-center">
-                <button onClick={() => setQuickSelectPath(quickSelectPath.slice(0, -1))} className="text-[10px] font-black uppercase tracking-widest text-stone-400 hover:text-stone-900">Quay lại</button>
+              <div className="p-6 bg-stone-50 border-t border-stone-100 flex justify-center">
+                <button 
+                  onClick={() => setQuickSelectPath(quickSelectPath.slice(0, -1))} 
+                  className="text-sm font-black uppercase tracking-[0.2em] text-amber-500 hover:text-amber-700 transition-colors flex items-center gap-2"
+                >
+                  <ChevronRight className="rotate-180" size={16} />
+                  QUAY LẠI
+                </button>
               </div>
             )}
           </div>
