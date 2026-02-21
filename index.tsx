@@ -560,10 +560,10 @@ const App = () => {
     setIsLoading(true);
     try {
       // 1. Xóa dữ liệu cũ - Kiểm tra lỗi chặt chẽ
-      const { error: delDishesError } = await supabase.from('dishes').delete().neq('id', 'temp-id-never-exists');
+      const { error: delDishesError } = await supabase.from('dishes').delete().neq('id', '00000000-0000-0000-0000-000000000000');
       if (delDishesError) throw new Error("Không thể xóa món ăn cũ: " + delDishesError.message);
 
-      const { error: delSlidesError } = await supabase.from('hero_slides').delete().neq('id', 'temp-id-never-exists');
+      const { error: delSlidesError } = await supabase.from('hero_slides').delete().neq('id', '00000000-0000-0000-0000-000000000000');
       if (delSlidesError) throw new Error("Không thể xóa banner cũ: " + delSlidesError.message);
 
       // 2. Chuẩn bị dữ liệu để lưu (loại bỏ id cũ để Supabase tự tạo id mới)
