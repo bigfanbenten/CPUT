@@ -7,6 +7,7 @@
  * 2. Tự động chuyển món trong Modal (10 giây/lần) với hiệu ứng mờ ảo và thanh tiến trình.
  * 3. Hệ thống thông báo ĐỘNG (Dynamic Notifications):
  *    - Quản lý tại #ACP1122: Tạo mới, Bật/Tắt bằng cần gạt, Xóa thông báo.
+ *    - Cho phép tùy chỉnh Lời chúc/Ghi chú màu vàng ở chân thông báo.
  *    - Hiển thị tự động thông báo mới nhất đang "Bật" trên trang chủ.
  * 4. Quản lý thực đơn nâng cao:
  *    - Chọn tất cả & Xóa hàng loạt món ăn.
@@ -752,7 +753,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
               </p>
               <div className="pt-6">
                 <p className="text-amber-600 text-sm md:text-lg italic font-black uppercase tracking-wide">
-                  XIN CHÚC BẠN VÀ GIA ĐÌNH SỨC KHỎE VÀ PHÁT TÀI.
+                  {activeNotif.footer || "XIN CHÚC BẠN VÀ GIA ĐÌNH SỨC KHỎE VÀ PHÁT TÀI."}
                 </p>
               </div>
               <button onClick={() => setShowTetPopup(false)} className="bg-stone-900 text-white px-12 py-4 rounded-full text-[10px] font-black uppercase tracking-[0.3em] hover:bg-amber-600 transition-all shadow-xl">ĐÃ HIỂU</button>
@@ -895,6 +896,7 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
   const [activeTab, setActiveTab] = useState<'menu' | 'hero' | 'notifications' | 'quick'>('menu');
   const [notifications, setNotifications] = useState<any[]>([]);
   const [newNotif, setNewNotif] = useState('');
+  const [newFooter, setNewFooter] = useState('XIN CHÚC BẠN VÀ GIA ĐÌNH SỨC KHỎE VÀ PHÁT TÀI.');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [quickMenuItems, setQuickMenuItems] = useState<QuickMenuItem[]>([]);
   const [loadingQuick, setLoadingQuick] = useState(false);
@@ -1004,7 +1006,7 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
     try {
       const { data, error } = await supabase
         .from('notifications')
-        .insert([{ message, is_active: true }])
+        .insert([{ message, footer: newFooter.trim(), is_active: true }])
         .select()
         .single();
       
@@ -1018,6 +1020,7 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
         console.log("Notification created successfully:", data);
         setNotifications(prev => [data, ...prev]);
         setNewNotif('');
+        setNewFooter('XIN CHÚC BẠN VÀ GIA ĐÌNH SỨC KHỎE VÀ PHÁT TÀI.');
         alert("Chúc mừng! Thông báo đã được tạo và đang hiển thị.");
       } else {
         alert("Không nhận được phản hồi từ máy chủ, vui lòng thử lại.");
@@ -1241,21 +1244,28 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
               
               <div className="bg-stone-50 p-8 rounded-[35px] border border-stone-100">
                 <h3 className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-4">Tạo thông báo mới</h3>
-                <form onSubmit={handleAddNotif} className="flex gap-4">
-                  <input 
+                <form onSubmit={handleAddNotif} className="flex flex-col gap-4">
+                  <textarea 
                     value={newNotif} 
-                    onChange={e => {
-                      console.log("Input changed:", e.target.value);
-                      setNewNotif(e.target.value);
-                    }} 
-                    className="flex-1 p-5 border rounded-2xl text-sm font-bold focus:ring-2 focus:ring-amber-500 outline-none transition-all" 
-                    placeholder="Ví dụ: Quán nghỉ bán ngày 26 Tết..." 
+                    onChange={(e) => setNewNotif(e.target.value)} 
+                    className="w-full p-5 border rounded-2xl text-sm font-bold focus:ring-2 focus:ring-amber-500 outline-none transition-all min-h-[120px]" 
+                    placeholder="Nội dung thông báo chính (Ví dụ: Website mới có chức năng giả lập...)" 
                   />
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-amber-800 ml-2">Lời chúc / Ghi chú (Chữ màu vàng):</label>
+                    <input 
+                      type="text"
+                      value={newFooter}
+                      onChange={(e) => setNewFooter(e.target.value)}
+                      className="w-full p-4 border rounded-2xl text-sm font-bold focus:ring-2 focus:ring-amber-500 outline-none transition-all"
+                      placeholder="Ví dụ: CHÚC MỪNG NĂM MỚI..."
+                    />
+                  </div>
                   <button 
                     type="submit"
-                    className="bg-amber-800 text-white px-10 py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg hover:bg-stone-900 transition-all active:scale-95"
+                    className="bg-amber-800 text-white px-10 py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg hover:bg-stone-900 transition-all active:scale-95 mt-2"
                   >
-                    + TẠO MỚI
+                    + TẠO MỚI THÔNG BÁO
                   </button>
                 </form>
               </div>
@@ -1266,6 +1276,7 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                   <div key={n.id} className={`p-6 rounded-[30px] border flex items-center justify-between transition-all ${n.is_active ? 'bg-amber-50 border-amber-200' : 'bg-white border-stone-100 opacity-60'}`}>
                     <div className="flex-1">
                       <p className={`text-lg font-bold ${n.is_active ? 'text-amber-900' : 'text-stone-400'}`}>{n.message}</p>
+                      {n.footer && <p className="text-xs italic text-amber-600 font-bold mt-1">{n.footer}</p>}
                       <span className="text-[9px] font-black uppercase tracking-widest text-stone-300">{new Date(n.created_at).toLocaleString('vi-VN')}</span>
                     </div>
                     <div className="flex items-center gap-4">
