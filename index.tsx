@@ -350,29 +350,41 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
     fetchNotifs();
   }, [supabase]);
 
-  const handleAddNotif = async () => {
-    if (!newNotif.trim()) return;
+  const handleAddNotif = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    
+    const message = newNotif.trim();
+    if (!message) {
+      alert("Vui lòng nhập nội dung thông báo.");
+      return;
+    }
+
+    console.log("Attempting to create notification:", message);
+    
     try {
       const { data, error } = await supabase
         .from('notifications')
-        .insert([{ message: newNotif, is_active: true }])
+        .insert([{ message, is_active: true }])
         .select()
         .single();
       
       if (error) {
-        console.error('Supabase error:', error);
-        alert(`Lỗi: ${error.message}. Có thể bảng 'notifications' chưa được tạo trong Supabase.`);
+        console.error('Supabase Error:', error);
+        alert(`Lỗi hệ thống: ${error.message}\n\nChi tiết: ${error.details || 'Không có'}\n\nHướng dẫn: Hãy đảm bảo bạn đã tạo bảng 'notifications' trong Supabase Dashboard.`);
         return;
       }
 
       if (data) {
-        setNotifications([data, ...notifications]);
+        console.log("Notification created successfully:", data);
+        setNotifications(prev => [data, ...prev]);
         setNewNotif('');
-        alert("Đã tạo thông báo mới thành công!");
+        alert("Chúc mừng! Thông báo đã được tạo và đang hiển thị.");
+      } else {
+        alert("Không nhận được phản hồi từ máy chủ, vui lòng thử lại.");
       }
-    } catch (err) {
-      console.error('Unexpected error:', err);
-      alert("Đã xảy ra lỗi không xác định khi kết nối với máy chủ.");
+    } catch (err: any) {
+      console.error('Unexpected Exception:', err);
+      alert(`Đã xảy ra lỗi không mong muốn: ${err.message || 'Vui lòng kiểm tra kết nối mạng.'}`);
     }
   };
 
@@ -469,20 +481,23 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
               
               <div className="bg-stone-50 p-8 rounded-[35px] border border-stone-100">
                 <h3 className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-4">Tạo thông báo mới</h3>
-                <div className="flex gap-4">
+                <form onSubmit={handleAddNotif} className="flex gap-4">
                   <input 
                     value={newNotif} 
-                    onChange={e => setNewNotif(e.target.value)} 
-                    className="flex-1 p-5 border rounded-2xl text-sm font-bold" 
+                    onChange={e => {
+                      console.log("Input changed:", e.target.value);
+                      setNewNotif(e.target.value);
+                    }} 
+                    className="flex-1 p-5 border rounded-2xl text-sm font-bold focus:ring-2 focus:ring-amber-500 outline-none transition-all" 
                     placeholder="Ví dụ: Quán nghỉ bán ngày 26 Tết..." 
                   />
                   <button 
-                    onClick={handleAddNotif}
-                    className="bg-amber-800 text-white px-10 py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg hover:bg-stone-900 transition-all"
+                    type="submit"
+                    className="bg-amber-800 text-white px-10 py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg hover:bg-stone-900 transition-all active:scale-95"
                   >
                     + TẠO MỚI
                   </button>
-                </div>
+                </form>
               </div>
 
               <div className="grid gap-4">
