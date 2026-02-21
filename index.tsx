@@ -644,7 +644,9 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
                     >
                       <div className="space-y-1">
                         <span className="text-lg font-black uppercase tracking-tighter text-stone-900 group-hover:text-amber-800">{option.name}</span>
-                        {option.price && <p className="text-amber-800 font-black text-sm">{option.price.toLocaleString('vi-VN')} VNĐ</p>}
+                        {option.price && option.price > 0 ? (
+                          <p className="text-amber-800 font-black text-sm">{option.price.toLocaleString('vi-VN')} VNĐ</p>
+                        ) : null}
                       </div>
                       <ChevronRight className="text-stone-300 group-hover:text-amber-800 group-hover:translate-x-1 transition-all" />
                     </button>
@@ -886,7 +888,8 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
   };
 
   const handlePriceChange = (id: string, newPrice: string) => {
-    const price = parseInt(newPrice.replace(/\D/g, '')) || 0;
+    const val = newPrice.replace(/\D/g, '');
+    const price = val ? parseInt(val) : null;
     setQuickMenuItems(prev => prev.map(item => item.id === id ? { ...item, price } : item));
   };
 
