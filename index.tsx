@@ -19,7 +19,7 @@
  * 6. Giỏ hàng thông minh (Shopping Cart):
  *    - Lưu trữ Cookie trong 1 giờ.
  *    - Tự động cộng tiền, quản lý số lượng món.
- *    - Thông báo hướng dẫn đặt hàng chi tiết & Ghi chú giả lập (Pre-Order).
+ *    - Modal thông báo hướng dẫn đặt hàng chi tiết & Ghi chú giả lập (Pre-Order).
  * 7. Quản lý CHỌN NHANH tại #ACP1122 (NÂNG CẤP):
  *    - Giao diện Thư mục thu gọn (Collapsible Tree) như Windows Explorer.
  *    - Cho phép sửa Tên món và Giá tiền trực tiếp.
@@ -388,6 +388,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
   const [showTetPopup, setShowTetPopup] = useState(false);
   const [activeNotif, setActiveNotif] = useState<any>(null);
   const [showQuickSelect, setShowQuickSelect] = useState(false);
+  const [showOrderConfirmModal, setShowOrderConfirmModal] = useState(false);
   const [quickSelectPath, setQuickSelectPath] = useState<QuickMenuItem[]>([]);
   const [quickMenuData, setQuickMenuData] = useState<QuickMenuItem[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -603,7 +604,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
                 <span className="text-3xl font-black text-amber-800 tabular-nums">{cartTotal.toLocaleString('vi-VN')} VNĐ</span>
               </div>
               <button 
-                onClick={() => { alert("Cảm ơn bạn đã chọn món ! Đây là chức năng tính món theo ví nên Quán không thể giao hàng cho bạn được, nhưng bạn có thể đặt hàng bằng cách gọi 0939.70.90.20 để LIỆT KÊ những món bạn đặt và vui lòng lại quán nhận đơn hàng nhé"); setShowCart(false); }}
+                onClick={() => { setShowOrderConfirmModal(true); setShowCart(false); }}
                 className="w-full bg-stone-900 text-white py-5 rounded-2xl text-xs font-black uppercase tracking-[0.3em] hover:bg-amber-800 transition-all shadow-xl"
               >
                 XÁC NHẬN ĐƠN HÀNG
@@ -713,6 +714,30 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
         </div>
       )}
       
+      {/* Order Confirmation Custom Modal */}
+      {showOrderConfirmModal && (
+        <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-stone-950/70 backdrop-blur-sm p-4" onClick={() => setShowOrderConfirmModal(false)}>
+          <div className="bg-white rounded-[40px] shadow-2xl max-w-2xl w-full p-10 md:p-16 relative overflow-hidden text-center border-t-[12px] border-amber-600 animate-[popIn_0.5s_ease-out]" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setShowOrderConfirmModal(false)} className="absolute top-8 right-8 text-stone-400 hover:text-stone-900 text-4xl transition-all">×</button>
+            <div className="space-y-8">
+              <span className="text-amber-600 font-black text-xs md:text-sm tracking-[0.6em] uppercase block">Xác nhận đơn hàng</span>
+              <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter text-stone-900 leading-tight">CẢM ƠN BẠN!</h2>
+              <div className="w-16 h-1 bg-amber-500 mx-auto rounded-full"></div>
+              <p className="text-stone-600 text-lg md:text-xl font-bold leading-relaxed">
+                Cảm ơn bạn đã chọn món! Đây là chức năng tính món theo ví nên Quán không thể giao hàng cho bạn được.
+              </p>
+              <div className="bg-amber-50 p-6 rounded-3xl border border-amber-100">
+                <p className="text-amber-900 text-base md:text-lg font-black leading-relaxed">
+                  Bạn có thể đặt hàng bằng cách gọi <span className="text-2xl block mt-2">0939.70.90.20</span>
+                  <span className="text-sm block mt-2 opacity-70">Để LIỆT KÊ những món bạn đặt và vui lòng lại quán nhận đơn hàng nhé!</span>
+                </p>
+              </div>
+              <button onClick={() => setShowOrderConfirmModal(false)} className="bg-stone-900 text-white px-12 py-4 rounded-full text-[10px] font-black uppercase tracking-[0.3em] hover:bg-amber-600 transition-all shadow-xl">ĐÃ HIỂU</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Dynamic Notification Popup */}
       {showTetPopup && activeNotif && (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-stone-950/70 backdrop-blur-sm p-4">
