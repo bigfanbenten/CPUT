@@ -1,7 +1,7 @@
 
 /**
- * BẢN SAVE SỐ 1 - PHIÊN BẢN CHÍNH THỨC
- * -----------------------------------------
+ * BẢN SAVE SỐ 1 - PHIÊN BẢN CHÍNH THỨC (CẬP NHẬT MỚI NHẤT)
+ * -------------------------------------------------------
  * Các tính năng đã tích hợp:
  * 1. Hiển thị món ăn RANDOM (ngẫu nhiên) mỗi khi tải trang hoặc đổi danh mục.
  * 2. Tự động chuyển món trong Modal (10 giây/lần) với hiệu ứng mờ ảo và thanh tiến trình.
@@ -14,19 +14,22 @@
  * 5. Tính năng CHỌN MÓN NHANH (Quick Select):
  *    - Sơ đồ nhánh chuyên nghiệp (Thịt, Cá, Canh...).
  *    - Tự động lấy dữ liệu từ Supabase `quick_menu`.
+ *    - Sửa lỗi hiển thị "0" khi món không có giá.
  * 6. Giỏ hàng thông minh (Shopping Cart):
  *    - Lưu trữ Cookie trong 1 giờ.
  *    - Tự động cộng tiền, quản lý số lượng món.
- * 7. Quản lý CHỌN NHANH tại #ACP1122:
- *    - Tự do thêm/sửa/xóa danh mục và giá tiền.
- * 8. Cập nhật Logo Shopee Food mới.
+ * 7. Quản lý CHỌN NHANH tại #ACP1122 (NÂNG CẤP):
+ *    - Hiển thị dạng Cây thư mục (Mẹ - Con - Cháu) trực quan.
+ *    - Cho phép sửa Tên món và Giá tiền trực tiếp.
+ *    - Nút "LƯU TẤT CẢ" giúp lưu hàng loạt thay đổi nhanh chóng, không bị giật trang.
+ * 8. Cập nhật Logo Shopee Food mới & Vị trí số điện thoại đặt món tối ưu.
  * 9. Hệ thống quản trị chuyên nghiệp tại đường dẫn #ACP1122.
  */
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import ReactDOM from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
-import { ChevronRight, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, X } from 'lucide-react';
+import { ChevronRight, ChevronDown, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, X } from 'lucide-react';
 
 // --- CẤU HÌNH CỐ ĐỊNH ---
 const DEFAULT_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co';
@@ -859,6 +862,16 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [quickMenuItems, setQuickMenuItems] = useState<QuickMenuItem[]>([]);
   const [loadingQuick, setLoadingQuick] = useState(false);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+
+  const toggleExpand = (id: string) => {
+    setExpandedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   const fetchQuickMenu = useCallback(async () => {
     setLoadingQuick(true);
@@ -1004,44 +1017,60 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
   };
 
   const renderQuickTree = (items: QuickMenuItem[], level = 0) => {
-    return items.map((item) => (
-      <React.Fragment key={item.id}>
-        <div 
-          className="p-6 border rounded-3xl bg-white flex justify-between items-center group hover:border-amber-800 transition-all shadow-sm mb-2"
-          style={{ marginLeft: `${level * 40}px` }}
-        >
-          <div className="flex items-center gap-4 flex-1">
-            <div className={`w-2 h-2 rounded-full shrink-0 ${level === 0 ? 'bg-amber-800' : level === 1 ? 'bg-amber-400' : 'bg-stone-300'}`}></div>
-            <div className="flex-1">
-              <input 
-                type="text"
-                value={item.name}
-                onChange={(e) => handleNameChange(item.id, e.target.value)}
-                className={`w-full bg-transparent border-none focus:ring-0 p-0 font-black uppercase tracking-tight ${level === 0 ? 'text-stone-900 text-lg' : 'text-stone-600 text-sm'}`}
-              />
-              <p className="text-[9px] text-stone-400 uppercase font-bold tracking-widest">
-                {level === 0 ? 'Danh mục gốc' : level === 1 ? 'Mục con' : 'Cách chế biến'}
-              </p>
+    return items.map((item) => {
+      const hasChildren = item.children && item.children.length > 0;
+      const isExpanded = expandedIds.has(item.id);
+
+      return (
+        <React.Fragment key={item.id}>
+          <div 
+            className={`p-4 border rounded-2xl bg-white flex justify-between items-center group hover:border-amber-800 transition-all shadow-sm mb-2 ${level > 0 ? 'border-stone-100' : 'border-stone-200'}`}
+            style={{ marginLeft: `${level * 32}px` }}
+          >
+            <div className="flex items-center gap-3 flex-1">
+              {hasChildren ? (
+                <button 
+                  onClick={() => toggleExpand(item.id)}
+                  className="p-1 hover:bg-stone-100 rounded-lg transition-colors text-stone-400 hover:text-amber-800"
+                >
+                  {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                </button>
+              ) : (
+                <div className="w-6" /> // Spacer for alignment
+              )}
+              
+              <div className={`w-2 h-2 rounded-full shrink-0 ${level === 0 ? 'bg-amber-800' : level === 1 ? 'bg-amber-400' : 'bg-stone-300'}`}></div>
+              <div className="flex-1">
+                <input 
+                  type="text"
+                  value={item.name}
+                  onChange={(e) => handleNameChange(item.id, e.target.value)}
+                  className={`w-full bg-transparent border-none focus:ring-0 p-0 font-black uppercase tracking-tight ${level === 0 ? 'text-stone-900 text-base' : 'text-stone-600 text-xs'}`}
+                />
+                <p className="text-[8px] text-stone-400 uppercase font-bold tracking-widest">
+                  {level === 0 ? 'Danh mục gốc' : level === 1 ? 'Mục con' : 'Cách chế biến'}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex flex-col items-end">
+                <span className="text-[8px] font-black text-stone-400 uppercase tracking-widest mb-0.5">Giá tiền</span>
+                <input 
+                  type="text" 
+                  placeholder="Giá (VNĐ)" 
+                  value={item.price ? item.price.toLocaleString('vi-VN') : ''}
+                  onChange={(e) => handlePriceChange(item.id, e.target.value)}
+                  className="w-28 p-1.5 border rounded-lg text-[10px] font-black text-amber-800 text-right focus:ring-2 focus:ring-amber-500 outline-none"
+                />
+              </div>
+              <button onClick={() => handleAddQuick(item.id)} className="p-2 bg-stone-50 border rounded-lg text-stone-400 hover:text-green-600 transition-colors shadow-sm" title="Thêm mục con"><Plus size={14}/></button>
+              <button onClick={() => deleteQuick(item.id)} className="p-2 bg-stone-50 border rounded-lg text-stone-300 hover:text-red-500 transition-colors shadow-sm"><Trash2 size={14}/></button>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="flex flex-col items-end">
-              <span className="text-[9px] font-black text-stone-400 uppercase tracking-widest mb-1">Giá tiền</span>
-              <input 
-                type="text" 
-                placeholder="Giá (VNĐ)" 
-                value={item.price ? item.price.toLocaleString('vi-VN') : ''}
-                onChange={(e) => handlePriceChange(item.id, e.target.value)}
-                className="w-32 p-2 border rounded-xl text-xs font-black text-amber-800 text-right focus:ring-2 focus:ring-amber-500 outline-none"
-              />
-            </div>
-            <button onClick={() => handleAddQuick(item.id)} className="p-3 bg-stone-50 border rounded-xl text-stone-400 hover:text-green-600 transition-colors shadow-sm" title="Thêm mục con"><Plus size={18}/></button>
-            <button onClick={() => deleteQuick(item.id)} className="p-3 bg-stone-50 border rounded-xl text-stone-300 hover:text-red-500 transition-colors shadow-sm"><Trash2 size={18}/></button>
-          </div>
-        </div>
-        {item.children && renderQuickTree(item.children, level + 1)}
-      </React.Fragment>
-    ));
+          {hasChildren && isExpanded && renderQuickTree(item.children, level + 1)}
+        </React.Fragment>
+      );
+    });
   };
 
   const quickTree = useMemo(() => {
