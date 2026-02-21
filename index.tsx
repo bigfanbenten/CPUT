@@ -18,7 +18,7 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import ReactDOM from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
-import { ChevronRight, UtensilsCrossed } from 'lucide-react';
+import { ChevronRight, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, X } from 'lucide-react';
 
 // --- CẤU HÌNH CỐ ĐỊNH ---
 const DEFAULT_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co';
@@ -51,7 +51,16 @@ interface HeroSlide {
 const CONFIG_KEY = 'ut-trinh-config-v9';
 const VIEW_COUNT_KEY = 'ut-trinh-total-views-v15';
 const SESSION_VISIT_KEY = 'ut-trinh-session-visited-v15';
+const CART_KEY = 'ut-trinh-cart-v1';
 const SHOPEE_LOGO = 'https://i.postimg.cc/Wzj6yWrp/pngtree-shopefood-logo-png-image-6472274.png';
+
+interface CartItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  addedAt: number;
+}
 
 interface QuickMenuItem {
   name: string;
@@ -279,7 +288,7 @@ const QUICK_MENU: QuickMenuItem[] = [
 
 // --- COMPONENTS ---
 
-const Nav = ({ isAdmin = false, onShowQuickSelect }: any) => {
+const Nav = ({ isAdmin = false, onShowQuickSelect, cartCount, onShowCart }: any) => {
   const [showConciseMenu, setShowConciseMenu] = useState(false);
 
   return (
@@ -318,9 +327,17 @@ const Nav = ({ isAdmin = false, onShowQuickSelect }: any) => {
                 </button>
               </div>
               
-              <span className="text-red-600 font-black text-[10px] md:text-[13px] tracking-widest uppercase hidden lg:block whitespace-nowrap">
-                HÃY ĐẶT MÓN NGAY 0939.70.90.20
-              </span>
+              <button 
+                onClick={onShowCart}
+                className="relative p-3 bg-stone-100 rounded-full hover:bg-amber-100 transition-colors group"
+              >
+                <ShoppingBag className="w-5 h-5 md:w-6 md:h-6 text-stone-900 group-hover:text-amber-800" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center animate-bounce">
+                    {cartCount}
+                  </span>
+                )}
+              </button>
 
               <div className="flex items-center gap-3 md:gap-4 border-l border-stone-100 pl-4">
                 <img src="https://inkythuatso.com/uploads/thumbnails/800/2021/12/logo-grab-food-inkythuatso-20-15-57-46.jpg" className="h-8 md:h-12 object-contain rounded-sm" alt="Grab" />
@@ -352,7 +369,55 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
   const [activeNotif, setActiveNotif] = useState<any>(null);
   const [showQuickSelect, setShowQuickSelect] = useState(false);
   const [quickSelectPath, setQuickSelectPath] = useState<QuickMenuItem[]>([]);
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [showCart, setShowCart] = useState(false);
   const itemsPerPage = 9;
+
+  // Cart Persistence Logic (1 hour expiry)
+  useEffect(() => {
+    const savedCart = localStorage.getItem(CART_KEY);
+    if (savedCart) {
+      const parsedCart: CartItem[] = JSON.parse(savedCart);
+      const now = Date.now();
+      const validItems = parsedCart.filter(item => now - item.addedAt < 60 * 60 * 1000);
+      setCart(validItems);
+      if (validItems.length !== parsedCart.length) {
+        localStorage.setItem(CART_KEY, JSON.stringify(validItems));
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(CART_KEY, JSON.stringify(cart));
+  }, [cart]);
+
+  const addToCart = (name: string, price: number) => {
+    setCart(prev => {
+      const existing = prev.find(item => item.name === name);
+      if (existing) {
+        return prev.map(item => item.name === name ? { ...item, quantity: item.quantity + 1, addedAt: Date.now() } : item);
+      }
+      return [...prev, { id: Math.random().toString(36).substr(2, 9), name, price, quantity: 1, addedAt: Date.now() }];
+    });
+    alert(`Đã thêm "${name}" vào giỏ hàng!`);
+  };
+
+  const removeFromCart = (id: string) => {
+    setCart(prev => prev.filter(item => item.id !== id));
+  };
+
+  const updateQuantity = (id: string, delta: number) => {
+    setCart(prev => prev.map(item => {
+      if (item.id === id) {
+        const newQty = Math.max(1, item.quantity + delta);
+        return { ...item, quantity: newQty };
+      }
+      return item;
+    }));
+  };
+
+  const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   useEffect(() => {
     const fetchActiveNotif = async () => {
@@ -447,8 +512,66 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
 
   return (
     <div className="min-h-screen bg-[#fafafa]">
-      <Nav onShowQuickSelect={() => setShowQuickSelect(true)} />
+      <Nav 
+        onShowQuickSelect={() => setShowQuickSelect(true)} 
+        cartCount={cartCount}
+        onShowCart={() => setShowCart(true)}
+      />
       
+      {/* Cart Modal */}
+      {showCart && (
+        <div className="fixed inset-0 z-[160] flex items-center justify-end bg-stone-950/60 backdrop-blur-sm" onClick={() => setShowCart(false)}>
+          <div className="bg-white w-full max-w-md h-full shadow-2xl flex flex-col animate-slide-left" onClick={e => e.stopPropagation()}>
+            <div className="p-6 border-b border-stone-100 flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <ShoppingBag className="text-amber-800" />
+                <h2 className="text-xl font-black uppercase tracking-tighter">GIỎ HÀNG CỦA BẠN</h2>
+              </div>
+              <button onClick={() => setShowCart(false)} className="text-3xl text-stone-300 hover:text-stone-900">×</button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              {cart.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center text-center space-y-4">
+                  <div className="w-20 h-20 bg-stone-50 rounded-full flex items-center justify-center text-stone-300">
+                    <ShoppingBag size={40} />
+                  </div>
+                  <p className="text-stone-400 font-bold">Giỏ hàng đang trống.<br/>Hãy chọn món ngay!</p>
+                </div>
+              ) : (
+                cart.map(item => (
+                  <div key={item.id} className="flex gap-4 items-center group">
+                    <div className="flex-1 space-y-1">
+                      <h4 className="font-black text-stone-900 uppercase text-sm tracking-tight">{item.name}</h4>
+                      <p className="text-amber-800 font-black text-xs">{(item.price * item.quantity).toLocaleString('vi-VN')} VNĐ</p>
+                    </div>
+                    <div className="flex items-center gap-3 bg-stone-50 rounded-xl p-1">
+                      <button onClick={() => updateQuantity(item.id, -1)} className="w-8 h-8 flex items-center justify-center hover:bg-white rounded-lg transition-colors"><Minus size={14}/></button>
+                      <span className="text-xs font-black w-4 text-center">{item.quantity}</span>
+                      <button onClick={() => updateQuantity(item.id, 1)} className="w-8 h-8 flex items-center justify-center hover:bg-white rounded-lg transition-colors"><Plus size={14}/></button>
+                    </div>
+                    <button onClick={() => removeFromCart(item.id)} className="text-stone-300 hover:text-red-500 transition-colors"><Trash2 size={18}/></button>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div className="p-6 bg-stone-50 border-t border-stone-100 space-y-4">
+              <div className="flex justify-between items-end">
+                <span className="text-[10px] font-black uppercase tracking-widest text-stone-400">TỔNG CỘNG</span>
+                <span className="text-3xl font-black text-amber-800 tabular-nums">{cartTotal.toLocaleString('vi-VN')} VNĐ</span>
+              </div>
+              <button 
+                onClick={() => { alert("Cảm ơn bạn! Hãy gọi 0939.70.90.20 để xác nhận đơn hàng."); setShowCart(false); }}
+                className="w-full bg-stone-900 text-white py-5 rounded-2xl text-xs font-black uppercase tracking-[0.3em] hover:bg-amber-800 transition-all shadow-xl"
+              >
+                XÁC NHẬN ĐƠN HÀNG
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Quick Select Modal */}
       {showQuickSelect && (
         <div className="fixed inset-0 z-[150] flex items-center justify-center bg-stone-950/98 backdrop-blur-3xl p-4" onClick={() => { setShowQuickSelect(false); setQuickSelectPath([]); }}>
@@ -505,12 +628,24 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
                   <div className="text-5xl font-black text-amber-800 tabular-nums">
                     {calculateTotalPrice().toLocaleString('vi-VN')} VNĐ
                   </div>
-                  <div className="pt-8">
+                  <div className="pt-8 flex gap-4 justify-center">
+                    <button 
+                      onClick={() => { 
+                        const name = quickSelectPath.map(i => i.name).join(' - ');
+                        const price = calculateTotalPrice();
+                        addToCart(name, price);
+                        setShowQuickSelect(false);
+                        setQuickSelectPath([]);
+                      }}
+                      className="bg-amber-800 text-white px-12 py-5 rounded-full text-xs font-black uppercase tracking-[0.3em] hover:bg-stone-900 transition-all shadow-xl"
+                    >
+                      THÊM VÀO GIỎ
+                    </button>
                     <button 
                       onClick={() => { setShowQuickSelect(false); setQuickSelectPath([]); }}
-                      className="bg-stone-900 text-white px-12 py-5 rounded-full text-xs font-black uppercase tracking-[0.3em] hover:bg-amber-800 transition-all shadow-xl"
+                      className="bg-stone-100 text-stone-900 px-12 py-5 rounded-full text-xs font-black uppercase tracking-[0.3em] hover:bg-stone-200 transition-all"
                     >
-                      ĐẶT MÓN NGAY
+                      CHỌN LẠI
                     </button>
                   </div>
                 </div>
@@ -616,7 +751,19 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
               <h2 className="text-4xl md:text-7xl font-black uppercase tracking-tighter leading-none text-stone-900">{selectedDish.name}</h2>
               <div className="text-4xl md:text-6xl font-black text-amber-800 tabular-nums">{selectedDish.price}</div>
               <p className="text-stone-500 text-lg md:text-xl italic font-light leading-relaxed max-w-lg">"{selectedDish.description || 'Món ăn truyền thống chuẩn vị mẹ nấu.'}"</p>
-              <div className="pt-4"><span className="bg-stone-950 text-white px-8 py-3 rounded-full text-[9px] font-black uppercase tracking-[0.3em]">{selectedDish.category}</span></div>
+              <div className="flex flex-col gap-4 pt-4">
+                <button 
+                  onClick={() => {
+                    const priceNum = parseInt(selectedDish.price.replace(/\D/g, ''));
+                    addToCart(selectedDish.name, priceNum);
+                    setSelectedIdx(null);
+                  }}
+                  className="bg-amber-800 text-white px-12 py-5 rounded-full text-xs font-black uppercase tracking-[0.3em] hover:bg-stone-900 transition-all shadow-xl shadow-amber-900/10 active:scale-95"
+                >
+                  THÊM VÀO GIỎ
+                </button>
+                <span className="bg-stone-100 text-stone-900 px-8 py-3 rounded-full text-[9px] font-black uppercase tracking-[0.3em] self-start">{selectedDish.category}</span>
+              </div>
             </div>
             <div className="absolute bottom-0 left-0 h-1 bg-amber-800/30 w-full">
               <div key={`progress-${selectedDish.id}`} className="h-full bg-amber-800 animate-[progress_10s_linear_forwards]"></div>
@@ -626,6 +773,8 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
             @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
             @keyframes scaleSlow { from { transform: scale(1); } to { transform: scale(1.1); } }
             @keyframes progress { from { width: 0%; } to { width: 100%; } }
+            @keyframes slide-left { from { transform: translateX(100%); } to { transform: translateX(0); } }
+            .animate-slide-left { animation: slide-left 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
           `}</style>
         </div>
       )}
