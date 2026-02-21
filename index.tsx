@@ -313,9 +313,6 @@ const Nav = ({ isAdmin = false, onShowQuickSelect, cartCount, onShowCart }: any)
               <span className="text-base md:text-4xl font-black text-amber-700 uppercase tracking-tighter leading-none">CƠM PHẦN</span>
               <span className="text-base md:text-4xl font-black text-stone-900 uppercase tracking-tighter leading-none">ÚT TRINH</span>
             </div>
-            <span className="text-[9px] md:text-lg font-black text-red-600 uppercase tracking-widest mt-1 animate-pulse">
-              Đặt món ngay : 0939.70.90.20
-            </span>
           </div>
         </div>
 
@@ -324,20 +321,25 @@ const Nav = ({ isAdmin = false, onShowQuickSelect, cartCount, onShowCart }: any)
             <button onClick={() => window.location.hash = ''} className="bg-amber-800 text-white px-4 md:px-8 py-2 md:py-3 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:bg-stone-900 transition-all">Thoát Quản Trị</button>
           ) : (
             <>
-              <div className="hidden xl:flex items-center gap-8">
-                <a href="#menu" className="text-stone-900 text-[10px] md:text-xs font-black uppercase tracking-widest hover:text-amber-700">THỰC ĐƠN</a>
-                <button 
-                  onClick={onShowQuickSelect} 
-                  className="text-stone-900 text-[10px] md:text-xs font-black uppercase tracking-widest hover:text-amber-700"
-                >
-                  CHỌN MÓN NHANH
-                </button>
-                <button 
-                  onClick={() => setShowConciseMenu(true)} 
-                  className="bg-amber-800 text-white text-[9px] md:text-[10px] font-black uppercase tracking-widest px-5 py-2.5 rounded-full hover:bg-stone-900 transition-all"
-                >
-                  MENU ẢNH
-                </button>
+              <div className="hidden xl:flex flex-col items-end gap-1">
+                <div className="flex items-center gap-8">
+                  <a href="#menu" className="text-stone-900 text-[10px] md:text-xs font-black uppercase tracking-widest hover:text-amber-700">THỰC ĐƠN</a>
+                  <button 
+                    onClick={onShowQuickSelect} 
+                    className="text-stone-900 text-[10px] md:text-xs font-black uppercase tracking-widest hover:text-amber-700"
+                  >
+                    CHỌN MÓN NHANH
+                  </button>
+                  <button 
+                    onClick={() => setShowConciseMenu(true)} 
+                    className="bg-amber-800 text-white text-[9px] md:text-[10px] font-black uppercase tracking-widest px-5 py-2.5 rounded-full hover:bg-stone-900 transition-all"
+                  >
+                    MENU ẢNH
+                  </button>
+                </div>
+                <span className="text-[10px] md:text-sm font-black text-red-600 uppercase tracking-widest animate-pulse">
+                  Đặt món ngay : 0939.70.90.20
+                </span>
               </div>
               
               <button 
@@ -883,10 +885,22 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
     if (!error) fetchQuickMenu();
   };
 
-  const updateQuickPrice = async (id: string, newPrice: string) => {
-    const price = parseInt(newPrice.replace(/\D/g, ''));
-    await supabase.from('quick_menu').update({ price }).eq('id', id);
-    fetchQuickMenu();
+  const handlePriceChange = (id: string, newPrice: string) => {
+    const price = parseInt(newPrice.replace(/\D/g, '')) || 0;
+    setQuickMenuItems(prev => prev.map(item => item.id === id ? { ...item, price } : item));
+  };
+
+  const saveQuickMenu = async () => {
+    setLoadingQuick(true);
+    try {
+      for (const item of quickMenuItems) {
+        await supabase.from('quick_menu').update({ price: item.price }).eq('id', item.id);
+      }
+      alert("Đã lưu tất cả thay đổi giá thành công!");
+    } catch (err) {
+      alert("Có lỗi xảy ra khi lưu giá.");
+    }
+    setLoadingQuick(false);
   };
 
   const toggleSelectAll = () => {
@@ -1003,8 +1017,8 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
               <input 
                 type="text" 
                 placeholder="Giá (VNĐ)" 
-                defaultValue={item.price ? item.price.toLocaleString('vi-VN') : ''}
-                onBlur={(e) => updateQuickPrice(item.id, e.target.value)}
+                value={item.price ? item.price.toLocaleString('vi-VN') : ''}
+                onChange={(e) => handlePriceChange(item.id, e.target.value)}
                 className="w-32 p-2 border rounded-xl text-xs font-black text-amber-800 text-right focus:ring-2 focus:ring-amber-500 outline-none"
               />
             </div>
@@ -1098,7 +1112,10 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
             <div className="space-y-8">
               <div className="flex justify-between items-end border-b pb-6">
                 <h2 className="text-3xl font-black uppercase text-stone-900">QUẢN LÝ CHỌN NHANH</h2>
-                <button onClick={() => handleAddQuick(null)} className="bg-amber-800 text-white px-8 py-3.5 text-[10px] font-black rounded-xl uppercase tracking-widest shadow-lg">+ THÊM DANH MỤC GỐC</button>
+                <div className="flex gap-3">
+                  <button onClick={saveQuickMenu} className="bg-green-600 text-white px-8 py-3.5 text-[10px] font-black rounded-xl uppercase tracking-widest shadow-lg">LƯU TẤT CẢ GIÁ</button>
+                  <button onClick={() => handleAddQuick(null)} className="bg-amber-800 text-white px-8 py-3.5 text-[10px] font-black rounded-xl uppercase tracking-widest shadow-lg">+ THÊM DANH MỤC GỐC</button>
+                </div>
               </div>
               
               <div className="space-y-2">
@@ -1110,7 +1127,7 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                   </div>
                 )}
               </div>
-              <p className="text-stone-400 text-[10px] italic font-bold">* Lưu ý: Nhấn vào ô giá và nhập số, sau đó nhấn ra ngoài để tự động lưu giá.</p>
+              <p className="text-stone-400 text-[10px] italic font-bold">* Lưu ý: Nhập giá cho các món, sau đó nhấn nút "LƯU TẤT CẢ GIÁ" để cập nhật lên hệ thống.</p>
             </div>
           ) : activeTab === 'hero' ? (
             <div className="space-y-10">
