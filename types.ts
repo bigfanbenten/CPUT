@@ -1,0 +1,22 @@
+export interface Notification {
+  id: string;
+  message: string;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface Dish {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  image_url: string;
+  category_id: string;
+  is_available: boolean;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  display_order: number;
+}
