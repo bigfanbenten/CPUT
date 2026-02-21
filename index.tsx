@@ -369,9 +369,30 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
   const [activeNotif, setActiveNotif] = useState<any>(null);
   const [showQuickSelect, setShowQuickSelect] = useState(false);
   const [quickSelectPath, setQuickSelectPath] = useState<QuickMenuItem[]>([]);
+  const [quickMenuData, setQuickMenuData] = useState<QuickMenuItem[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showCart, setShowCart] = useState(false);
   const itemsPerPage = 9;
+
+  // Fetch Quick Menu from Supabase
+  useEffect(() => {
+    const fetchQuick = async () => {
+      const { data } = await supabase.from('quick_menu').select('*').order('sort_order', { ascending: true });
+      if (data) {
+        // Build tree structure
+        const buildTree = (items: any[], parentId: string | null = null): QuickMenuItem[] => {
+          return items
+            .filter(item => item.parent_id === parentId)
+            .map(item => ({
+              ...item,
+              children: buildTree(items, item.id)
+            }));
+        };
+        setQuickMenuData(buildTree(data));
+      }
+    };
+    fetchQuick();
+  }, [supabase, showQuickSelect]);
 
   // Cart Persistence Logic (1 hour expiry)
   useEffect(() => {
@@ -496,7 +517,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
   const selectedDish = selectedIdx !== null ? filteredMenu[selectedIdx] : null;
 
   const currentQuickOptions = quickSelectPath.length === 0 
-    ? QUICK_MENU 
+    ? quickMenuData 
     : quickSelectPath[quickSelectPath.length - 1].children || [];
 
   const calculateTotalPrice = () => {
@@ -815,10 +836,45 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
 };
 
 const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase }: any) => {
-  const [activeTab, setActiveTab] = useState<'menu' | 'hero' | 'notifications'>('menu');
+  const [activeTab, setActiveTab] = useState<'menu' | 'hero' | 'notifications' | 'quick'>('menu');
   const [notifications, setNotifications] = useState<any[]>([]);
   const [newNotif, setNewNotif] = useState('');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [quickMenuItems, setQuickMenuItems] = useState<QuickMenuItem[]>([]);
+  const [loadingQuick, setLoadingQuick] = useState(false);
+
+  const fetchQuickMenu = useCallback(async () => {
+    setLoadingQuick(true);
+    const { data } = await supabase.from('quick_menu').select('*').order('sort_order', { ascending: true });
+    if (data) setQuickMenuItems(data);
+    setLoadingQuick(false);
+  }, [supabase]);
+
+  useEffect(() => {
+    if (activeTab === 'quick') fetchQuickMenu();
+  }, [activeTab, fetchQuickMenu]);
+
+  const handleAddQuick = async (parentId: string | null = null) => {
+    const name = prompt("Nhập tên mục mới:");
+    if (!name) return;
+    const priceStr = prompt("Nhập giá (để trống nếu là danh mục cha):");
+    const price = priceStr ? parseInt(priceStr.replace(/\D/g, '')) : null;
+    
+    const { error } = await supabase.from('quick_menu').insert([{ name, price, parent_id: parentId, sort_order: quickMenuItems.length }]);
+    if (!error) fetchQuickMenu();
+  };
+
+  const deleteQuick = async (id: string) => {
+    if (!confirm("Xóa mục này và tất cả mục con?")) return;
+    const { error } = await supabase.from('quick_menu').delete().eq('id', id);
+    if (!error) fetchQuickMenu();
+  };
+
+  const updateQuickPrice = async (id: string, newPrice: string) => {
+    const price = parseInt(newPrice.replace(/\D/g, ''));
+    await supabase.from('quick_menu').update({ price }).eq('id', id);
+    fetchQuickMenu();
+  };
 
   const toggleSelectAll = () => {
     if (selectedIds.length === menu.length) {
@@ -917,6 +973,7 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
         <div className="flex bg-stone-50 border-b p-3 gap-2">
           <button onClick={() => setActiveTab('menu')} className={`flex-1 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest ${activeTab === 'menu' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>🍱 THỰC ĐƠN</button>
           <button onClick={() => setActiveTab('hero')} className={`flex-1 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest ${activeTab === 'hero' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>🖼️ HERO SLIDES</button>
+          <button onClick={() => setActiveTab('quick')} className={`flex-1 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest ${activeTab === 'quick' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>⚡ CHỌN NHANH</button>
           <button onClick={() => setActiveTab('notifications')} className={`flex-1 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest ${activeTab === 'notifications' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>🔔 THÔNG BÁO</button>
         </div>
         
@@ -973,6 +1030,48 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                   </div>
                 ))}
               </div>
+            </div>
+          ) : activeTab === 'quick' ? (
+            <div className="space-y-8">
+              <div className="flex justify-between items-end border-b pb-6">
+                <h2 className="text-3xl font-black uppercase text-stone-900">QUẢN LÝ CHỌN NHANH</h2>
+                <button onClick={() => handleAddQuick(null)} className="bg-amber-800 text-white px-8 py-3.5 text-[10px] font-black rounded-xl uppercase tracking-widest shadow-lg">+ THÊM DANH MỤC GỐC</button>
+              </div>
+              
+              <div className="space-y-4">
+                {loadingQuick ? (
+                  <div className="text-center py-10 text-stone-400 font-bold">Đang tải dữ liệu...</div>
+                ) : (
+                  <div className="grid gap-4">
+                    {quickMenuItems.map((item) => (
+                      <div key={item.id} className="p-6 border rounded-3xl bg-stone-50 flex justify-between items-center group">
+                        <div className="flex items-center gap-4">
+                          <div className={`w-2 h-2 rounded-full ${item.parent_id ? 'bg-stone-300' : 'bg-amber-800'}`}></div>
+                          <div>
+                            <p className="font-black text-stone-900 uppercase tracking-tight">{item.name}</p>
+                            {item.parent_id && <p className="text-[10px] text-stone-400 uppercase font-bold">Mục con</p>}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <div className="flex flex-col items-end">
+                            <span className="text-[9px] font-black text-stone-400 uppercase tracking-widest mb-1">Giá tiền</span>
+                            <input 
+                              type="text" 
+                              placeholder="Giá (VNĐ)" 
+                              defaultValue={item.price ? item.price.toLocaleString('vi-VN') : ''}
+                              onBlur={(e) => updateQuickPrice(item.id, e.target.value)}
+                              className="w-32 p-2 border rounded-xl text-xs font-black text-amber-800 text-right focus:ring-2 focus:ring-amber-500 outline-none"
+                            />
+                          </div>
+                          <button onClick={() => handleAddQuick(item.id)} className="p-3 bg-white border rounded-xl text-stone-400 hover:text-green-600 transition-colors shadow-sm" title="Thêm mục con"><Plus size={18}/></button>
+                          <button onClick={() => deleteQuick(item.id)} className="p-3 bg-white border rounded-xl text-stone-300 hover:text-red-500 transition-colors shadow-sm"><Trash2 size={18}/></button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <p className="text-stone-400 text-[10px] italic font-bold">* Lưu ý: Nhấn vào ô giá và nhập số, sau đó nhấn ra ngoài để tự động lưu giá.</p>
             </div>
           ) : activeTab === 'hero' ? (
             <div className="space-y-10">
