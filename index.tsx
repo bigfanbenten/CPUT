@@ -337,7 +337,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
   );
 };
 
-const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave }: any) => {
+const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase }: any) => {
   const [activeTab, setActiveTab] = useState<'menu' | 'hero' | 'notifications'>('menu');
   const [notifications, setNotifications] = useState<any[]>([]);
   const [newNotif, setNewNotif] = useState('');
@@ -537,7 +537,7 @@ const App = () => {
   };
 
   const isAcp = window.location.hash.toUpperCase().includes('ACP1122');
-  return isAcp ? <AdminPanel menu={menu} setMenu={setMenu} heroSlides={heroSlides} setHeroSlides={setHeroSlides} onSave={handleSave} /> : <HomePage menu={menu} heroSlides={heroSlides} isLoading={isLoading} supabase={supabase} />;
+  return isAcp ? <AdminPanel menu={menu} setMenu={setMenu} heroSlides={heroSlides} setHeroSlides={setHeroSlides} onSave={handleSave} supabase={supabase} /> : <HomePage menu={menu} heroSlides={heroSlides} isLoading={isLoading} supabase={supabase} />;
 };
 
 ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
