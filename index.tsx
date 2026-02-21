@@ -312,7 +312,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
           <div className="space-y-6">
             <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-amber-600">Liên hệ</h4>
             <div className="space-y-4 text-stone-400 text-sm">
-              <p className="font-bold text-white">158A/5 Trần Vĩnh Kiết, Phường Tân An, Quận Ninh Kiều, TP Cần Thơ</p>
+              <p className="font-bold text-white">158A/5 Trần Vĩnh Kiết, Cần Thơ</p>
               <p className="font-black text-2xl text-white">0939.70.90.20</p>
             </div>
           </div>
@@ -556,16 +556,38 @@ const App = () => {
   useEffect(() => { fetchData(); }, [fetchData]);
   
   const handleSave = async () => {
+    if (isLoading) return;
     setIsLoading(true);
     try {
-      await supabase.from('dishes').delete().neq('id', '0');
-      await supabase.from('hero_slides').delete().neq('id', '0');
+      // 1. Xóa dữ liệu cũ - Kiểm tra lỗi chặt chẽ
+      const { error: delDishesError } = await supabase.from('dishes').delete().neq('id', 'temp-id-never-exists');
+      if (delDishesError) throw new Error("Không thể xóa món ăn cũ: " + delDishesError.message);
+
+      const { error: delSlidesError } = await supabase.from('hero_slides').delete().neq('id', 'temp-id-never-exists');
+      if (delSlidesError) throw new Error("Không thể xóa banner cũ: " + delSlidesError.message);
+
+      // 2. Chuẩn bị dữ liệu để lưu (loại bỏ id cũ để Supabase tự tạo id mới)
       const sanitize = (list: any[]) => list.map(({ id, created_at, ...rest }) => rest);
-      if (menu.length) await supabase.from('dishes').insert(sanitize(menu));
-      if (heroSlides.length) await supabase.from('hero_slides').insert(sanitize(heroSlides));
-      alert("Đồng bộ dữ liệu thành công!"); 
+      
+      // 3. Lưu dữ liệu mới
+      if (menu.length) {
+        const { error: insDishesError } = await supabase.from('dishes').insert(sanitize(menu));
+        if (insDishesError) throw new Error("Lỗi khi lưu danh sách món ăn: " + insDishesError.message);
+      }
+      
+      if (heroSlides.length) {
+        const { error: insSlidesError } = await supabase.from('hero_slides').insert(sanitize(heroSlides));
+        if (insSlidesError) throw new Error("Lỗi khi lưu banner: " + insSlidesError.message);
+      }
+
+      alert("Đồng bộ dữ liệu thành công! Dữ liệu đã được làm mới."); 
       fetchData();
-    } catch (e) { alert("Lỗi đồng bộ."); } finally { setIsLoading(false); }
+    } catch (e: any) { 
+      console.error(e);
+      alert("LỖI ĐỒNG BỘ: " + (e.message || "Vui lòng kiểm tra quyền xóa (Delete Policy) trong Supabase.")); 
+    } finally { 
+      setIsLoading(false); 
+    }
   };
 
   const isAcp = window.location.hash.toUpperCase().includes('ACP1122');
