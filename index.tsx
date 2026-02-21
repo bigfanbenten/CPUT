@@ -1,6 +1,6 @@
 
 /**
- * BẢN SAVE SỐ 1 - PHIÊN BẢN CHÍNH THỨC (CẬP NHẬT MỚI NHẤT)
+ * BẢN SAVE SỐ 1 - PHIÊN BẢN CHÍNH THỨC (HOÀN THIỆN)
  * -------------------------------------------------------
  * Các tính năng đã tích hợp:
  * 1. Hiển thị món ăn RANDOM (ngẫu nhiên) mỗi khi tải trang hoặc đổi danh mục.
@@ -15,11 +15,13 @@
  *    - Sơ đồ nhánh chuyên nghiệp (Thịt, Cá, Canh...).
  *    - Tự động lấy dữ liệu từ Supabase `quick_menu`.
  *    - Sửa lỗi hiển thị "0" khi món không có giá.
+ *    - UX Refinement: "BẠN CÓ MUỐN CHỌN ?" & Nút QUAY LẠI màu vàng nổi bật.
  * 6. Giỏ hàng thông minh (Shopping Cart):
  *    - Lưu trữ Cookie trong 1 giờ.
  *    - Tự động cộng tiền, quản lý số lượng món.
+ *    - Thông báo hướng dẫn đặt hàng chi tiết khi nhấn Xác nhận.
  * 7. Quản lý CHỌN NHANH tại #ACP1122 (NÂNG CẤP):
- *    - Hiển thị dạng Cây thư mục (Mẹ - Con - Cháu) trực quan.
+ *    - Giao diện Thư mục thu gọn (Collapsible Tree) như Windows Explorer.
  *    - Cho phép sửa Tên món và Giá tiền trực tiếp.
  *    - Nút "LƯU TẤT CẢ" giúp lưu hàng loạt thay đổi nhanh chóng, không bị giật trang.
  * 8. Cập nhật Logo Shopee Food mới & Vị trí số điện thoại đặt món tối ưu.
@@ -601,7 +603,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
                 <span className="text-3xl font-black text-amber-800 tabular-nums">{cartTotal.toLocaleString('vi-VN')} VNĐ</span>
               </div>
               <button 
-                onClick={() => { alert("Cảm ơn bạn! Hãy gọi 0939.70.90.20 để xác nhận đơn hàng."); setShowCart(false); }}
+                onClick={() => { alert("Cảm ơn bạn đã chọn món ! Đây là chức năng tính món theo ví nên Quán không thể giao hàng cho bạn được, nhưng bạn có thể đặt hàng bằng cách gọi 0939.70.90.20 để LIỆT KÊ những món bạn đặt và vui lòng lại quán nhận đơn hàng nhé"); setShowCart(false); }}
                 className="w-full bg-stone-900 text-white py-5 rounded-2xl text-xs font-black uppercase tracking-[0.3em] hover:bg-amber-800 transition-all shadow-xl"
               >
                 XÁC NHẬN ĐƠN HÀNG
