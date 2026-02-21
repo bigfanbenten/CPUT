@@ -245,7 +245,7 @@ const QUICK_MENU: QuickMenuItem[] = [
     price: 40000,
     children: [
       { name: "Tôm kho tàu" },
-      { name: "Rép ram mặn" },
+      { name: "Tép ram mặn" },
       { name: "Ba rọi tép ram" },
       { name: "Mì xào tôm" },
       { name: "Canh chua tôm" }
