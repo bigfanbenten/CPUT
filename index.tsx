@@ -8,8 +8,11 @@
  * 3. Hệ thống thông báo ĐỘNG (Dynamic Notifications):
  *    - Quản lý tại #ACP1122: Tạo mới, Bật/Tắt bằng cần gạt, Xóa thông báo.
  *    - Hiển thị tự động thông báo mới nhất đang "Bật" trên trang chủ.
- * 4. Cập nhật Logo Shopee Food mới.
- * 5. Hệ thống quản trị chuyên nghiệp tại đường dẫn #ACP1122.
+ * 4. Quản lý thực đơn nâng cao:
+ *    - Chọn tất cả & Xóa hàng loạt món ăn.
+ *    - Cơ chế Đồng bộ an toàn (Safe Sync) chống trùng lặp dữ liệu.
+ * 5. Cập nhật Logo Shopee Food mới.
+ * 6. Hệ thống quản trị chuyên nghiệp tại đường dẫn #ACP1122.
  */
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
@@ -49,9 +52,233 @@ const VIEW_COUNT_KEY = 'ut-trinh-total-views-v15';
 const SESSION_VISIT_KEY = 'ut-trinh-session-visited-v15';
 const SHOPEE_LOGO = 'https://i.postimg.cc/Wzj6yWrp/pngtree-shopefood-logo-png-image-6472274.png';
 
+interface QuickMenuItem {
+  name: string;
+  price?: number;
+  children?: QuickMenuItem[];
+}
+
+const QUICK_MENU: QuickMenuItem[] = [
+  {
+    name: "THỊT",
+    children: [
+      {
+        name: "SƯỜN",
+        price: 38000,
+        children: [
+          { name: "Muối chiên" },
+          { name: "Chiên sả" },
+          { 
+            name: "Chiên sốt",
+            children: [
+              { name: "Xí muội" },
+              { name: "Cay" },
+              { name: "Chua Ngọt" },
+              { name: "Mắm" }
+            ]
+          },
+          { name: "Kho Trứng" },
+          { name: "Ram Mặn" }
+        ]
+      },
+      {
+        name: "BA RỌI",
+        price: 38000,
+        children: [
+          { name: "Muối chiên" },
+          { name: "Chiên sả" },
+          { 
+            name: "Chiên sốt",
+            children: [
+              { name: "Xí muội" },
+              { name: "Cay" },
+              { name: "Chua Ngọt" },
+              { name: "Mắm" }
+            ]
+          },
+          { name: "Kho Tiêu" },
+          { name: "Mắm Ruốc" }
+        ]
+      }
+    ]
+  },
+  {
+    name: "CÁ",
+    children: [
+      {
+        name: "Ba sa",
+        price: 35000,
+        children: [{ name: "Kho tiêu" }, { name: "Canh Chua Ba sa" }]
+      },
+      {
+        name: "Cá Lóc",
+        price: 35000,
+        children: [
+          { name: "Muối chiên" },
+          { name: "Chiên Sả" },
+          { 
+            name: "Chiên sốt",
+            children: [
+              { name: "Xí muội" },
+              { name: "Cay" },
+              { name: "Chua Ngọt" },
+              { name: "Mắm" }
+            ]
+          },
+          { name: "Kho Tiêu" }
+        ]
+      },
+      {
+        name: "Điêu Hồng",
+        price: 35000,
+        children: [{ name: "Chiên Giòn" }, { name: "Sốt Cà" }, { name: "Canh Chua Cá Điều Hồng" }]
+      },
+      {
+        name: "Trê",
+        price: 35000,
+        children: [{ name: "Kho Tiêu" }, { name: "Chiên mắm gừng" }]
+      },
+      {
+        name: "Cam",
+        price: 38000,
+        children: [{ name: "Chiên Giòn" }, { name: "Sốt Cà" }]
+      },
+      {
+        name: "Chim",
+        price: 38000,
+        children: [{ name: "Muối chiên" }, { name: "Sốt Cà" }]
+      }
+    ]
+  },
+  {
+    name: "CANH",
+    children: [
+      { name: "Canh chua Cá ba sa", price: 40000 },
+      { name: "Canh chua cá lóc", price: 40000 },
+      { name: "Canh chua cá điêu hồng", price: 40000 },
+      { name: "Canh chua cá không", price: 35000 },
+      { name: "Canh Rong Biển", price: 35000 },
+      { name: "Canh Khoai Ngọt", price: 35000 },
+      { name: "Canh Khổ qua thịt bằm", price: 35000 },
+      { name: "Canh Cải thịt bằm", price: 35000 }
+    ]
+  },
+  {
+    name: "MÓN XÀO",
+    children: [
+      { name: "Rau muống xào Mề", price: 35000 },
+      { name: "Rau muống xào Tỏi", price: 35000 },
+      { name: "Cải ngọt xào Mề", price: 35000 },
+      { name: "Cải ngọt xào Tỏi", price: 35000 },
+      { name: "Bắp cải xào trứng", price: 35000 },
+      { name: "Bắp cải xào thịt bằm", price: 35000 },
+      { name: "Bắp cải xào cà chua", price: 35000 },
+      { name: "Khổ qua xào Tỏi", price: 35000 },
+      { name: "Khổ qua xào Trứng", price: 35000 },
+      { name: "Mực xào chua ngọt", price: 40000 }
+    ]
+  },
+  {
+    name: "MÓN CÁNH GÀ",
+    price: 33000,
+    children: [
+      { name: "Chiên muối" },
+      { 
+        name: "Chiên sốt",
+        children: [
+          { name: "Xí muội" },
+          { name: "Cay" },
+          { name: "Chua Ngọt" },
+          { name: "Mắm" }
+        ]
+      },
+      { name: "Cánh kho sả" },
+      { name: "Cánh Rô ti" }
+    ]
+  },
+  {
+    name: "MÓN ẾCH",
+    price: 35000,
+    children: [
+      { 
+        name: "Ếch chiên sốt",
+        children: [
+          { name: "Xí muội" },
+          { name: "Cay" },
+          { name: "Chua Ngọt" },
+          { name: "Mắm" }
+        ]
+      },
+      { name: "Ếch xào sả ớt" },
+      { name: "Canh Chua Ếch", price: 40000 }
+    ]
+  },
+  {
+    name: "MÓN MỰC",
+    price: 40000,
+    children: [
+      { 
+        name: "Chiên sốt",
+        children: [
+          { name: "Xí muội" },
+          { name: "Cay" },
+          { name: "Chua Ngọt" },
+          { name: "Mắm" }
+        ]
+      },
+      { name: "Xào chua ngọt" },
+      { name: "Mì xào mực" }
+    ]
+  },
+  {
+    name: "TRỨNG",
+    children: [
+      { name: "Trứng chiên thịt bằm", price: 35000 },
+      { name: "Cơm 2 trứng quậy", price: 35000 },
+      { name: "Trứng quậy thêm", price: 10000 },
+      { name: "Sườn kho trứng", price: 38000 }
+    ]
+  },
+  {
+    name: "TÔM - TÉP",
+    price: 40000,
+    children: [
+      { name: "Tôm kho tàu" },
+      { name: "Rép ram mặn" },
+      { name: "Ba rọi tép ram" },
+      { name: "Mì xào tôm" },
+      { name: "Canh chua tôm" }
+    ]
+  },
+  {
+    name: "MẮM KHO",
+    children: [
+      { name: "Mắm kho THẬP CẨM", price: 60000 },
+      { name: "Mắm kho ba rọi", price: 40000 },
+      { name: "Mắm kho ba sa", price: 40000 },
+      { name: "Mắm kho cá lóc", price: 40000 },
+      { name: "Mắm kho điêu hồng", price: 40000 },
+      { name: "Mắm kho mực", price: 40000 },
+      { name: "Mắm kho tôm", price: 40000 }
+    ]
+  },
+  {
+    name: "MÓN THÊM",
+    children: [
+      { name: "Lạp xưởng", price: 15000 },
+      { name: "Ốp la", price: 10000 },
+      { name: "Cơm thêm", price: 5000 },
+      { name: "Trứng quậy thêm", price: 10000 },
+      { name: "Xúc Xích", price: 10000 },
+      { name: "Đậu hủ sả / giòn", price: 15000 },
+      { name: "Trứng kho", price: 10000 }
+    ]
+  }
+];
+
 // --- COMPONENTS ---
 
-const Nav = ({ isAdmin = false }) => {
+const Nav = ({ isAdmin = false, onShowQuickSelect }: any) => {
   const [showConciseMenu, setShowConciseMenu] = useState(false);
 
   return (
@@ -76,6 +303,12 @@ const Nav = ({ isAdmin = false }) => {
             <>
               <div className="hidden xl:flex items-center gap-8">
                 <a href="#menu" className="text-stone-900 text-[10px] md:text-xs font-black uppercase tracking-widest hover:text-amber-700">THỰC ĐƠN</a>
+                <button 
+                  onClick={onShowQuickSelect} 
+                  className="text-stone-900 text-[10px] md:text-xs font-black uppercase tracking-widest hover:text-amber-700"
+                >
+                  CHỌN MÓN NHANH
+                </button>
                 <button 
                   onClick={() => setShowConciseMenu(true)} 
                   className="bg-amber-800 text-white text-[9px] md:text-[10px] font-black uppercase tracking-widest px-5 py-2.5 rounded-full hover:bg-stone-900 transition-all"
@@ -116,6 +349,8 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [showTetPopup, setShowTetPopup] = useState(false);
   const [activeNotif, setActiveNotif] = useState<any>(null);
+  const [showQuickSelect, setShowQuickSelect] = useState(false);
+  const [quickSelectPath, setQuickSelectPath] = useState<QuickMenuItem[]>([]);
   const itemsPerPage = 9;
 
   useEffect(() => {
@@ -194,9 +429,101 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
 
   const selectedDish = selectedIdx !== null ? filteredMenu[selectedIdx] : null;
 
+  const currentQuickOptions = quickSelectPath.length === 0 
+    ? QUICK_MENU 
+    : quickSelectPath[quickSelectPath.length - 1].children || [];
+
+  const calculateTotalPrice = () => {
+    let total = 0;
+    quickSelectPath.forEach(item => {
+      if (item.price) total = item.price; // Lấy giá của cấp cao nhất có giá
+    });
+    // Nếu món cuối cùng có giá riêng thì lấy giá đó
+    const lastItem = quickSelectPath[quickSelectPath.length - 1];
+    if (lastItem?.price) total = lastItem.price;
+    return total;
+  };
+
   return (
     <div className="min-h-screen bg-[#fafafa]">
-      <Nav />
+      <Nav onShowQuickSelect={() => setShowQuickSelect(true)} />
+      
+      {/* Quick Select Modal */}
+      {showQuickSelect && (
+        <div className="fixed inset-0 z-[150] flex items-center justify-center bg-stone-950/98 backdrop-blur-3xl p-4" onClick={() => { setShowQuickSelect(false); setQuickSelectPath([]); }}>
+          <div className="bg-white w-full max-w-4xl rounded-[40px] overflow-hidden shadow-2xl flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
+            <div className="p-8 border-b border-stone-100 flex justify-between items-center bg-stone-50">
+              <div className="space-y-1">
+                <h2 className="text-2xl font-black uppercase tracking-tighter text-stone-900">CHỌN MÓN NHANH</h2>
+                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+                  <button onClick={() => setQuickSelectPath([])} className="text-[10px] font-black uppercase tracking-widest text-amber-800 hover:underline">BẮT ĐẦU</button>
+                  {quickSelectPath.map((item, idx) => (
+                    <React.Fragment key={idx}>
+                      <span className="text-stone-300">/</span>
+                      <button 
+                        onClick={() => setQuickSelectPath(quickSelectPath.slice(0, idx + 1))}
+                        className="text-[10px] font-black uppercase tracking-widest text-stone-900 whitespace-nowrap"
+                      >
+                        {item.name}
+                      </button>
+                    </React.Fragment>
+                  ))}
+                </div>
+              </div>
+              <button onClick={() => { setShowQuickSelect(false); setQuickSelectPath([]); }} className="text-4xl text-stone-300 hover:text-stone-900 transition-colors">×</button>
+            </div>
+
+            <div className="flex-1 p-8 overflow-y-auto">
+              {currentQuickOptions.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {currentQuickOptions.map((option, idx) => (
+                    <button 
+                      key={idx}
+                      onClick={() => setQuickSelectPath([...quickSelectPath, option])}
+                      className="group p-6 border border-stone-100 rounded-3xl hover:border-amber-800 hover:bg-amber-50/30 transition-all text-left flex justify-between items-center"
+                    >
+                      <div className="space-y-1">
+                        <span className="text-lg font-black uppercase tracking-tighter text-stone-900 group-hover:text-amber-800">{option.name}</span>
+                        {option.price && <p className="text-amber-800 font-black text-sm">{option.price.toLocaleString('vi-VN')} VNĐ</p>}
+                      </div>
+                      <ChevronRight className="text-stone-300 group-hover:text-amber-800 group-hover:translate-x-1 transition-all" />
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 space-y-8">
+                  <div className="w-24 h-24 bg-amber-100 rounded-full flex items-center justify-center mx-auto text-amber-800">
+                    <UtensilsCrossed size={40} />
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-3xl font-black uppercase tracking-tighter text-stone-900">MÓN BẠN ĐÃ CHỌN</h3>
+                    <p className="text-stone-500 italic text-lg">
+                      {quickSelectPath.map(i => i.name).join(' - ')}
+                    </p>
+                  </div>
+                  <div className="text-5xl font-black text-amber-800 tabular-nums">
+                    {calculateTotalPrice().toLocaleString('vi-VN')} VNĐ
+                  </div>
+                  <div className="pt-8">
+                    <button 
+                      onClick={() => { setShowQuickSelect(false); setQuickSelectPath([]); }}
+                      className="bg-stone-900 text-white px-12 py-5 rounded-full text-xs font-black uppercase tracking-[0.3em] hover:bg-amber-800 transition-all shadow-xl"
+                    >
+                      ĐẶT MÓN NGAY
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            {quickSelectPath.length > 0 && (
+              <div className="p-4 bg-stone-50 border-t border-stone-100 flex justify-center">
+                <button onClick={() => setQuickSelectPath(quickSelectPath.slice(0, -1))} className="text-[10px] font-black uppercase tracking-widest text-stone-400 hover:text-stone-900">Quay lại</button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       
       {/* Dynamic Notification Popup */}
       {showTetPopup && activeNotif && (
