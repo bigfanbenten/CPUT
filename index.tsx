@@ -352,10 +352,27 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
 
   const handleAddNotif = async () => {
     if (!newNotif.trim()) return;
-    const { data, error } = await supabase.from('notifications').insert([{ message: newNotif, is_active: true }]).select().single();
-    if (data) {
-      setNotifications([data, ...notifications]);
-      setNewNotif('');
+    try {
+      const { data, error } = await supabase
+        .from('notifications')
+        .insert([{ message: newNotif, is_active: true }])
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Supabase error:', error);
+        alert(`Lỗi: ${error.message}. Có thể bảng 'notifications' chưa được tạo trong Supabase.`);
+        return;
+      }
+
+      if (data) {
+        setNotifications([data, ...notifications]);
+        setNewNotif('');
+        alert("Đã tạo thông báo mới thành công!");
+      }
+    } catch (err) {
+      console.error('Unexpected error:', err);
+      alert("Đã xảy ra lỗi không xác định khi kết nối với máy chủ.");
     }
   };
 
