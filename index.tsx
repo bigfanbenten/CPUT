@@ -11,8 +11,16 @@
  * 4. Quản lý thực đơn nâng cao:
  *    - Chọn tất cả & Xóa hàng loạt món ăn.
  *    - Cơ chế Đồng bộ an toàn (Safe Sync) chống trùng lặp dữ liệu.
- * 5. Cập nhật Logo Shopee Food mới.
- * 6. Hệ thống quản trị chuyên nghiệp tại đường dẫn #ACP1122.
+ * 5. Tính năng CHỌN MÓN NHANH (Quick Select):
+ *    - Sơ đồ nhánh chuyên nghiệp (Thịt, Cá, Canh...).
+ *    - Tự động lấy dữ liệu từ Supabase `quick_menu`.
+ * 6. Giỏ hàng thông minh (Shopping Cart):
+ *    - Lưu trữ Cookie trong 1 giờ.
+ *    - Tự động cộng tiền, quản lý số lượng món.
+ * 7. Quản lý CHỌN NHANH tại #ACP1122:
+ *    - Tự do thêm/sửa/xóa danh mục và giá tiền.
+ * 8. Cập nhật Logo Shopee Food mới.
+ * 9. Hệ thống quản trị chuyên nghiệp tại đường dẫn #ACP1122.
  */
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
@@ -300,9 +308,14 @@ const Nav = ({ isAdmin = false, onShowQuickSelect, cartCount, onShowCart }: any)
             alt="Logo Út Trinh" 
             className="w-16 h-16 md:w-24 md:h-24 object-contain shrink-0 group-hover:scale-105 transition-transform duration-500"
           />
-          <div className="flex flex-col md:flex-row md:items-center gap-0 md:gap-4 whitespace-nowrap">
-            <span className="text-base md:text-4xl font-black text-amber-700 uppercase tracking-tighter leading-none">CƠM PHẦN</span>
-            <span className="text-base md:text-4xl font-black text-stone-900 uppercase tracking-tighter leading-none">ÚT TRINH</span>
+          <div className="flex flex-col justify-center">
+            <div className="flex items-center gap-2 md:gap-4 whitespace-nowrap">
+              <span className="text-base md:text-4xl font-black text-amber-700 uppercase tracking-tighter leading-none">CƠM PHẦN</span>
+              <span className="text-base md:text-4xl font-black text-stone-900 uppercase tracking-tighter leading-none">ÚT TRINH</span>
+            </div>
+            <span className="text-[9px] md:text-lg font-black text-red-600 uppercase tracking-widest mt-1 animate-pulse">
+              Đặt món ngay : 0939.70.90.20
+            </span>
           </div>
         </div>
 
@@ -966,6 +979,56 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
     }
   };
 
+  const renderQuickTree = (items: QuickMenuItem[], level = 0) => {
+    return items.map((item) => (
+      <React.Fragment key={item.id}>
+        <div 
+          className="p-6 border rounded-3xl bg-white flex justify-between items-center group hover:border-amber-800 transition-all shadow-sm mb-2"
+          style={{ marginLeft: `${level * 40}px` }}
+        >
+          <div className="flex items-center gap-4">
+            <div className={`w-2 h-2 rounded-full ${level === 0 ? 'bg-amber-800' : level === 1 ? 'bg-amber-400' : 'bg-stone-300'}`}></div>
+            <div>
+              <p className={`font-black uppercase tracking-tight ${level === 0 ? 'text-stone-900 text-lg' : 'text-stone-600 text-sm'}`}>
+                {item.name}
+              </p>
+              <p className="text-[9px] text-stone-400 uppercase font-bold tracking-widest">
+                {level === 0 ? 'Danh mục gốc' : level === 1 ? 'Mục con' : 'Cách chế biến'}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="flex flex-col items-end">
+              <span className="text-[9px] font-black text-stone-400 uppercase tracking-widest mb-1">Giá tiền</span>
+              <input 
+                type="text" 
+                placeholder="Giá (VNĐ)" 
+                defaultValue={item.price ? item.price.toLocaleString('vi-VN') : ''}
+                onBlur={(e) => updateQuickPrice(item.id, e.target.value)}
+                className="w-32 p-2 border rounded-xl text-xs font-black text-amber-800 text-right focus:ring-2 focus:ring-amber-500 outline-none"
+              />
+            </div>
+            <button onClick={() => handleAddQuick(item.id)} className="p-3 bg-stone-50 border rounded-xl text-stone-400 hover:text-green-600 transition-colors shadow-sm" title="Thêm mục con"><Plus size={18}/></button>
+            <button onClick={() => deleteQuick(item.id)} className="p-3 bg-stone-50 border rounded-xl text-stone-300 hover:text-red-500 transition-colors shadow-sm"><Trash2 size={18}/></button>
+          </div>
+        </div>
+        {item.children && renderQuickTree(item.children, level + 1)}
+      </React.Fragment>
+    ));
+  };
+
+  const quickTree = useMemo(() => {
+    const buildTree = (items: QuickMenuItem[], parentId: string | null = null): QuickMenuItem[] => {
+      return items
+        .filter(item => item.parent_id === parentId)
+        .map(item => ({
+          ...item,
+          children: buildTree(items, item.id)
+        }));
+    };
+    return buildTree(quickMenuItems);
+  }, [quickMenuItems]);
+
   return (
     <div className="min-h-screen bg-stone-100 pt-32 pb-20 px-4 md:px-6">
       <Nav isAdmin />
@@ -1038,36 +1101,12 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                 <button onClick={() => handleAddQuick(null)} className="bg-amber-800 text-white px-8 py-3.5 text-[10px] font-black rounded-xl uppercase tracking-widest shadow-lg">+ THÊM DANH MỤC GỐC</button>
               </div>
               
-              <div className="space-y-4">
+              <div className="space-y-2">
                 {loadingQuick ? (
                   <div className="text-center py-10 text-stone-400 font-bold">Đang tải dữ liệu...</div>
                 ) : (
-                  <div className="grid gap-4">
-                    {quickMenuItems.map((item) => (
-                      <div key={item.id} className="p-6 border rounded-3xl bg-stone-50 flex justify-between items-center group">
-                        <div className="flex items-center gap-4">
-                          <div className={`w-2 h-2 rounded-full ${item.parent_id ? 'bg-stone-300' : 'bg-amber-800'}`}></div>
-                          <div>
-                            <p className="font-black text-stone-900 uppercase tracking-tight">{item.name}</p>
-                            {item.parent_id && <p className="text-[10px] text-stone-400 uppercase font-bold">Mục con</p>}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          <div className="flex flex-col items-end">
-                            <span className="text-[9px] font-black text-stone-400 uppercase tracking-widest mb-1">Giá tiền</span>
-                            <input 
-                              type="text" 
-                              placeholder="Giá (VNĐ)" 
-                              defaultValue={item.price ? item.price.toLocaleString('vi-VN') : ''}
-                              onBlur={(e) => updateQuickPrice(item.id, e.target.value)}
-                              className="w-32 p-2 border rounded-xl text-xs font-black text-amber-800 text-right focus:ring-2 focus:ring-amber-500 outline-none"
-                            />
-                          </div>
-                          <button onClick={() => handleAddQuick(item.id)} className="p-3 bg-white border rounded-xl text-stone-400 hover:text-green-600 transition-colors shadow-sm" title="Thêm mục con"><Plus size={18}/></button>
-                          <button onClick={() => deleteQuick(item.id)} className="p-3 bg-white border rounded-xl text-stone-300 hover:text-red-500 transition-colors shadow-sm"><Trash2 size={18}/></button>
-                        </div>
-                      </div>
-                    ))}
+                  <div className="py-4">
+                    {renderQuickTree(quickTree)}
                   </div>
                 )}
               </div>
