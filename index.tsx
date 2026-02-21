@@ -5,10 +5,10 @@
  * Các tính năng đã tích hợp:
  * 1. Hiển thị món ăn RANDOM (ngẫu nhiên) mỗi khi tải trang hoặc đổi danh mục.
  * 2. Tự động chuyển món trong Modal (10 giây/lần) với hiệu ứng mờ ảo và thanh tiến trình.
- * 3. Popup thông báo Lịch Nghỉ Tết:
- *    - Nội dung: Nghỉ từ 26 Tết, bán lại Mùng 6 Tết.
- *    - Lời chúc: Màu Vàng Cam đậm (Amber-600) nổi bật.
- * 4. Cập nhật Logo Shopee Food mới theo yêu cầu.
+ * 3. Hệ thống thông báo ĐỘNG (Dynamic Notifications):
+ *    - Quản lý tại #ACP1122: Tạo mới, Bật/Tắt bằng cần gạt, Xóa thông báo.
+ *    - Hiển thị tự động thông báo mới nhất đang "Bật" trên trang chủ.
+ * 4. Cập nhật Logo Shopee Food mới.
  * 5. Hệ thống quản trị chuyên nghiệp tại đường dẫn #ACP1122.
  */
 
