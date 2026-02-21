@@ -19,7 +19,7 @@
  * 6. Giỏ hàng thông minh (Shopping Cart):
  *    - Lưu trữ Cookie trong 1 giờ.
  *    - Tự động cộng tiền, quản lý số lượng món.
- *    - Thông báo hướng dẫn đặt hàng chi tiết khi nhấn Xác nhận.
+ *    - Thông báo hướng dẫn đặt hàng chi tiết & Ghi chú giả lập (Pre-Order).
  * 7. Quản lý CHỌN NHANH tại #ACP1122 (NÂNG CẤP):
  *    - Giao diện Thư mục thu gọn (Collapsible Tree) như Windows Explorer.
  *    - Cho phép sửa Tên món và Giá tiền trực tiếp.
@@ -608,6 +608,9 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
               >
                 XÁC NHẬN ĐƠN HÀNG
               </button>
+              <p className="text-[9px] text-stone-400 font-bold italic leading-relaxed text-center pt-2">
+                Lưu ý: đây là chức năng giả lập chứ không phải đặt hàng Online hoặc đặt qua Apps các bạn nhé, nhưng các bạn cứ thoải mái chọn món cho vào giỏ hàng theo túi ví của mình rồi Alo theo số Hotline để các bạn tự lại quán lấy nhé ( Pre-Order ) !
+              </p>
             </div>
           </div>
         </div>
