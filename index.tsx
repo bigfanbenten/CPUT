@@ -893,15 +893,22 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
     setQuickMenuItems(prev => prev.map(item => item.id === id ? { ...item, price } : item));
   };
 
+  const handleNameChange = (id: string, newName: string) => {
+    setQuickMenuItems(prev => prev.map(item => item.id === id ? { ...item, name: newName } : item));
+  };
+
   const saveQuickMenu = async () => {
     setLoadingQuick(true);
     try {
       for (const item of quickMenuItems) {
-        await supabase.from('quick_menu').update({ price: item.price }).eq('id', item.id);
+        await supabase.from('quick_menu').update({ 
+          name: item.name,
+          price: item.price 
+        }).eq('id', item.id);
       }
-      alert("Đã lưu tất cả thay đổi giá thành công!");
+      alert("Đã lưu tất cả thay đổi thành công!");
     } catch (err) {
-      alert("Có lỗi xảy ra khi lưu giá.");
+      alert("Có lỗi xảy ra khi lưu dữ liệu.");
     }
     setLoadingQuick(false);
   };
@@ -1003,12 +1010,15 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
           className="p-6 border rounded-3xl bg-white flex justify-between items-center group hover:border-amber-800 transition-all shadow-sm mb-2"
           style={{ marginLeft: `${level * 40}px` }}
         >
-          <div className="flex items-center gap-4">
-            <div className={`w-2 h-2 rounded-full ${level === 0 ? 'bg-amber-800' : level === 1 ? 'bg-amber-400' : 'bg-stone-300'}`}></div>
-            <div>
-              <p className={`font-black uppercase tracking-tight ${level === 0 ? 'text-stone-900 text-lg' : 'text-stone-600 text-sm'}`}>
-                {item.name}
-              </p>
+          <div className="flex items-center gap-4 flex-1">
+            <div className={`w-2 h-2 rounded-full shrink-0 ${level === 0 ? 'bg-amber-800' : level === 1 ? 'bg-amber-400' : 'bg-stone-300'}`}></div>
+            <div className="flex-1">
+              <input 
+                type="text"
+                value={item.name}
+                onChange={(e) => handleNameChange(item.id, e.target.value)}
+                className={`w-full bg-transparent border-none focus:ring-0 p-0 font-black uppercase tracking-tight ${level === 0 ? 'text-stone-900 text-lg' : 'text-stone-600 text-sm'}`}
+              />
               <p className="text-[9px] text-stone-400 uppercase font-bold tracking-widest">
                 {level === 0 ? 'Danh mục gốc' : level === 1 ? 'Mục con' : 'Cách chế biến'}
               </p>
