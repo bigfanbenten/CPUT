@@ -341,6 +341,27 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
   const [activeTab, setActiveTab] = useState<'menu' | 'hero' | 'notifications'>('menu');
   const [notifications, setNotifications] = useState<any[]>([]);
   const [newNotif, setNewNotif] = useState('');
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === menu.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(menu.map((d: any) => d.id));
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+  };
+
+  const deleteSelected = () => {
+    if (selectedIds.length === 0) return;
+    if (confirm(`Xóa ${selectedIds.length} món đã chọn?`)) {
+      setMenu(menu.filter((d: any) => !selectedIds.includes(d.id)));
+      setSelectedIds([]);
+    }
+  };
 
   useEffect(() => {
     const fetchNotifs = async () => {
@@ -426,7 +447,28 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
           {activeTab === 'menu' ? (
             <div className="space-y-8">
               <div className="flex justify-between items-end border-b pb-6">
-                <h2 className="text-3xl font-black uppercase text-stone-900">QUẢN LÝ THỰC ĐƠN</h2>
+                <div className="space-y-2">
+                  <h2 className="text-3xl font-black uppercase text-stone-900">QUẢN LÝ THỰC ĐƠN</h2>
+                  <div className="flex items-center gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer group">
+                      <input 
+                        type="checkbox" 
+                        checked={selectedIds.length === menu.length && menu.length > 0} 
+                        onChange={toggleSelectAll}
+                        className="w-5 h-5 rounded border-stone-300 text-amber-800 focus:ring-amber-800"
+                      />
+                      <span className="text-[10px] font-black uppercase tracking-widest text-stone-500 group-hover:text-stone-900">Chọn tất cả ({menu.length})</span>
+                    </label>
+                    {selectedIds.length > 0 && (
+                      <button 
+                        onClick={deleteSelected}
+                        className="bg-red-50 text-red-600 px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-red-100 transition-all"
+                      >
+                        Xóa đã chọn ({selectedIds.length})
+                      </button>
+                    )}
+                  </div>
+                </div>
                 <div className="flex gap-3">
                   <button onClick={onSave} className="bg-green-600 text-white px-8 py-3.5 text-[10px] font-black rounded-xl uppercase tracking-widest shadow-lg">ĐỒNG BỘ</button>
                   <button onClick={() => setMenu([{ id: Date.now().toString(), name: 'Món Mới', price: '35.000 VNĐ', description: '', image_url: '', category: Category.MainCourse }, ...menu])} className="bg-amber-800 text-white px-8 py-3.5 text-[10px] font-black rounded-xl uppercase tracking-widest shadow-lg">+ THÊM MÓN</button>
@@ -434,15 +476,23 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
               </div>
               <div className="grid gap-6">
                 {menu.map((dish: Dish, i: number) => (
-                  <div key={dish.id} className="p-8 border border-stone-100 rounded-[35px] bg-stone-50/40 flex gap-10 items-start hover:border-amber-200 transition-all">
-                    <div className="w-40 h-40 rounded-[25px] overflow-hidden bg-stone-200 border-4 border-white"><img src={dish.image_url || 'https://placehold.co/400x400'} className="w-full h-full object-cover" /></div>
+                  <div key={dish.id} className={`p-8 border rounded-[35px] flex gap-10 items-start transition-all ${selectedIds.includes(dish.id) ? 'bg-amber-50/50 border-amber-200' : 'bg-stone-50/40 border-stone-100 hover:border-amber-200'}`}>
+                    <div className="pt-2">
+                      <input 
+                        type="checkbox" 
+                        checked={selectedIds.includes(dish.id)} 
+                        onChange={() => toggleSelect(dish.id)}
+                        className="w-6 h-6 rounded-lg border-stone-300 text-amber-800 focus:ring-amber-800 cursor-pointer"
+                      />
+                    </div>
+                    <div className="w-40 h-40 rounded-[25px] overflow-hidden bg-stone-200 border-4 border-white shrink-0"><img src={dish.image_url || 'https://placehold.co/400x400'} className="w-full h-full object-cover" /></div>
                     <div className="flex-1 grid grid-cols-3 gap-5">
                       <input value={dish.name} onChange={e => { const m = [...menu]; m[i].name = e.target.value; setMenu(m); }} className="p-4 border rounded-2xl text-sm font-bold" placeholder="Tên món" />
                       <input value={dish.price} onChange={e => { const m = [...menu]; m[i].price = e.target.value; setMenu(m); }} className="p-4 border rounded-2xl text-sm font-black text-amber-800" placeholder="Giá" />
                       <select value={dish.category} onChange={e => { const m = [...menu]; m[i].category = e.target.value as Category; setMenu(m); }} className="p-4 border rounded-2xl text-sm font-bold">{Object.values(Category).filter(c => c !== Category.All).map(c => <option key={c} value={c}>{c}</option>)}</select>
                       <input value={dish.image_url} onChange={e => { const m = [...menu]; m[i].image_url = e.target.value; setMenu(m); }} className="col-span-3 p-4 border rounded-2xl text-[10px] font-mono" placeholder="Link ảnh (URL)" />
                     </div>
-                    <button onClick={() => { if(confirm('Xóa món này?')) setMenu(menu.filter(d => d.id !== dish.id)) }} className="w-14 h-14 bg-red-50 text-red-500 rounded-2xl text-2xl font-bold">×</button>
+                    <button onClick={() => { if(confirm('Xóa món này?')) setMenu(menu.filter(d => d.id !== dish.id)) }} className="w-14 h-14 bg-red-50 text-red-500 rounded-2xl text-2xl font-bold shrink-0">×</button>
                   </div>
                 ))}
               </div>
