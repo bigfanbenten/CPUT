@@ -312,7 +312,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
           <div className="space-y-6">
             <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-amber-600">Liên hệ</h4>
             <div className="space-y-4 text-stone-400 text-sm">
-              <p className="font-bold text-white">158A/5 Trần Vĩnh Kiết, Cần Thơ</p>
+              <p className="font-bold text-white">158A/5 Trần Vĩnh Kiết, Phường Tân An, Quận Ninh Kiều, TP Cần Thơ</p>
               <p className="font-black text-2xl text-white">0939.70.90.20</p>
             </div>
           </div>
