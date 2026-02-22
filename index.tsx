@@ -1,6 +1,6 @@
 
 /**
- * BẢN SAVE SỐ 1 - PHIÊN BẢN CHÍNH THỨC (HOÀN THIỆN)
+ * BẢN SAVE SỐ 3 - PHIÊN BẢN GUESTBOOK & TỐI ƯU MOBILE
  * -------------------------------------------------------
  * Các tính năng đã tích hợp:
  * 1. Hiển thị món ăn RANDOM (ngẫu nhiên) mỗi khi tải trang hoặc đổi danh mục.
@@ -15,7 +15,6 @@
  * 5. Tính năng CHỌN MÓN NHANH (Quick Select):
  *    - Sơ đồ nhánh chuyên nghiệp (Thịt, Cá, Canh...).
  *    - Tự động lấy dữ liệu từ Supabase `quick_menu`.
- *    - Sửa lỗi hiển thị "0" khi món không có giá.
  *    - UX Refinement: "BẠN CÓ MUỐN CHỌN ?" & Nút QUAY LẠI màu vàng nổi bật.
  * 6. Giỏ hàng thông minh (Shopping Cart):
  *    - Lưu trữ Cookie trong 1 giờ.
@@ -25,14 +24,21 @@
  *    - Giao diện Thư mục thu gọn (Collapsible Tree) như Windows Explorer.
  *    - Cho phép sửa Tên món và Giá tiền trực tiếp.
  *    - Nút "LƯU TẤT CẢ" giúp lưu hàng loạt thay đổi nhanh chóng, không bị giật trang.
- * 8. Cập nhật Logo Shopee Food mới & Vị trí số điện thoại đặt món tối ưu.
- * 9. Hệ thống quản trị chuyên nghiệp tại đường dẫn #ACP1122.
+ * 8. Tối ưu hóa Đa nền tảng (Responsive Design):
+ *    - Hotline hiển thị ngay dưới Logo trên điện thoại.
+ *    - Menu trực tiếp (Thực đơn, Chọn món nhanh) thay thế Hamburger menu trên Mobile.
+ *    - Modal "Chọn món nhanh" được thu nhỏ và tinh chỉnh font chữ cho điện thoại.
+ * 9. Tính năng GÓP Ý & LỜI CHÚC (Guestbook):
+ *    - Khách gửi: Tên, SĐT, Nội dung.
+ *    - Quản trị viên duyệt tại #ACP1122 mới được hiển thị.
+ *    - Lưu trữ an toàn trên Supabase.
+ * 10. Hệ thống quản trị chuyên nghiệp tại đường dẫn #ACP1122.
  */
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import ReactDOM from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
-import { ChevronRight, ChevronDown, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, X, Menu } from 'lucide-react';
+import { ChevronRight, ChevronDown, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, X, MessageSquare, CheckCircle2 } from 'lucide-react';
 
 // --- CẤU HÌNH CỐ ĐỊNH ---
 const DEFAULT_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co';
@@ -60,6 +66,15 @@ interface HeroSlide {
   id: string;
   image_url: string;
   quote: string;
+}
+
+interface GuestbookEntry {
+  id: string;
+  name: string;
+  phone: string;
+  content: string;
+  is_approved: boolean;
+  created_at: string;
 }
 
 const CONFIG_KEY = 'ut-trinh-config-v9';
@@ -392,6 +407,11 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
   const [quickMenuData, setQuickMenuData] = useState<QuickMenuItem[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showCart, setShowCart] = useState(false);
+  const [guestbookEntries, setGuestbookEntries] = useState<GuestbookEntry[]>([]);
+  const [guestName, setGuestName] = useState('');
+  const [guestPhone, setGuestPhone] = useState('');
+  const [guestContent, setGuestContent] = useState('');
+  const [isSubmittingGuestbook, setIsSubmittingGuestbook] = useState(false);
   const itemsPerPage = 9;
 
   // Fetch Quick Menu from Supabase
@@ -431,6 +451,43 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
   useEffect(() => {
     localStorage.setItem(CART_KEY, JSON.stringify(cart));
   }, [cart]);
+
+  // Fetch Approved Guestbook Entries
+  useEffect(() => {
+    const fetchGuestbook = async () => {
+      const { data } = await supabase
+        .from('guestbook')
+        .select('*')
+        .eq('is_approved', true)
+        .order('created_at', { ascending: false });
+      if (data) setGuestbookEntries(data);
+    };
+    fetchGuestbook();
+  }, [supabase]);
+
+  const handleGuestbookSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!guestName || !guestContent) {
+      alert('Vui lòng nhập Tên và Nội dung góp ý nhé!');
+      return;
+    }
+    setIsSubmittingGuestbook(true);
+    try {
+      const { error } = await supabase.from('guestbook').insert([
+        { name: guestName, phone: guestPhone, content: guestContent, is_approved: false }
+      ]);
+      if (error) throw error;
+      alert('Cảm ơn bạn đã góp ý! Lời chúc của bạn đang được chờ duyệt để hiển thị lên website nhé.');
+      setGuestName('');
+      setGuestPhone('');
+      setGuestContent('');
+    } catch (err: any) {
+      console.error('Guestbook error:', err);
+      alert('Có lỗi xảy ra khi gửi góp ý. Vui lòng thử lại sau!');
+    } finally {
+      setIsSubmittingGuestbook(false);
+    }
+  };
 
   const addToCart = (name: string, price: number) => {
     setCart(prev => {
@@ -855,6 +912,102 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
         </div>
       )}
 
+      {/* Guestbook Section */}
+      <section className="bg-stone-50 py-24 px-6">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-20">
+          {/* Form */}
+          <div className="space-y-10">
+            <div className="space-y-4">
+              <span className="text-amber-800 font-black uppercase tracking-[0.4em] text-[10px]">Kết nối với quán</span>
+              <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter text-stone-900">GÓP Ý & LỜI CHÚC</h2>
+              <p className="text-stone-500 italic">"Mọi ý kiến đóng góp của quý khách là động lực để Út Trinh hoàn thiện hơn mỗi ngày."</p>
+            </div>
+
+            <form onSubmit={handleGuestbookSubmit} className="space-y-6 bg-white p-8 md:p-12 rounded-[40px] shadow-xl border border-stone-100">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-stone-400 ml-4">Họ và Tên</label>
+                  <input 
+                    type="text" 
+                    value={guestName}
+                    onChange={e => setGuestName(e.target.value)}
+                    placeholder="Nguyễn Văn A"
+                    className="w-full bg-stone-50 border-none rounded-2xl px-6 py-4 text-sm font-bold focus:ring-2 focus:ring-amber-500 outline-none transition-all"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-stone-400 ml-4">Số điện thoại</label>
+                  <input 
+                    type="tel" 
+                    value={guestPhone}
+                    onChange={e => setGuestPhone(e.target.value)}
+                    placeholder="09xx xxx xxx"
+                    className="w-full bg-stone-50 border-none rounded-2xl px-6 py-4 text-sm font-bold focus:ring-2 focus:ring-amber-500 outline-none transition-all"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-stone-400 ml-4">Nội dung góp ý / Lời chúc</label>
+                <textarea 
+                  rows={4}
+                  value={guestContent}
+                  onChange={e => setGuestContent(e.target.value)}
+                  placeholder="Nhập nội dung tại đây..."
+                  className="w-full bg-stone-50 border-none rounded-3xl px-6 py-4 text-sm font-bold focus:ring-2 focus:ring-amber-500 outline-none transition-all resize-none"
+                ></textarea>
+              </div>
+              <button 
+                type="submit"
+                disabled={isSubmittingGuestbook}
+                className="w-full bg-stone-900 text-white py-5 rounded-2xl text-[10px] font-black uppercase tracking-[0.4em] hover:bg-amber-800 transition-all shadow-xl disabled:opacity-50 flex items-center justify-center gap-3"
+              >
+                {isSubmittingGuestbook ? 'ĐANG GỬI...' : (
+                  <>
+                    <MessageSquare size={16} />
+                    GỬI GÓP Ý NGAY
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+
+          {/* Entries List */}
+          <div className="space-y-10 flex flex-col">
+            <div className="flex justify-between items-end">
+              <h3 className="text-2xl font-black uppercase tracking-tighter text-stone-900">Lời chúc mới nhất</h3>
+              <span className="text-[10px] font-black text-amber-800 uppercase tracking-widest">{guestbookEntries.length} Đã duyệt</span>
+            </div>
+
+            <div className="flex-1 space-y-6 overflow-y-auto max-h-[600px] pr-4 no-scrollbar">
+              {guestbookEntries.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center text-center space-y-4 py-20 bg-white rounded-[40px] border border-dashed border-stone-200">
+                  <MessageSquare size={40} className="text-stone-200" />
+                  <p className="text-stone-300 font-bold italic">Chưa có lời chúc nào được hiển thị.<br/>Hãy là người đầu tiên nhé!</p>
+                </div>
+              ) : (
+                guestbookEntries.map(entry => (
+                  <div key={entry.id} className="bg-white p-8 rounded-[35px] shadow-sm border border-stone-100 space-y-4 hover:shadow-md transition-all group">
+                    <div className="flex justify-between items-start">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center text-amber-800 font-black text-xs uppercase">
+                          {entry.name.charAt(0)}
+                        </div>
+                        <div>
+                          <h4 className="font-black text-stone-900 uppercase text-sm tracking-tight">{entry.name}</h4>
+                          <p className="text-[9px] text-stone-400 font-bold uppercase tracking-widest">{new Date(entry.created_at).toLocaleDateString('vi-VN')}</p>
+                        </div>
+                      </div>
+                      <CheckCircle2 size={16} className="text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                    <p className="text-stone-600 text-sm italic leading-relaxed">"{entry.content}"</p>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="bg-stone-950 text-white pt-32 pb-16 px-10 relative">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-16 mb-24">
@@ -891,8 +1044,9 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
 };
 
 const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase }: any) => {
-  const [activeTab, setActiveTab] = useState<'menu' | 'hero' | 'notifications' | 'quick'>('menu');
+  const [activeTab, setActiveTab] = useState<'menu' | 'hero' | 'notifications' | 'quick' | 'guestbook'>('menu');
   const [notifications, setNotifications] = useState<any[]>([]);
+  const [guestbookItems, setGuestbookItems] = useState<GuestbookEntry[]>([]);
   const [newNotif, setNewNotif] = useState('');
   const [newFooter, setNewFooter] = useState('XIN CHÚC BẠN VÀ GIA ĐÌNH SỨC KHỎE VÀ PHÁT TÀI.');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -916,9 +1070,26 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
     setLoadingQuick(false);
   }, [supabase]);
 
+  const fetchGuestbook = useCallback(async () => {
+    const { data } = await supabase.from('guestbook').select('*').order('created_at', { ascending: false });
+    if (data) setGuestbookItems(data);
+  }, [supabase]);
+
   useEffect(() => {
     if (activeTab === 'quick') fetchQuickMenu();
-  }, [activeTab, fetchQuickMenu]);
+    if (activeTab === 'guestbook') fetchGuestbook();
+  }, [activeTab, fetchQuickMenu, fetchGuestbook]);
+
+  const approveGuestbook = async (id: string) => {
+    const { error } = await supabase.from('guestbook').update({ is_approved: true }).eq('id', id);
+    if (!error) fetchGuestbook();
+  };
+
+  const deleteGuestbook = async (id: string) => {
+    if (!confirm("Xóa góp ý này?")) return;
+    const { error } = await supabase.from('guestbook').delete().eq('id', id);
+    if (!error) fetchGuestbook();
+  };
 
   const handleAddQuick = async (parentId: string | null = null) => {
     const name = prompt("Nhập tên mục mới:");
@@ -1148,6 +1319,7 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
           <button onClick={() => setActiveTab('hero')} className={`flex-1 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest ${activeTab === 'hero' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>🖼️ HERO SLIDES</button>
           <button onClick={() => setActiveTab('quick')} className={`flex-1 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest ${activeTab === 'quick' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>⚡ CHỌN NHANH</button>
           <button onClick={() => setActiveTab('notifications')} className={`flex-1 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest ${activeTab === 'notifications' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>🔔 THÔNG BÁO</button>
+          <button onClick={() => setActiveTab('guestbook')} className={`flex-1 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest ${activeTab === 'guestbook' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>💬 GÓP Ý</button>
         </div>
         
         <div className="p-12">
@@ -1249,6 +1421,62 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+          ) : activeTab === 'guestbook' ? (
+            <div className="space-y-10">
+              <div className="flex justify-between items-end border-b pb-6">
+                <h2 className="text-3xl font-black uppercase text-stone-900">QUẢN LÝ GÓP Ý</h2>
+                <span className="text-[10px] font-black uppercase tracking-widest text-stone-400">{guestbookItems.length} Tổng số</span>
+              </div>
+
+              <div className="grid gap-6">
+                {guestbookItems.length === 0 ? (
+                  <div className="text-center py-20 text-stone-400 font-bold">Chưa có góp ý nào từ khách hàng.</div>
+                ) : (
+                  guestbookItems.map((item) => (
+                    <div key={item.id} className={`p-8 rounded-[35px] border flex flex-col md:flex-row gap-6 items-start md:items-center justify-between transition-all ${item.is_approved ? 'bg-white border-stone-100' : 'bg-amber-50 border-amber-200 shadow-lg shadow-amber-900/5'}`}>
+                      <div className="flex-1 space-y-3">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-xs uppercase ${item.is_approved ? 'bg-stone-100 text-stone-500' : 'bg-amber-800 text-white'}`}>
+                            {item.name.charAt(0)}
+                          </div>
+                          <div>
+                            <h4 className="font-black text-stone-900 uppercase text-sm tracking-tight flex items-center gap-2">
+                              {item.name}
+                              {!item.is_approved && <span className="bg-amber-800 text-white text-[8px] px-2 py-0.5 rounded-full">CHỜ DUYỆT</span>}
+                            </h4>
+                            <div className="flex items-center gap-3">
+                              <p className="text-[10px] text-amber-800 font-black uppercase tracking-widest">{item.phone || 'Không có SĐT'}</p>
+                              <span className="text-stone-300">|</span>
+                              <p className="text-[9px] text-stone-400 font-bold uppercase tracking-widest">{new Date(item.created_at).toLocaleString('vi-VN')}</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="bg-stone-50/50 p-4 rounded-2xl border border-stone-100 italic text-stone-600 text-sm">
+                          "{item.content}"
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 self-end md:self-center">
+                        {!item.is_approved && (
+                          <button 
+                            onClick={() => approveGuestbook(item.id)}
+                            className="bg-emerald-600 text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg hover:bg-emerald-700 transition-all flex items-center gap-2"
+                          >
+                            <CheckCircle2 size={14} />
+                            DUYỆT ĐĂNG
+                          </button>
+                        )}
+                        <button 
+                          onClick={() => deleteGuestbook(item.id)}
+                          className="w-12 h-12 bg-red-50 text-red-500 rounded-xl flex items-center justify-center hover:bg-red-100 transition-all"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           ) : (
