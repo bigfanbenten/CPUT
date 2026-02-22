@@ -26,11 +26,7 @@
  *    - Cho phép sửa Tên món và Giá tiền trực tiếp.
  *    - Nút "LƯU TẤT CẢ" giúp lưu hàng loạt thay đổi nhanh chóng, không bị giật trang.
  * 8. Cập nhật Logo Shopee Food mới & Vị trí số điện thoại đặt món tối ưu.
- * 9. Tối ưu hiển thị trên Mobile:
- *    - Menu Hamburger cho điện thoại.
- *    - Hiển thị Hotline 0939.70.90.20 trên mọi thiết bị.
- *    - Điều chỉnh kích thước Logo/Title phù hợp màn hình nhỏ.
- * 10. Hệ thống quản trị chuyên nghiệp tại đường dẫn #ACP1122.
+ * 9. Hệ thống quản trị chuyên nghiệp tại đường dẫn #ACP1122.
  */
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
@@ -308,49 +304,48 @@ const QUICK_MENU: QuickMenuItem[] = [
 
 const Nav = ({ isAdmin = false, onShowQuickSelect, cartCount, onShowCart }: any) => {
   const [showConciseMenu, setShowConciseMenu] = useState(false);
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   return (
     <>
-      <nav className="fixed top-0 w-full z-[80] bg-white/95 backdrop-blur-xl border-b border-stone-100 px-4 md:px-20 h-24 md:h-32 flex items-center justify-between transition-all">
-        <div className="flex items-center gap-3 md:gap-6 cursor-pointer group" onClick={() => window.location.hash = ''}>
+      <nav className="fixed top-0 w-full z-[80] bg-white/95 backdrop-blur-xl border-b border-stone-100 px-2 md:px-20 h-24 md:h-32 flex items-center justify-between transition-all">
+        <div className="flex items-center gap-2 md:gap-6 cursor-pointer group" onClick={() => window.location.hash = ''}>
           <img 
             src="https://i.postimg.cc/5tdmrBLb/6d45d4f.png" 
             alt="Logo Út Trinh" 
-            className="w-12 h-12 md:w-24 md:h-24 object-contain shrink-0 group-hover:scale-105 transition-transform duration-500"
+            className="w-10 h-10 md:w-24 md:h-24 object-contain shrink-0 group-hover:scale-105 transition-transform duration-500"
           />
           <div className="flex flex-col justify-center">
-            <div className="flex items-center gap-1 md:gap-4 whitespace-nowrap">
-              <span className="text-sm md:text-4xl font-black text-amber-700 uppercase tracking-tighter leading-none">CƠM PHẦN</span>
-              <span className="text-sm md:text-4xl font-black text-stone-900 uppercase tracking-tighter leading-none">ÚT TRINH</span>
+            <div className="flex flex-col whitespace-nowrap">
+              <div className="flex items-center gap-1">
+                <span className="text-[11px] md:text-3xl lg:text-4xl font-black text-amber-700 uppercase tracking-tighter leading-none">CƠM PHẦN</span>
+                <span className="text-[11px] md:text-3xl lg:text-4xl font-black text-stone-900 uppercase tracking-tighter leading-none">ÚT TRINH</span>
+              </div>
+              <span className="text-[7px] md:text-xs lg:text-sm font-black text-red-600 uppercase tracking-widest animate-pulse mt-0.5 md:mt-1">
+                Đặt món ngay : 0939.70.90.20
+              </span>
             </div>
           </div>
         </div>
 
-        <div className="flex gap-2 md:gap-8 items-center">
+        <div className="flex gap-1 md:gap-8 items-center flex-1 justify-end md:justify-start">
           {isAdmin ? (
             <button onClick={() => window.location.hash = ''} className="bg-amber-800 text-white px-4 md:px-8 py-2 md:py-3 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:bg-stone-900 transition-all">Thoát Quản Trị</button>
           ) : (
             <>
-              <div className="flex flex-col items-end gap-0.5 md:gap-1">
-                <div className="hidden xl:flex items-center gap-8">
-                  <a href="#menu" className="text-stone-900 text-[10px] md:text-xs font-black uppercase tracking-widest hover:text-amber-700">THỰC ĐƠN</a>
-                  <button 
-                    onClick={onShowQuickSelect} 
-                    className="text-stone-900 text-[10px] md:text-xs font-black uppercase tracking-widest hover:text-amber-700"
-                  >
-                    CHỌN MÓN NHANH
-                  </button>
-                  <button 
-                    onClick={() => setShowConciseMenu(true)} 
-                    className="bg-amber-800 text-white text-[9px] md:text-[10px] font-black uppercase tracking-widest px-5 py-2.5 rounded-full hover:bg-stone-900 transition-all"
-                  >
-                    MENU ẢNH
-                  </button>
-                </div>
-                <span className="text-[8px] md:text-sm font-black text-red-600 uppercase tracking-widest animate-pulse">
-                  Đặt món ngay : 0939.70.90.20
-                </span>
+              <div className="flex items-center gap-2 md:gap-8 flex-1 justify-center">
+                <a href="#menu" className="text-stone-900 text-[8px] md:text-xs font-black uppercase tracking-widest hover:text-amber-700 whitespace-nowrap">THỰC ĐƠN</a>
+                <button 
+                  onClick={onShowQuickSelect} 
+                  className="text-stone-900 text-[8px] md:text-xs font-black uppercase tracking-widest hover:text-amber-700 whitespace-nowrap"
+                >
+                  CHỌN MÓN NHANH
+                </button>
+                <button 
+                  onClick={() => setShowConciseMenu(true)} 
+                  className="hidden xl:block bg-amber-800 text-white text-[9px] md:text-[10px] font-black uppercase tracking-widest px-5 py-2.5 rounded-full hover:bg-stone-900 transition-all"
+                >
+                  MENU ẢNH
+                </button>
               </div>
               
               <button 
@@ -369,56 +364,10 @@ const Nav = ({ isAdmin = false, onShowQuickSelect, cartCount, onShowCart }: any)
                 <img src="https://inkythuatso.com/uploads/thumbnails/800/2021/12/logo-grab-food-inkythuatso-20-15-57-46.jpg" className="h-6 md:h-12 object-contain rounded-sm" alt="Grab" />
                 <img src={SHOPEE_LOGO} className="h-6 md:h-12 object-contain" alt="Shopee" />
               </div>
-
-              <button 
-                onClick={() => setShowMobileMenu(true)} 
-                className="xl:hidden p-2 bg-stone-900 text-white rounded-full hover:bg-amber-800 transition-colors"
-              >
-                <Menu size={18} />
-              </button>
             </>
           )}
         </div>
       </nav>
-
-      {/* Mobile Menu Overlay */}
-      {showMobileMenu && (
-        <div className="fixed inset-0 z-[100] bg-stone-950/95 backdrop-blur-xl flex flex-col items-center justify-center p-8 animate-[fadeIn_0.3s_ease-out]">
-          <button 
-            onClick={() => setShowMobileMenu(false)}
-            className="absolute top-8 right-8 text-white text-4xl hover:rotate-90 transition-transform"
-          >
-            ×
-          </button>
-          
-          <div className="flex flex-col gap-8 text-center">
-            <a 
-              href="#menu" 
-              onClick={() => setShowMobileMenu(false)}
-              className="text-white text-2xl font-black uppercase tracking-[0.2em] hover:text-amber-500 transition-colors"
-            >
-              THỰC ĐƠN
-            </a>
-            <button 
-              onClick={() => { onShowQuickSelect(); setShowMobileMenu(false); }}
-              className="text-white text-2xl font-black uppercase tracking-[0.2em] hover:text-amber-500 transition-colors"
-            >
-              CHỌN MÓN NHANH
-            </button>
-            <button 
-              onClick={() => { setShowConciseMenu(true); setShowMobileMenu(false); }}
-              className="text-white text-2xl font-black uppercase tracking-[0.2em] hover:text-amber-500 transition-colors"
-            >
-              MENU ẢNH
-            </button>
-            
-            <div className="mt-8 pt-8 border-t border-white/10">
-              <p className="text-amber-500 text-xs font-black uppercase tracking-widest mb-2">Đặt món ngay</p>
-              <a href="tel:0939709020" className="text-white text-3xl font-black tracking-tighter">0939.70.90.20</a>
-            </div>
-          </div>
-        </div>
-      )}
 
       {showConciseMenu && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-stone-950/95 backdrop-blur-2xl p-4" onClick={() => setShowConciseMenu(false)}>
@@ -669,19 +618,19 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
 
       {/* Quick Select Modal */}
       {showQuickSelect && (
-        <div className="fixed inset-0 z-[150] flex items-center justify-center bg-stone-950/98 backdrop-blur-3xl p-4" onClick={() => { setShowQuickSelect(false); setQuickSelectPath([]); }}>
-          <div className="bg-white w-full max-w-4xl rounded-[40px] overflow-hidden shadow-2xl flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
-            <div className="p-8 border-b border-stone-100 flex justify-between items-center bg-stone-50">
+        <div className="fixed inset-0 z-[150] flex items-center justify-center bg-stone-950/98 backdrop-blur-3xl p-2 md:p-4" onClick={() => { setShowQuickSelect(false); setQuickSelectPath([]); }}>
+          <div className="bg-white w-full max-w-4xl rounded-[30px] md:rounded-[40px] overflow-hidden shadow-2xl flex flex-col max-h-[95vh] md:max-h-[90vh]" onClick={e => e.stopPropagation()}>
+            <div className="p-4 md:p-8 border-b border-stone-100 flex justify-between items-center bg-stone-50">
               <div className="space-y-1">
-                <h2 className="text-2xl font-black uppercase tracking-tighter text-stone-900">CHỌN MÓN NHANH</h2>
+                <h2 className="text-base md:text-2xl font-black uppercase tracking-tighter text-stone-900">CHỌN MÓN NHANH</h2>
                 <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-                  <button onClick={() => setQuickSelectPath([])} className="text-[10px] font-black uppercase tracking-widest text-amber-800 hover:underline">BẮT ĐẦU</button>
+                  <button onClick={() => setQuickSelectPath([])} className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-amber-800 hover:underline">BẮT ĐẦU</button>
                   {quickSelectPath.map((item, idx) => (
                     <React.Fragment key={idx}>
                       <span className="text-stone-300">/</span>
                       <button 
                         onClick={() => setQuickSelectPath(quickSelectPath.slice(0, idx + 1))}
-                        className="text-[10px] font-black uppercase tracking-widest text-stone-900 whitespace-nowrap"
+                        className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-stone-900 whitespace-nowrap"
                       >
                         {item.name}
                       </button>
@@ -689,43 +638,43 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
                   ))}
                 </div>
               </div>
-              <button onClick={() => { setShowQuickSelect(false); setQuickSelectPath([]); }} className="text-4xl text-stone-300 hover:text-stone-900 transition-colors">×</button>
+              <button onClick={() => { setShowQuickSelect(false); setQuickSelectPath([]); }} className="text-2xl md:text-4xl text-stone-300 hover:text-stone-900 transition-colors">×</button>
             </div>
 
-            <div className="flex-1 p-8 overflow-y-auto">
+            <div className="flex-1 p-4 md:p-8 overflow-y-auto">
               {currentQuickOptions.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                   {currentQuickOptions.map((option, idx) => (
                     <button 
                       key={idx}
                       onClick={() => setQuickSelectPath([...quickSelectPath, option])}
-                      className="group p-6 border border-stone-100 rounded-3xl hover:border-amber-800 hover:bg-amber-50/30 transition-all text-left flex justify-between items-center"
+                      className="group p-4 md:p-6 border border-stone-100 rounded-2xl md:rounded-3xl hover:border-amber-800 hover:bg-amber-50/30 transition-all text-left flex justify-between items-center"
                     >
                       <div className="space-y-1">
-                        <span className="text-lg font-black uppercase tracking-tighter text-stone-900 group-hover:text-amber-800">{option.name}</span>
+                        <span className="text-sm md:text-lg font-black uppercase tracking-tighter text-stone-900 group-hover:text-amber-800">{option.name}</span>
                         {option.price && option.price > 0 ? (
-                          <p className="text-amber-800 font-black text-sm">{option.price.toLocaleString('vi-VN')} VNĐ</p>
+                          <p className="text-amber-800 font-black text-xs md:text-sm">{option.price.toLocaleString('vi-VN')} VNĐ</p>
                         ) : null}
                       </div>
-                      <ChevronRight className="text-stone-300 group-hover:text-amber-800 group-hover:translate-x-1 transition-all" />
+                      <ChevronRight className="w-4 h-4 md:w-6 md:h-6 text-stone-300 group-hover:text-amber-800 group-hover:translate-x-1 transition-all" />
                     </button>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-12 space-y-8">
-                  <div className="w-24 h-24 bg-amber-100 rounded-full flex items-center justify-center mx-auto text-amber-800">
-                    <UtensilsCrossed size={40} />
+                <div className="text-center py-6 md:py-12 space-y-4 md:space-y-8">
+                  <div className="w-16 h-16 md:w-24 md:h-24 bg-amber-100 rounded-full flex items-center justify-center mx-auto text-amber-800">
+                    <UtensilsCrossed size={30} />
                   </div>
-                  <div className="space-y-2">
-                    <h3 className="text-3xl font-black uppercase tracking-tighter text-stone-900">BẠN CÓ MUỐN CHỌN ?</h3>
-                    <p className="text-stone-500 italic text-lg">
+                  <div className="space-y-1 md:space-y-2">
+                    <h3 className="text-xl md:text-3xl font-black uppercase tracking-tighter text-stone-900">BẠN CÓ MUỐN CHỌN ?</h3>
+                    <p className="text-stone-500 italic text-sm md:text-lg">
                       {quickSelectPath.map(i => i.name).join(' - ')}
                     </p>
                   </div>
-                  <div className="text-5xl font-black text-amber-800 tabular-nums">
+                  <div className="text-3xl md:text-5xl font-black text-amber-800 tabular-nums">
                     {calculateTotalPrice().toLocaleString('vi-VN')} VNĐ
                   </div>
-                  <div className="pt-8 flex gap-4 justify-center">
+                  <div className="pt-4 md:pt-8 flex flex-col sm:flex-row gap-3 md:gap-4 justify-center">
                     <button 
                       onClick={() => { 
                         const name = quickSelectPath.map(i => i.name).join(' - ');
@@ -734,13 +683,13 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
                         setShowQuickSelect(false);
                         setQuickSelectPath([]);
                       }}
-                      className="bg-amber-800 text-white px-12 py-5 rounded-full text-xs font-black uppercase tracking-[0.3em] hover:bg-stone-900 transition-all shadow-xl"
+                      className="bg-amber-800 text-white px-8 md:px-12 py-4 md:py-5 rounded-full text-[10px] md:text-xs font-black uppercase tracking-[0.3em] hover:bg-stone-900 transition-all shadow-xl"
                     >
                       THÊM VÀO GIỎ
                     </button>
                     <button 
                       onClick={() => { setShowQuickSelect(false); setQuickSelectPath([]); }}
-                      className="bg-stone-100 text-stone-900 px-12 py-5 rounded-full text-xs font-black uppercase tracking-[0.3em] hover:bg-stone-200 transition-all"
+                      className="bg-stone-100 text-stone-900 px-8 md:px-12 py-4 md:py-5 rounded-full text-[10px] md:text-xs font-black uppercase tracking-[0.3em] hover:bg-stone-200 transition-all"
                     >
                       CHỌN LẠI
                     </button>
@@ -750,12 +699,12 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
             </div>
             
             {quickSelectPath.length > 0 && (
-              <div className="p-6 bg-stone-50 border-t border-stone-100 flex justify-center">
+              <div className="p-4 md:p-6 bg-stone-50 border-t border-stone-100 flex justify-center">
                 <button 
                   onClick={() => setQuickSelectPath(quickSelectPath.slice(0, -1))} 
-                  className="text-sm font-black uppercase tracking-[0.2em] text-amber-500 hover:text-amber-700 transition-colors flex items-center gap-2"
+                  className="text-xs md:text-sm font-black uppercase tracking-[0.2em] text-amber-500 hover:text-amber-700 transition-colors flex items-center gap-2"
                 >
-                  <ChevronRight className="rotate-180" size={16} />
+                  <ChevronRight className="rotate-180" size={14} />
                   QUAY LẠI
                 </button>
               </div>
