@@ -26,13 +26,17 @@
  *    - Cho phép sửa Tên món và Giá tiền trực tiếp.
  *    - Nút "LƯU TẤT CẢ" giúp lưu hàng loạt thay đổi nhanh chóng, không bị giật trang.
  * 8. Cập nhật Logo Shopee Food mới & Vị trí số điện thoại đặt món tối ưu.
- * 9. Hệ thống quản trị chuyên nghiệp tại đường dẫn #ACP1122.
+ * 9. Tối ưu hiển thị trên Mobile:
+ *    - Menu Hamburger cho điện thoại.
+ *    - Hiển thị Hotline 0939.70.90.20 trên mọi thiết bị.
+ *    - Điều chỉnh kích thước Logo/Title phù hợp màn hình nhỏ.
+ * 10. Hệ thống quản trị chuyên nghiệp tại đường dẫn #ACP1122.
  */
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import ReactDOM from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
-import { ChevronRight, ChevronDown, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, X } from 'lucide-react';
+import { ChevronRight, ChevronDown, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, X, Menu } from 'lucide-react';
 
 // --- CẤU HÌNH CỐ ĐỊNH ---
 const DEFAULT_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co';
@@ -304,31 +308,32 @@ const QUICK_MENU: QuickMenuItem[] = [
 
 const Nav = ({ isAdmin = false, onShowQuickSelect, cartCount, onShowCart }: any) => {
   const [showConciseMenu, setShowConciseMenu] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   return (
     <>
       <nav className="fixed top-0 w-full z-[80] bg-white/95 backdrop-blur-xl border-b border-stone-100 px-4 md:px-20 h-24 md:h-32 flex items-center justify-between transition-all">
-        <div className="flex items-center gap-4 md:gap-6 cursor-pointer group" onClick={() => window.location.hash = ''}>
+        <div className="flex items-center gap-3 md:gap-6 cursor-pointer group" onClick={() => window.location.hash = ''}>
           <img 
             src="https://i.postimg.cc/5tdmrBLb/6d45d4f.png" 
             alt="Logo Út Trinh" 
-            className="w-16 h-16 md:w-24 md:h-24 object-contain shrink-0 group-hover:scale-105 transition-transform duration-500"
+            className="w-12 h-12 md:w-24 md:h-24 object-contain shrink-0 group-hover:scale-105 transition-transform duration-500"
           />
           <div className="flex flex-col justify-center">
-            <div className="flex items-center gap-2 md:gap-4 whitespace-nowrap">
-              <span className="text-base md:text-4xl font-black text-amber-700 uppercase tracking-tighter leading-none">CƠM PHẦN</span>
-              <span className="text-base md:text-4xl font-black text-stone-900 uppercase tracking-tighter leading-none">ÚT TRINH</span>
+            <div className="flex items-center gap-1 md:gap-4 whitespace-nowrap">
+              <span className="text-sm md:text-4xl font-black text-amber-700 uppercase tracking-tighter leading-none">CƠM PHẦN</span>
+              <span className="text-sm md:text-4xl font-black text-stone-900 uppercase tracking-tighter leading-none">ÚT TRINH</span>
             </div>
           </div>
         </div>
 
-        <div className="flex gap-4 md:gap-8 items-center">
+        <div className="flex gap-2 md:gap-8 items-center">
           {isAdmin ? (
             <button onClick={() => window.location.hash = ''} className="bg-amber-800 text-white px-4 md:px-8 py-2 md:py-3 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:bg-stone-900 transition-all">Thoát Quản Trị</button>
           ) : (
             <>
-              <div className="hidden xl:flex flex-col items-end gap-1">
-                <div className="flex items-center gap-8">
+              <div className="flex flex-col items-end gap-0.5 md:gap-1">
+                <div className="hidden xl:flex items-center gap-8">
                   <a href="#menu" className="text-stone-900 text-[10px] md:text-xs font-black uppercase tracking-widest hover:text-amber-700">THỰC ĐƠN</a>
                   <button 
                     onClick={onShowQuickSelect} 
@@ -343,33 +348,77 @@ const Nav = ({ isAdmin = false, onShowQuickSelect, cartCount, onShowCart }: any)
                     MENU ẢNH
                   </button>
                 </div>
-                <span className="text-[10px] md:text-sm font-black text-red-600 uppercase tracking-widest animate-pulse">
+                <span className="text-[8px] md:text-sm font-black text-red-600 uppercase tracking-widest animate-pulse">
                   Đặt món ngay : 0939.70.90.20
                 </span>
               </div>
               
               <button 
                 onClick={onShowCart}
-                className="relative p-3 bg-stone-100 rounded-full hover:bg-amber-100 transition-colors group"
+                className="relative p-2 md:p-3 bg-stone-100 rounded-full hover:bg-amber-100 transition-colors group"
               >
-                <ShoppingBag className="w-5 h-5 md:w-6 md:h-6 text-stone-900 group-hover:text-amber-800" />
+                <ShoppingBag className="w-4 h-4 md:w-6 md:h-6 text-stone-900 group-hover:text-amber-800" />
                 {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center animate-bounce">
+                  <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[8px] md:text-[10px] font-black w-4 h-4 md:w-5 md:h-5 rounded-full flex items-center justify-center animate-bounce">
                     {cartCount}
                   </span>
                 )}
               </button>
 
-              <div className="flex items-center gap-3 md:gap-4 border-l border-stone-100 pl-4">
-                <img src="https://inkythuatso.com/uploads/thumbnails/800/2021/12/logo-grab-food-inkythuatso-20-15-57-46.jpg" className="h-8 md:h-12 object-contain rounded-sm" alt="Grab" />
-                <img src={SHOPEE_LOGO} className="h-8 md:h-12 object-contain" alt="Shopee" />
+              <div className="hidden sm:flex items-center gap-2 md:gap-4 border-l border-stone-100 pl-4">
+                <img src="https://inkythuatso.com/uploads/thumbnails/800/2021/12/logo-grab-food-inkythuatso-20-15-57-46.jpg" className="h-6 md:h-12 object-contain rounded-sm" alt="Grab" />
+                <img src={SHOPEE_LOGO} className="h-6 md:h-12 object-contain" alt="Shopee" />
               </div>
 
-              <button onClick={() => setShowConciseMenu(true)} className="xl:hidden bg-amber-800 text-white px-4 py-2 rounded-full text-[8px] font-black uppercase">MENU</button>
+              <button 
+                onClick={() => setShowMobileMenu(true)} 
+                className="xl:hidden p-2 bg-stone-900 text-white rounded-full hover:bg-amber-800 transition-colors"
+              >
+                <Menu size={18} />
+              </button>
             </>
           )}
         </div>
       </nav>
+
+      {/* Mobile Menu Overlay */}
+      {showMobileMenu && (
+        <div className="fixed inset-0 z-[100] bg-stone-950/95 backdrop-blur-xl flex flex-col items-center justify-center p-8 animate-[fadeIn_0.3s_ease-out]">
+          <button 
+            onClick={() => setShowMobileMenu(false)}
+            className="absolute top-8 right-8 text-white text-4xl hover:rotate-90 transition-transform"
+          >
+            ×
+          </button>
+          
+          <div className="flex flex-col gap-8 text-center">
+            <a 
+              href="#menu" 
+              onClick={() => setShowMobileMenu(false)}
+              className="text-white text-2xl font-black uppercase tracking-[0.2em] hover:text-amber-500 transition-colors"
+            >
+              THỰC ĐƠN
+            </a>
+            <button 
+              onClick={() => { onShowQuickSelect(); setShowMobileMenu(false); }}
+              className="text-white text-2xl font-black uppercase tracking-[0.2em] hover:text-amber-500 transition-colors"
+            >
+              CHỌN MÓN NHANH
+            </button>
+            <button 
+              onClick={() => { setShowConciseMenu(true); setShowMobileMenu(false); }}
+              className="text-white text-2xl font-black uppercase tracking-[0.2em] hover:text-amber-500 transition-colors"
+            >
+              MENU ẢNH
+            </button>
+            
+            <div className="mt-8 pt-8 border-t border-white/10">
+              <p className="text-amber-500 text-xs font-black uppercase tracking-widest mb-2">Đặt món ngay</p>
+              <a href="tel:0939709020" className="text-white text-3xl font-black tracking-tighter">0939.70.90.20</a>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showConciseMenu && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-stone-950/95 backdrop-blur-2xl p-4" onClick={() => setShowConciseMenu(false)}>
@@ -1004,15 +1053,32 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
     console.log("Attempting to create notification:", message);
     
     try {
-      const { data, error } = await supabase
+      // Thử insert với cột footer
+      let { data, error } = await supabase
         .from('notifications')
         .insert([{ message, footer: newFooter.trim(), is_active: true }])
         .select()
         .single();
       
+      // Nếu lỗi do thiếu cột 'footer' trong database
+      if (error && error.message.includes("column 'footer'")) {
+        console.warn("Cột 'footer' chưa tồn tại, đang thử lại không có footer...");
+        const retry = await supabase
+          .from('notifications')
+          .insert([{ message, is_active: true }])
+          .select()
+          .single();
+        data = retry.data;
+        error = retry.error;
+
+        if (!error) {
+          alert("Lưu ý: Thông báo đã được tạo nhưng dòng chữ màu vàng (Lời chúc) không được lưu vì bạn chưa thêm cột 'footer' vào bảng 'notifications' trong Supabase.\n\nHướng dẫn: Vào Supabase Dashboard -> SQL Editor -> Chạy lệnh: ALTER TABLE notifications ADD COLUMN footer TEXT;");
+        }
+      }
+      
       if (error) {
         console.error('Supabase Error:', error);
-        alert(`Lỗi hệ thống: ${error.message}\n\nChi tiết: ${error.details || 'Không có'}\n\nHướng dẫn: Hãy đảm bảo bạn đã tạo bảng 'notifications' trong Supabase Dashboard.`);
+        alert(`Lỗi hệ thống: ${error.message}\n\nHướng dẫn: Hãy đảm bảo bạn đã tạo bảng 'notifications' trong Supabase Dashboard.`);
         return;
       }
 
