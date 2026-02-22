@@ -82,6 +82,13 @@ const VIEW_COUNT_KEY = 'ut-trinh-total-views-v15';
 const SESSION_VISIT_KEY = 'ut-trinh-session-visited-v15';
 const CART_KEY = 'ut-trinh-cart-v1';
 const SHOPEE_LOGO = 'https://i.postimg.cc/Wzj6yWrp/pngtree-shopefood-logo-png-image-6472274.png';
+const GUESTBOOK_COLORS = [
+  { avatar: 'bg-emerald-100 text-emerald-800', content: 'text-emerald-600', border: 'border-emerald-100', bg: 'bg-emerald-50/30' },
+  { avatar: 'bg-rose-100 text-rose-800', content: 'text-rose-600', border: 'border-rose-100', bg: 'bg-rose-50/30' },
+  { avatar: 'bg-orange-100 text-orange-800', content: 'text-orange-600', border: 'border-orange-100', bg: 'bg-orange-50/30' },
+  { avatar: 'bg-sky-100 text-sky-800', content: 'text-sky-600', border: 'border-sky-100', bg: 'bg-sky-50/30' },
+  { avatar: 'bg-violet-100 text-violet-800', content: 'text-violet-600', border: 'border-violet-100', bg: 'bg-violet-50/30' },
+];
 
 interface CartItem {
   id: string;
@@ -789,26 +796,46 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
               ) : (
                 <>
                   <div className="space-y-6">
-                    {guestbookEntries.slice(0, showAllGuestbook ? undefined : 5).map((entry, index) => (
-                      <div 
-                        key={entry.id} 
-                        className={`p-8 rounded-[35px] shadow-sm border border-stone-100 space-y-4 hover:shadow-md transition-all group ${index % 2 === 0 ? 'bg-white' : 'bg-stone-50/80'}`}
-                      >
-                        <div className="flex justify-between items-start">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-xs uppercase ${index % 2 === 0 ? 'bg-amber-100 text-amber-800' : 'bg-stone-200 text-stone-600'}`}>
-                              {entry.name.charAt(0)}
+                    {guestbookEntries.slice(0, showAllGuestbook ? undefined : 5).map((entry, index) => {
+                      const colorSet = GUESTBOOK_COLORS[index % GUESTBOOK_COLORS.length];
+                      const maskedPhone = (() => {
+                        if (!entry.phone || entry.phone.trim() === '') {
+                          // Generate a stable random number based on entry ID if possible, 
+                          // but for simplicity a random one is fine as it's just for display
+                          const seed = entry.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                          const randomSuffix = 100 + (seed % 900);
+                          return `093xxxx${randomSuffix}`;
+                        }
+                        const cleanPhone = entry.phone.replace(/\D/g, '');
+                        const prefix = cleanPhone.length >= 4 ? cleanPhone.substring(0, 4) : '0939';
+                        const suffix = cleanPhone.length >= 3 ? cleanPhone.substring(cleanPhone.length - 3) : '***';
+                        return `${prefix}xxx${suffix}`;
+                      })();
+
+                      return (
+                        <div 
+                          key={entry.id} 
+                          className={`p-8 rounded-[35px] shadow-sm border space-y-4 hover:shadow-md transition-all group ${colorSet.border} ${colorSet.bg}`}
+                        >
+                          <div className="flex justify-between items-start">
+                            <div className="flex items-center gap-3">
+                              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-xs uppercase ${colorSet.avatar}`}>
+                                {entry.name.charAt(0)}
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <h4 className="font-black text-stone-900 uppercase text-sm tracking-tight">{entry.name}</h4>
+                                  <span className="text-[8px] font-black text-stone-400 bg-stone-100 px-1.5 py-0.5 rounded-md tracking-widest">{maskedPhone}</span>
+                                </div>
+                                <p className="text-[9px] text-stone-400 font-bold uppercase tracking-widest">{new Date(entry.created_at).toLocaleDateString('vi-VN')}</p>
+                              </div>
                             </div>
-                            <div>
-                              <h4 className="font-black text-stone-900 uppercase text-sm tracking-tight">{entry.name}</h4>
-                              <p className="text-[9px] text-stone-400 font-bold uppercase tracking-widest">{new Date(entry.created_at).toLocaleDateString('vi-VN')}</p>
-                            </div>
+                            <CheckCircle2 size={16} className="text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity" />
                           </div>
-                          <CheckCircle2 size={16} className="text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          <p className={`text-sm font-bold italic leading-relaxed ${colorSet.content}`}>"{entry.content}"</p>
                         </div>
-                        <p className="text-amber-600 text-sm font-bold italic leading-relaxed">"{entry.content}"</p>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                   
                   {guestbookEntries.length > 5 && !showAllGuestbook && (
