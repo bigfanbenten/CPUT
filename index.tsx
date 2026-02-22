@@ -318,17 +318,38 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
 
   const [totalViews, setTotalViews] = useState(300);
   const [onlineCount, setOnlineCount] = useState(1);
+  const [showAllGuestbook, setShowAllGuestbook] = useState(false);
 
   useEffect(() => {
-    const savedViews = localStorage.getItem(VIEW_COUNT_KEY);
-    let currentViews = savedViews ? parseInt(savedViews) : 300;
-    const sessionVisited = sessionStorage.getItem(SESSION_VISIT_KEY);
-    if (!sessionVisited) {
-      currentViews += 1;
-      localStorage.setItem(VIEW_COUNT_KEY, currentViews.toString());
-      sessionStorage.setItem(SESSION_VISIT_KEY, 'true');
-    }
-    setTotalViews(currentViews);
+    const fetchStats = async () => {
+      // Fetch total views from Supabase
+      const { data, error } = await supabase.from('site_stats').select('total_views').eq('id', 1).single();
+      
+      if (error) {
+        console.warn("Table 'site_stats' not found. Using local storage fallback.");
+        const savedViews = localStorage.getItem(VIEW_COUNT_KEY);
+        let currentViews = savedViews ? parseInt(savedViews) : 300;
+        const sessionVisited = sessionStorage.getItem(SESSION_VISIT_KEY);
+        if (!sessionVisited) {
+          currentViews += 1;
+          localStorage.setItem(VIEW_COUNT_KEY, currentViews.toString());
+          sessionStorage.setItem(SESSION_VISIT_KEY, 'true');
+        }
+        setTotalViews(currentViews);
+      } else if (data) {
+        let currentViews = data.total_views;
+        const sessionVisited = sessionStorage.getItem(SESSION_VISIT_KEY);
+        if (!sessionVisited) {
+          currentViews += 1;
+          // Increment in Supabase
+          await supabase.from('site_stats').update({ total_views: currentViews }).eq('id', 1);
+          sessionStorage.setItem(SESSION_VISIT_KEY, 'true');
+        }
+        setTotalViews(currentViews);
+      }
+    };
+
+    fetchStats();
 
     const channel = supabase.channel('online-users', { config: { presence: { key: 'user' } } });
     channel.on('presence', { event: 'sync' }, () => {
@@ -766,23 +787,48 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
                   <p className="text-stone-300 font-bold italic">Chưa có lời chúc nào được hiển thị.<br/>Hãy là người đầu tiên nhé!</p>
                 </div>
               ) : (
-                guestbookEntries.map(entry => (
-                  <div key={entry.id} className="bg-white p-8 rounded-[35px] shadow-sm border border-stone-100 space-y-4 hover:shadow-md transition-all group">
-                    <div className="flex justify-between items-start">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center text-amber-800 font-black text-xs uppercase">
-                          {entry.name.charAt(0)}
+                <>
+                  <div className="space-y-6">
+                    {guestbookEntries.slice(0, showAllGuestbook ? undefined : 5).map((entry, index) => (
+                      <div 
+                        key={entry.id} 
+                        className={`p-8 rounded-[35px] shadow-sm border border-stone-100 space-y-4 hover:shadow-md transition-all group ${index % 2 === 0 ? 'bg-white' : 'bg-stone-50/80'}`}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-xs uppercase ${index % 2 === 0 ? 'bg-amber-100 text-amber-800' : 'bg-stone-200 text-stone-600'}`}>
+                              {entry.name.charAt(0)}
+                            </div>
+                            <div>
+                              <h4 className="font-black text-stone-900 uppercase text-sm tracking-tight">{entry.name}</h4>
+                              <p className="text-[9px] text-stone-400 font-bold uppercase tracking-widest">{new Date(entry.created_at).toLocaleDateString('vi-VN')}</p>
+                            </div>
+                          </div>
+                          <CheckCircle2 size={16} className="text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
-                        <div>
-                          <h4 className="font-black text-stone-900 uppercase text-sm tracking-tight">{entry.name}</h4>
-                          <p className="text-[9px] text-stone-400 font-bold uppercase tracking-widest">{new Date(entry.created_at).toLocaleDateString('vi-VN')}</p>
-                        </div>
+                        <p className="text-amber-600 text-sm font-bold italic leading-relaxed">"{entry.content}"</p>
                       </div>
-                      <CheckCircle2 size={16} className="text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </div>
-                    <p className="text-stone-600 text-sm italic leading-relaxed">"{entry.content}"</p>
+                    ))}
                   </div>
-                ))
+                  
+                  {guestbookEntries.length > 5 && !showAllGuestbook && (
+                    <button 
+                      onClick={() => setShowAllGuestbook(true)}
+                      className="w-full py-4 text-[10px] font-black text-amber-800 uppercase tracking-widest hover:bg-amber-50 rounded-2xl transition-all border border-dashed border-amber-200 mt-4"
+                    >
+                      Xem tất cả {guestbookEntries.length} góp ý
+                    </button>
+                  )}
+                  
+                  {showAllGuestbook && (
+                    <button 
+                      onClick={() => setShowAllGuestbook(false)}
+                      className="w-full py-4 text-[10px] font-black text-stone-400 uppercase tracking-widest hover:bg-stone-50 rounded-2xl transition-all border border-dashed border-stone-200 mt-4"
+                    >
+                      Thu gọn
+                    </button>
+                  )}
+                </>
               )}
             </div>
           </div>
