@@ -36,6 +36,7 @@
  *    - Quản trị viên duyệt tại #ACP1122 mới được hiển thị.
  * 10. Hệ thống THỐNG KÊ ĐỒNG NHẤT:
  *    - Lượt xem (Visitor) được đồng bộ qua Supabase `site_stats`, thống nhất trên mọi thiết bị.
+ *    - Cơ chế đếm thông minh: Mỗi khách truy cập được tính 1 lượt mỗi 30 phút (sử dụng Cookie/LocalStorage).
  *    - Đếm số người đang Online thời gian thực.
  */
 
@@ -333,6 +334,11 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
 
   useEffect(() => {
     const fetchStats = async () => {
+      const VISIT_EXPIRY = 30 * 60 * 1000; // 30 minutes
+      const now = Date.now();
+      const lastVisit = localStorage.getItem(SESSION_VISIT_KEY);
+      const isNewVisit = !lastVisit || (now - parseInt(lastVisit) > VISIT_EXPIRY);
+
       // Fetch total views from Supabase
       const { data, error } = await supabase.from('site_stats').select('total_views').eq('id', 1).single();
       
@@ -340,21 +346,21 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
         console.warn("Table 'site_stats' not found. Using local storage fallback.");
         const savedViews = localStorage.getItem(VIEW_COUNT_KEY);
         let currentViews = savedViews ? parseInt(savedViews) : 300;
-        const sessionVisited = sessionStorage.getItem(SESSION_VISIT_KEY);
-        if (!sessionVisited) {
+        
+        if (isNewVisit) {
           currentViews += 1;
           localStorage.setItem(VIEW_COUNT_KEY, currentViews.toString());
-          sessionStorage.setItem(SESSION_VISIT_KEY, 'true');
+          localStorage.setItem(SESSION_VISIT_KEY, now.toString());
         }
         setTotalViews(currentViews);
       } else if (data) {
         let currentViews = data.total_views;
-        const sessionVisited = sessionStorage.getItem(SESSION_VISIT_KEY);
-        if (!sessionVisited) {
+        
+        if (isNewVisit) {
           currentViews += 1;
           // Increment in Supabase
           await supabase.from('site_stats').update({ total_views: currentViews }).eq('id', 1);
-          sessionStorage.setItem(SESSION_VISIT_KEY, 'true');
+          localStorage.setItem(SESSION_VISIT_KEY, now.toString());
         }
         setTotalViews(currentViews);
       }
