@@ -38,6 +38,9 @@
  *    - Lượt xem (Visitor) được đồng bộ qua Supabase `site_stats`, thống nhất trên mọi thiết bị.
  *    - Cơ chế đếm thông minh: Mỗi khách truy cập được tính 1 lượt mỗi 30 phút (sử dụng Cookie/LocalStorage).
  *    - Đếm số người đang Online thời gian thực.
+ * 11. Cải tiến UI/UX:
+ *    - Modal chi tiết món ăn: Nhãn "CƠM PHẦN ÚT TRINH" nổi bật với nền đỏ, chữ trắng.
+ *    - Tích hợp các liên kết Mạng xã hội (Facebook, Gmail...) ở chân trang.
  */
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
@@ -700,7 +703,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
               <img src={selectedDish.image_url} className="w-full h-full object-cover animate-[scaleSlow_10s_linear_infinite]" />
             </div>
             <div className="flex-1 p-12 md:p-20 flex flex-col justify-center bg-white space-y-8">
-              <span className="text-amber-800 font-black uppercase tracking-[0.5em] text-[10px]">Út Trinh Kitchen</span>
+              <span className="bg-red-600 text-white font-black uppercase tracking-[0.2em] text-[10px] px-4 py-2 rounded-md self-start">CƠM PHẦN ÚT TRINH</span>
               <h2 className="text-4xl md:text-7xl font-black uppercase tracking-tighter leading-none text-stone-900">{selectedDish.name}</h2>
               <div className="text-4xl md:text-6xl font-black text-amber-800 tabular-nums">{selectedDish.price}</div>
               <p className="text-stone-500 text-lg md:text-xl italic font-light leading-relaxed max-w-lg">"{selectedDish.description || 'Món ăn truyền thống chuẩn vị mẹ nấu.'}"</p>
