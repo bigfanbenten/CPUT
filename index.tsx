@@ -1,6 +1,6 @@
 
 /**
- * BẢN SAVE SỐ 3 - PHIÊN BẢN GUESTBOOK & TỐI ƯU MOBILE
+ * BẢN SAVE SỐ 3 - PHIÊN BẢN HOÀN THIỆN GUESTBOOK & THỐNG KÊ ĐỒNG BỘ
  * -------------------------------------------------------
  * Các tính năng đã tích hợp:
  * 1. Hiển thị món ăn RANDOM (ngẫu nhiên) mỗi khi tải trang hoặc đổi danh mục.
@@ -28,17 +28,21 @@
  *    - Hotline hiển thị ngay dưới Logo trên điện thoại.
  *    - Menu trực tiếp (Thực đơn, Chọn món nhanh) thay thế Hamburger menu trên Mobile.
  *    - Modal "Chọn món nhanh" được thu nhỏ và tinh chỉnh font chữ cho điện thoại.
- * 9. Tính năng GÓP Ý & LỜI CHÚC (Guestbook):
+ * 9. Tính năng GÓP Ý & LỜI CHÚC (Guestbook) NÂNG CAO:
  *    - Khách gửi: Tên, SĐT, Nội dung.
+ *    - Hiển thị 5 lời chúc mới nhất với màu sắc rực rỡ (Xanh, Đỏ, Cam, Tím...).
+ *    - Bảo mật: Số điện thoại được che (0939xxx123) để đảm bảo tính minh bạch mà vẫn an toàn.
+ *    - Tính năng "Xem tất cả" / "Thu gọn" danh sách góp ý.
  *    - Quản trị viên duyệt tại #ACP1122 mới được hiển thị.
- *    - Lưu trữ an toàn trên Supabase.
- * 10. Hệ thống quản trị chuyên nghiệp tại đường dẫn #ACP1122.
+ * 10. Hệ thống THỐNG KÊ ĐỒNG NHẤT:
+ *    - Lượt xem (Visitor) được đồng bộ qua Supabase `site_stats`, thống nhất trên mọi thiết bị.
+ *    - Đếm số người đang Online thời gian thực.
  */
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import ReactDOM from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
-import { ChevronRight, ChevronDown, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, MessageSquare, CheckCircle2 } from 'lucide-react';
+import { ChevronRight, ChevronDown, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, MessageSquare, CheckCircle2, Facebook, Mail, Twitter, Instagram, Youtube } from 'lucide-react';
 
 // --- CẤU HÌNH CỐ ĐỊNH ---
 const DEFAULT_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co';
@@ -874,6 +878,23 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
             <div className="space-y-4 text-stone-400 text-sm">
               <p className="font-bold text-white">158A/5 Trần Vĩnh Kiết, Cần Thơ</p>
               <p className="font-black text-2xl text-white">0939.70.90.20</p>
+              <div className="flex gap-4 pt-2">
+                <a href="https://www.facebook.com/profile.php?id=100088316355555" target="_blank" rel="noopener noreferrer" className="text-stone-500 hover:text-blue-500 transition-colors">
+                  <Facebook size={20} />
+                </a>
+                <a href="mailto:comphanuttrinh@gmail.com" className="text-stone-500 hover:text-red-400 transition-colors">
+                  <Mail size={20} />
+                </a>
+                <a href="#" className="text-stone-500 hover:text-sky-400 transition-colors cursor-default">
+                  <Twitter size={20} />
+                </a>
+                <a href="#" className="text-stone-500 hover:text-pink-500 transition-colors cursor-default">
+                  <Instagram size={20} />
+                </a>
+                <a href="#" className="text-stone-500 hover:text-red-600 transition-colors cursor-default">
+                  <Youtube size={20} />
+                </a>
+              </div>
             </div>
           </div>
           <div className="space-y-6">
