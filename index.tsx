@@ -38,7 +38,7 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import ReactDOM from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
-import { ChevronRight, ChevronDown, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, X, MessageSquare, CheckCircle2 } from 'lucide-react';
+import { ChevronRight, ChevronDown, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, MessageSquare, CheckCircle2 } from 'lucide-react';
 
 // --- CẤU HÌNH CỐ ĐỊNH ---
 const DEFAULT_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co';
@@ -96,224 +96,6 @@ interface QuickMenuItem {
   price?: number;
   children?: QuickMenuItem[];
 }
-
-const QUICK_MENU: QuickMenuItem[] = [
-  {
-    name: "THỊT",
-    children: [
-      {
-        name: "SƯỜN",
-        price: 38000,
-        children: [
-          { name: "Muối chiên" },
-          { name: "Chiên sả" },
-          { 
-            name: "Chiên sốt",
-            children: [
-              { name: "Xí muội" },
-              { name: "Cay" },
-              { name: "Chua Ngọt" },
-              { name: "Mắm" }
-            ]
-          },
-          { name: "Kho Trứng" },
-          { name: "Ram Mặn" }
-        ]
-      },
-      {
-        name: "BA RỌI",
-        price: 38000,
-        children: [
-          { name: "Muối chiên" },
-          { name: "Chiên sả" },
-          { 
-            name: "Chiên sốt",
-            children: [
-              { name: "Xí muội" },
-              { name: "Cay" },
-              { name: "Chua Ngọt" },
-              { name: "Mắm" }
-            ]
-          },
-          { name: "Kho Tiêu" },
-          { name: "Mắm Ruốc" }
-        ]
-      }
-    ]
-  },
-  {
-    name: "CÁ",
-    children: [
-      {
-        name: "Ba sa",
-        price: 35000,
-        children: [{ name: "Kho tiêu" }, { name: "Canh Chua Ba sa" }]
-      },
-      {
-        name: "Cá Lóc",
-        price: 35000,
-        children: [
-          { name: "Muối chiên" },
-          { name: "Chiên Sả" },
-          { 
-            name: "Chiên sốt",
-            children: [
-              { name: "Xí muội" },
-              { name: "Cay" },
-              { name: "Chua Ngọt" },
-              { name: "Mắm" }
-            ]
-          },
-          { name: "Kho Tiêu" }
-        ]
-      },
-      {
-        name: "Điêu Hồng",
-        price: 35000,
-        children: [{ name: "Chiên Giòn" }, { name: "Sốt Cà" }, { name: "Canh Chua Cá Điều Hồng" }]
-      },
-      {
-        name: "Trê",
-        price: 35000,
-        children: [{ name: "Kho Tiêu" }, { name: "Chiên mắm gừng" }]
-      },
-      {
-        name: "Cam",
-        price: 38000,
-        children: [{ name: "Chiên Giòn" }, { name: "Sốt Cà" }]
-      },
-      {
-        name: "Chim",
-        price: 38000,
-        children: [{ name: "Muối chiên" }, { name: "Sốt Cà" }]
-      }
-    ]
-  },
-  {
-    name: "CANH",
-    children: [
-      { name: "Canh chua Cá ba sa", price: 40000 },
-      { name: "Canh chua cá lóc", price: 40000 },
-      { name: "Canh chua cá điêu hồng", price: 40000 },
-      { name: "Canh chua cá không", price: 35000 },
-      { name: "Canh Rong Biển", price: 35000 },
-      { name: "Canh Khoai Ngọt", price: 35000 },
-      { name: "Canh Khổ qua thịt bằm", price: 35000 },
-      { name: "Canh Cải thịt bằm", price: 35000 }
-    ]
-  },
-  {
-    name: "MÓN XÀO",
-    children: [
-      { name: "Rau muống xào Mề", price: 35000 },
-      { name: "Rau muống xào Tỏi", price: 35000 },
-      { name: "Cải ngọt xào Mề", price: 35000 },
-      { name: "Cải ngọt xào Tỏi", price: 35000 },
-      { name: "Bắp cải xào trứng", price: 35000 },
-      { name: "Bắp cải xào thịt bằm", price: 35000 },
-      { name: "Bắp cải xào cà chua", price: 35000 },
-      { name: "Khổ qua xào Tỏi", price: 35000 },
-      { name: "Khổ qua xào Trứng", price: 35000 },
-      { name: "Mực xào chua ngọt", price: 40000 }
-    ]
-  },
-  {
-    name: "MÓN CÁNH GÀ",
-    price: 33000,
-    children: [
-      { name: "Chiên muối" },
-      { 
-        name: "Chiên sốt",
-        children: [
-          { name: "Xí muội" },
-          { name: "Cay" },
-          { name: "Chua Ngọt" },
-          { name: "Mắm" }
-        ]
-      },
-      { name: "Cánh kho sả" },
-      { name: "Cánh Rô ti" }
-    ]
-  },
-  {
-    name: "MÓN ẾCH",
-    price: 35000,
-    children: [
-      { 
-        name: "Ếch chiên sốt",
-        children: [
-          { name: "Xí muội" },
-          { name: "Cay" },
-          { name: "Chua Ngọt" },
-          { name: "Mắm" }
-        ]
-      },
-      { name: "Ếch xào sả ớt" },
-      { name: "Canh Chua Ếch", price: 40000 }
-    ]
-  },
-  {
-    name: "MÓN MỰC",
-    price: 40000,
-    children: [
-      { 
-        name: "Chiên sốt",
-        children: [
-          { name: "Xí muội" },
-          { name: "Cay" },
-          { name: "Chua Ngọt" },
-          { name: "Mắm" }
-        ]
-      },
-      { name: "Xào chua ngọt" },
-      { name: "Mì xào mực" }
-    ]
-  },
-  {
-    name: "TRỨNG",
-    children: [
-      { name: "Trứng chiên thịt bằm", price: 35000 },
-      { name: "Cơm 2 trứng quậy", price: 35000 },
-      { name: "Trứng quậy thêm", price: 10000 },
-      { name: "Sườn kho trứng", price: 38000 }
-    ]
-  },
-  {
-    name: "TÔM - TÉP",
-    price: 40000,
-    children: [
-      { name: "Tôm kho tàu" },
-      { name: "Tép ram mặn" },
-      { name: "Ba rọi tép ram" },
-      { name: "Mì xào tôm" },
-      { name: "Canh chua tôm" }
-    ]
-  },
-  {
-    name: "MẮM KHO",
-    children: [
-      { name: "Mắm kho THẬP CẨM", price: 60000 },
-      { name: "Mắm kho ba rọi", price: 40000 },
-      { name: "Mắm kho ba sa", price: 40000 },
-      { name: "Mắm kho cá lóc", price: 40000 },
-      { name: "Mắm kho điêu hồng", price: 40000 },
-      { name: "Mắm kho mực", price: 40000 },
-      { name: "Mắm kho tôm", price: 40000 }
-    ]
-  },
-  {
-    name: "MÓN THÊM",
-    children: [
-      { name: "Lạp xưởng", price: 15000 },
-      { name: "Ốp la", price: 10000 },
-      { name: "Cơm thêm", price: 5000 },
-      { name: "Trứng quậy thêm", price: 10000 },
-      { name: "Xúc Xích", price: 10000 },
-      { name: "Đậu hủ sả / giòn", price: 15000 },
-      { name: "Trứng kho", price: 10000 }
-    ]
-  }
-];
 
 // --- COMPONENTS ---
 
@@ -569,7 +351,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
 
   // Logic hiển thị ngẫu nhiên (Random)
   const filteredMenu = useMemo(() => {
-    let list = activeFilter === Category.All ? [...menu] : menu.filter(d => d.category === activeFilter);
+    const list = activeFilter === Category.All ? [...menu] : menu.filter(d => d.category === activeFilter);
     return list.sort(() => Math.random() - 0.5);
   }, [menu, activeFilter]);
 
@@ -975,7 +757,6 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
           <div className="space-y-10 flex flex-col">
             <div className="flex justify-between items-end">
               <h3 className="text-2xl font-black uppercase tracking-tighter text-stone-900">Lời chúc mới nhất</h3>
-              <span className="text-[10px] font-black text-amber-800 uppercase tracking-widest">{guestbookEntries.length} Đã duyệt</span>
             </div>
 
             <div className="flex-1 space-y-6 overflow-y-auto max-h-[600px] pr-4 no-scrollbar">
@@ -1076,8 +857,14 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
   }, [supabase]);
 
   useEffect(() => {
-    if (activeTab === 'quick') fetchQuickMenu();
-    if (activeTab === 'guestbook') fetchGuestbook();
+    if (activeTab === 'quick') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      fetchQuickMenu();
+    }
+    if (activeTab === 'guestbook') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      fetchGuestbook();
+    }
   }, [activeTab, fetchQuickMenu, fetchGuestbook]);
 
   const approveGuestbook = async (id: string) => {
@@ -1127,7 +914,7 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
         }).eq('id', item.id);
       }
       alert("Đã lưu tất cả thay đổi thành công!");
-    } catch (err) {
+    } catch {
       alert("Có lỗi xảy ra khi lưu dữ liệu.");
     }
     setLoadingQuick(false);
@@ -1581,7 +1368,12 @@ const App = () => {
       if (delSlidesError) throw new Error("Không thể xóa banner cũ: " + delSlidesError.message);
 
       // 2. Chuẩn bị dữ liệu để lưu (loại bỏ id cũ để Supabase tự tạo id mới)
-      const sanitize = (list: any[]) => list.map(({ id, created_at, ...rest }) => rest);
+      const sanitize = (list: any[]) => list.map((item) => {
+        const newItem = { ...item };
+        delete newItem.id;
+        delete newItem.created_at;
+        return newItem;
+      });
       
       // 3. Lưu dữ liệu mới
       if (menu.length) {

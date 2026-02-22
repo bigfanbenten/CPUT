@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, X, Plus, Power, PowerOff, ChevronRight, UtensilsCrossed } from 'lucide-react';
 import { supabaseService } from './services/supabaseService';
-import { Notification, Dish, Category } from './types';
+import { Notification } from './types';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -15,22 +15,20 @@ export default function App() {
   const [allNotifications, setAllNotifications] = useState<Notification[]>([]);
   const [showAdmin, setShowAdmin] = useState(false);
   const [newNotification, setNewNotification] = useState('');
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   const fetchData = async () => {
-    setLoading(true);
     const [active, all] = await Promise.all([
       supabaseService.getActiveNotification(),
       supabaseService.getAllNotifications()
     ]);
     setActiveNotification(active);
     setAllNotifications(all);
-    setLoading(false);
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchData();
+  }, []);
 
   const handleCreateNotification = async (e: React.FormEvent) => {
     e.preventDefault();
