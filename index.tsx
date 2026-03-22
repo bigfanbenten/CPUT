@@ -47,7 +47,7 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import ReactDOM from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
-import { ChevronRight, ChevronDown, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, MessageSquare, CheckCircle2, Facebook, Mail, Twitter, Instagram, Youtube } from 'lucide-react';
+import { ChevronRight, ChevronDown, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, MessageSquare, CheckCircle2, Facebook, Mail, Youtube } from 'lucide-react';
 
 // --- CẤU HÌNH CỐ ĐỊNH ---
 const DEFAULT_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co';
@@ -896,19 +896,13 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
               <p className="font-bold text-white">158A/5 Trần Vĩnh Kiết, Cần Thơ</p>
               <p className="font-black text-2xl text-white">0939.70.90.20</p>
               <div className="flex gap-4 pt-2">
-                <a href="https://www.facebook.com/profile.php?id=100088316355555" target="_blank" rel="noopener noreferrer" className="text-stone-500 hover:text-blue-500 transition-colors">
+                <a href="https://www.facebook.com/comphanuttrinh" target="_blank" rel="noopener noreferrer" className="text-stone-500 hover:text-blue-500 transition-colors">
                   <Facebook size={20} />
                 </a>
                 <a href="mailto:comphanuttrinh@gmail.com" className="text-stone-500 hover:text-red-400 transition-colors">
                   <Mail size={20} />
                 </a>
-                <a href="#" className="text-stone-500 hover:text-sky-400 transition-colors cursor-default">
-                  <Twitter size={20} />
-                </a>
-                <a href="#" className="text-stone-500 hover:text-pink-500 transition-colors cursor-default">
-                  <Instagram size={20} />
-                </a>
-                <a href="#" className="text-stone-500 hover:text-red-600 transition-colors cursor-default">
+                <a href="https://www.youtube.com/@comphanuttrinh" target="_blank" rel="noopener noreferrer" className="text-stone-500 hover:text-red-600 transition-colors">
                   <Youtube size={20} />
                 </a>
               </div>
