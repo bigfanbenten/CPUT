@@ -36,7 +36,8 @@
  *    - Quản trị viên duyệt tại #ACP1122 mới được hiển thị.
  * 10. Hệ thống THỐNG KÊ ĐỒNG NHẤT:
  *    - Lượt xem (Visitor) được đồng bộ qua Supabase `site_stats`, thống nhất trên mọi thiết bị.
- *    - Cơ chế đếm thông minh: Mỗi khách truy cập được tính 1 lượt mỗi 30 phút (sử dụng Cookie/LocalStorage).
+ *    - Cơ chế đếm thông minh: Mỗi khách truy cập được tính 1 lượt mỗi 30 phút (sử dụng LocalStorage).
+ *    - Đã sửa lỗi bộ đếm bị nhảy lùi: Tự động lấy giá trị lớn nhất giữa Database và LocalStorage, khởi tạo tối thiểu 372.
  *    - Đếm số người đang Online thời gian thực.
  * 11. Cải tiến UI/UX:
  *    - Modal chi tiết món ăn: Nhãn "CƠM PHẦN ÚT TRINH" nổi bật với nền đỏ, chữ trắng.
@@ -342,27 +343,34 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
       const lastVisit = localStorage.getItem(SESSION_VISIT_KEY);
       const isNewVisit = !lastVisit || (now - parseInt(lastVisit) > VISIT_EXPIRY);
 
-      // Fetch total views from Supabase
-      const { data, error } = await supabase.from('site_stats').select('total_views').eq('id', 1).single();
-      
-      if (error) {
-        console.warn("Table 'site_stats' not found. Using local storage fallback.");
-        const savedViews = localStorage.getItem(VIEW_COUNT_KEY);
-        let currentViews = savedViews ? parseInt(savedViews) : 300;
+      try {
+        // Fetch total views from Supabase - using maybeSingle to avoid error if row missing
+        const { data } = await supabase.from('site_stats').select('total_views').eq('id', 1).maybeSingle();
         
+        // Use 372 as a base if the database is empty or has a lower value
+        // This ensures the counter doesn't "go backwards"
+        const dbViews = data?.total_views || 0;
+        const savedViews = localStorage.getItem(VIEW_COUNT_KEY);
+        const localViews = savedViews ? parseInt(savedViews) : 372;
+        
+        let currentViews = Math.max(dbViews, localViews);
+        
+        if (isNewVisit) {
+          currentViews += 1;
+          // Use upsert to ensure the row exists and is updated
+          await supabase.from('site_stats').upsert({ id: 1, total_views: currentViews });
+          localStorage.setItem(SESSION_VISIT_KEY, now.toString());
+        }
+        
+        setTotalViews(currentViews);
+        localStorage.setItem(VIEW_COUNT_KEY, currentViews.toString());
+      } catch (err) {
+        console.warn("Supabase stats error, falling back to local storage:", err);
+        const savedViews = localStorage.getItem(VIEW_COUNT_KEY);
+        let currentViews = savedViews ? parseInt(savedViews) : 372;
         if (isNewVisit) {
           currentViews += 1;
           localStorage.setItem(VIEW_COUNT_KEY, currentViews.toString());
-          localStorage.setItem(SESSION_VISIT_KEY, now.toString());
-        }
-        setTotalViews(currentViews);
-      } else if (data) {
-        let currentViews = data.total_views;
-        
-        if (isNewVisit) {
-          currentViews += 1;
-          // Increment in Supabase
-          await supabase.from('site_stats').update({ total_views: currentViews }).eq('id', 1);
           localStorage.setItem(SESSION_VISIT_KEY, now.toString());
         }
         setTotalViews(currentViews);
