@@ -20,3 +20,9 @@ export interface Category {
   name: string;
   display_order: number;
 }
+
+export interface VisitorStats {
+  id: string;
+  total_visitors: number;
+  updated_at: string;
+}

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, X, Plus, Power, PowerOff, ChevronRight, UtensilsCrossed } from 'lucide-react';
+import { Bell, X, Plus, Power, PowerOff, ChevronRight, UtensilsCrossed, Users, Save } from 'lucide-react';
 import { supabaseService } from './services/supabaseService';
-import { Notification } from './types';
+import { Notification, VisitorStats } from './types';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -14,15 +14,23 @@ export default function App() {
   const [activeNotification, setActiveNotification] = useState<Notification | null>(null);
   const [allNotifications, setAllNotifications] = useState<Notification[]>([]);
   const [showAdmin, setShowAdmin] = useState(false);
+  const [adminTab, setAdminTab] = useState<'notifications' | 'visitors'>('notifications');
   const [newNotification, setNewNotification] = useState('');
+  const [visitorStats, setVisitorStats] = useState<VisitorStats | null>(null);
+  const [newVisitorCount, setNewVisitorCount] = useState('');
 
   const fetchData = async () => {
-    const [active, all] = await Promise.all([
+    const [active, all, stats] = await Promise.all([
       supabaseService.getActiveNotification(),
-      supabaseService.getAllNotifications()
+      supabaseService.getAllNotifications(),
+      supabaseService.getVisitorStats()
     ]);
     setActiveNotification(active);
     setAllNotifications(all);
+    setVisitorStats(stats);
+    if (stats) {
+      setNewVisitorCount(stats.total_visitors.toString());
+    }
   };
 
   useEffect(() => {
@@ -43,6 +51,17 @@ export default function App() {
 
   const handleToggleStatus = async (id: string, currentStatus: boolean) => {
     const success = await supabaseService.updateNotificationStatus(id, !currentStatus);
+    if (success) {
+      fetchData();
+    }
+  };
+
+  const handleUpdateVisitorCount = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const count = parseInt(newVisitorCount);
+    if (isNaN(count)) return;
+
+    const success = await supabaseService.updateVisitorStats(count);
     if (success) {
       fetchData();
     }
@@ -79,63 +98,135 @@ export default function App() {
             animate={{ opacity: 1, y: 0 }}
             className="space-y-8"
           >
-            <div className="bg-white rounded-3xl p-8 border border-orange-100 shadow-sm">
-              <h2 className="text-2xl font-serif italic mb-6 text-orange-900">Quản Lý Thông Báo</h2>
-              
-              <form onSubmit={handleCreateNotification} className="flex gap-4 mb-8">
-                <input 
-                  type="text" 
-                  value={newNotification}
-                  onChange={(e) => setNewNotification(e.target.value)}
-                  placeholder="Nhập nội dung thông báo mới..."
-                  className="flex-1 bg-orange-50/50 border border-orange-100 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-orange-900/20 transition-all"
-                />
-                <button 
-                  type="submit"
-                  className="bg-orange-900 text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-2 hover:bg-orange-800 transition-colors shadow-lg shadow-orange-900/10"
-                >
-                  <Plus size={20} />
-                  <span>Tạo Mới</span>
-                </button>
-              </form>
+            {/* Admin Tabs */}
+            <div className="flex gap-4 mb-8">
+              <button 
+                onClick={() => setAdminTab('notifications')}
+                className={cn(
+                  "px-6 py-3 rounded-2xl text-sm font-bold uppercase tracking-widest transition-all",
+                  adminTab === 'notifications' 
+                    ? "bg-orange-900 text-white shadow-lg shadow-orange-900/20" 
+                    : "bg-white text-orange-900/50 hover:bg-orange-50"
+                )}
+              >
+                Thông Báo
+              </button>
+              <button 
+                onClick={() => setAdminTab('visitors')}
+                className={cn(
+                  "px-6 py-3 rounded-2xl text-sm font-bold uppercase tracking-widest transition-all",
+                  adminTab === 'visitors' 
+                    ? "bg-orange-900 text-white shadow-lg shadow-orange-900/20" 
+                    : "bg-white text-orange-900/50 hover:bg-orange-50"
+                )}
+              >
+                Thống Kê
+              </button>
+            </div>
 
-              <div className="space-y-4">
-                <h3 className="text-xs font-bold uppercase tracking-widest text-orange-900/40 mb-4">Lịch Sử Thông Báo</h3>
-                {allNotifications.map((notif) => (
-                  <div 
-                    key={notif.id}
-                    className={cn(
-                      "flex items-center justify-between p-6 rounded-2xl border transition-all",
-                      notif.is_active 
-                        ? "bg-orange-50/30 border-orange-200" 
-                        : "bg-white border-gray-100 opacity-60"
-                    )}
+            {adminTab === 'notifications' ? (
+              <div className="bg-white rounded-3xl p-8 border border-orange-100 shadow-sm">
+                <h2 className="text-2xl font-serif italic mb-6 text-orange-900">Quản Lý Thông Báo</h2>
+                
+                <form onSubmit={handleCreateNotification} className="flex gap-4 mb-8">
+                  <input 
+                    type="text" 
+                    value={newNotification}
+                    onChange={(e) => setNewNotification(e.target.value)}
+                    placeholder="Nhập nội dung thông báo mới..."
+                    className="flex-1 bg-orange-50/50 border border-orange-100 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-orange-900/20 transition-all"
+                  />
+                  <button 
+                    type="submit"
+                    className="bg-orange-900 text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-2 hover:bg-orange-800 transition-colors shadow-lg shadow-orange-900/10"
                   >
-                    <div className="flex-1 mr-4">
-                      <p className={cn("font-medium", notif.is_active ? "text-orange-900" : "text-gray-500")}>
-                        {notif.message}
-                      </p>
-                      <span className="text-[10px] text-gray-400 uppercase tracking-wider">
-                        {new Date(notif.created_at).toLocaleDateString('vi-VN')}
-                      </span>
-                    </div>
-                    
-                    <button 
-                      onClick={() => handleToggleStatus(notif.id, notif.is_active)}
+                    <Plus size={20} />
+                    <span>Tạo Mới</span>
+                  </button>
+                </form>
+
+                <div className="space-y-4">
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-orange-900/40 mb-4">Lịch Sử Thông Báo</h3>
+                  {allNotifications.map((notif) => (
+                    <div 
+                      key={notif.id}
                       className={cn(
-                        "flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all",
+                        "flex items-center justify-between p-6 rounded-2xl border transition-all",
                         notif.is_active 
-                          ? "bg-orange-900 text-white shadow-md" 
-                          : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+                          ? "bg-orange-50/30 border-orange-200" 
+                          : "bg-white border-gray-100 opacity-60"
                       )}
                     >
-                      {notif.is_active ? <Power size={14} /> : <PowerOff size={14} />}
-                      <span>{notif.is_active ? 'Đang Bật' : 'Đã Tắt'}</span>
-                    </button>
-                  </div>
-                ))}
+                      <div className="flex-1 mr-4">
+                        <p className={cn("font-medium", notif.is_active ? "text-orange-900" : "text-gray-500")}>
+                          {notif.message}
+                        </p>
+                        <span className="text-[10px] text-gray-400 uppercase tracking-wider">
+                          {new Date(notif.created_at).toLocaleDateString('vi-VN')}
+                        </span>
+                      </div>
+                      
+                      <button 
+                        onClick={() => handleToggleStatus(notif.id, notif.is_active)}
+                        className={cn(
+                          "flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all",
+                          notif.is_active 
+                            ? "bg-orange-900 text-white shadow-md" 
+                            : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+                        )}
+                      >
+                        {notif.is_active ? <Power size={14} /> : <PowerOff size={14} />}
+                        <span>{notif.is_active ? 'Đang Bật' : 'Đã Tắt'}</span>
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="bg-white rounded-3xl p-8 border border-orange-100 shadow-sm">
+                <h2 className="text-2xl font-serif italic mb-6 text-orange-900">Thống Kê Truy Cập</h2>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="bg-orange-50/50 p-8 rounded-[32px] border border-orange-100 flex flex-col items-center justify-center text-center">
+                    <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-orange-900 mb-4 shadow-sm">
+                      <Users size={32} />
+                    </div>
+                    <span className="text-xs font-bold uppercase tracking-widest text-orange-900/40 mb-2">Tổng Lượt Truy Cập</span>
+                    <span className="text-5xl font-serif italic text-orange-900">
+                      {visitorStats?.total_visitors.toLocaleString('vi-VN') || 0}
+                    </span>
+                    {visitorStats && (
+                      <span className="text-[10px] text-gray-400 uppercase tracking-wider mt-4">
+                        Cập nhật lần cuối: {new Date(visitorStats.updated_at).toLocaleString('vi-VN')}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="space-y-6">
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-orange-900/40">Cập Nhật Số Liệu</h3>
+                    <form onSubmit={handleUpdateVisitorCount} className="space-y-4">
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-orange-900/60 uppercase tracking-widest ml-2">Số lượt truy cập mới</label>
+                        <input 
+                          type="number" 
+                          value={newVisitorCount}
+                          onChange={(e) => setNewVisitorCount(e.target.value)}
+                          placeholder="Nhập số lượt truy cập..."
+                          className="w-full bg-orange-50/50 border border-orange-100 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-orange-900/20 transition-all"
+                        />
+                      </div>
+                      <button 
+                        type="submit"
+                        className="w-full bg-orange-900 text-white px-8 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-orange-800 transition-colors shadow-lg shadow-orange-900/10"
+                      >
+                        <Save size={20} />
+                        <span>Lưu Thay Đổi</span>
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            )}
           </motion.div>
         ) : (
           <div className="text-center space-y-12 py-20">
@@ -144,6 +235,12 @@ export default function App() {
               <p className="text-orange-900/60 max-w-xl mx-auto leading-relaxed">
                 Chào mừng bạn đến với Cơm Phần Út Trinh. Chúng tôi mang đến những bữa cơm ấm cúng, đậm đà hương vị quê hương.
               </p>
+              {visitorStats && (
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-50 rounded-full text-[10px] font-bold text-orange-900/40 uppercase tracking-[0.2em]">
+                  <Users size={12} />
+                  <span>{visitorStats.total_visitors.toLocaleString('vi-VN')} lượt truy cập</span>
+                </div>
+              )}
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

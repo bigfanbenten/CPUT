@@ -77,5 +77,49 @@ export const supabaseService = {
 
     if (error) return [];
     return data || [];
+  },
+
+  // Visitor Stats
+  async getVisitorStats(): Promise<VisitorStats | null> {
+    const { data, error } = await supabase
+      .from('visitor_stats')
+      .select('*')
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error) {
+      console.error('Error fetching visitor stats:', error);
+      return null;
+    }
+    return data;
+  },
+
+  async updateVisitorStats(total: number): Promise<boolean> {
+    const { data: existing } = await supabase
+      .from('visitor_stats')
+      .select('id')
+      .limit(1)
+      .single();
+
+    let error;
+    if (existing) {
+      const { error: updateError } = await supabase
+        .from('visitor_stats')
+        .update({ total_visitors: total, updated_at: new Date().toISOString() })
+        .eq('id', existing.id);
+      error = updateError;
+    } else {
+      const { error: insertError } = await supabase
+        .from('visitor_stats')
+        .insert([{ total_visitors: total, updated_at: new Date().toISOString() }]);
+      error = insertError;
+    }
+
+    if (error) {
+      console.error('Error updating visitor stats:', error);
+      return false;
+    }
+    return true;
   }
 };
