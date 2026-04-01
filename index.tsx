@@ -999,9 +999,9 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
             <div className="flex items-center gap-4"><img src="https://i.postimg.cc/5tdmrBLb/6d45d4f.png" className="w-16 h-16 md:w-20 md:h-20" /><span className="text-2xl font-black">ÚT TRINH</span></div>
             <p className="text-white/60 text-sm leading-relaxed font-medium italic">"Hương vị cơm nhà tinh túy – Nơi tìm lại những giá trị nguyên bản nhất của ẩm thực Việt"</p>
             <div className="flex gap-4">
-              <a href="#" className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white hover:text-stone-900 transition-all"><Facebook size={18} /></a>
-              <a href="#" className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white hover:text-stone-900 transition-all"><Mail size={18} /></a>
-              <a href="#" className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white hover:text-stone-900 transition-all"><Youtube size={18} /></a>
+              <a href="https://www.facebook.com/comphanuttrinh/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white hover:text-stone-900 transition-all"><Facebook size={18} /></a>
+              <a href="mailto:comphanuttrinh@gmail.com" className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white hover:text-stone-900 transition-all"><Mail size={18} /></a>
+              <a href="https://www.youtube.com/@comphanuttrinh" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white hover:text-stone-900 transition-all"><Youtube size={18} /></a>
             </div>
           </div>
           
@@ -1017,9 +1017,9 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
           <div className="space-y-8">
             <h4 className="text-xs font-black uppercase tracking-[0.3em] text-white/40">Liên hệ</h4>
             <div className="space-y-4">
-              <p className="text-sm font-bold leading-relaxed">Địa chỉ: 123 Đường Ẩm Thực, Quận 1, TP. Hồ Chí Minh</p>
+              <p className="text-sm font-bold leading-relaxed">Địa chỉ: 158A đường Trần Vĩnh Kiết. Phường Tân An, Quận Ninh Kiều, TP Cần Thơ</p>
               <p className="text-sm font-bold">Hotline: 0939.70.90.20</p>
-              <p className="text-sm font-bold">Email: uttrinhkitchen@gmail.com</p>
+              <p className="text-sm font-bold">Email: comphanuttrinh@gmail.com</p>
             </div>
           </div>
 
@@ -1045,8 +1045,8 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
         </div>
 
         <div className={`pt-16 border-t border-white/10 text-center space-y-4`}>
-          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30">© 2024 CƠM PHẦN ÚT TRINH. ALL RIGHTS RESERVED.</p>
-          <p className="text-[9px] font-bold italic text-amber-500/60 tracking-widest">DESIGNED BY ÚT TRINH KITCHEN</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30">© 2026 CƠM PHẦN ÚT TRINH. ALL RIGHTS RESERVED.</p>
+          <p className="text-[9px] font-bold italic text-amber-500/60 tracking-widest">CƠM PHẦN ÚT TRINH @ EST 2019</p>
         </div>
       </footer>
     </div>
