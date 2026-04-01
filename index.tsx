@@ -1,6 +1,6 @@
 
 /**
- * BẢN SAVE SỐ 3 - PHIÊN BẢN HOÀN THIỆN GUESTBOOK & THỐNG KÊ ĐỒNG BỘ
+ * BẢN SAVE SỐ 4 - PHIÊN BẢN TỐI ƯU GIAO DIỆN & THÔNG TIN LIÊN HỆ
  * -------------------------------------------------------
  * Các tính năng đã tích hợp:
  * 1. Hiển thị món ăn RANDOM (ngẫu nhiên) mỗi khi tải trang hoặc đổi danh mục.
@@ -34,14 +34,17 @@
  *    - Bảo mật: Số điện thoại được che (0939xxx123) để đảm bảo tính minh bạch mà vẫn an toàn.
  *    - Tính năng "Xem tất cả" / "Thu gọn" danh sách góp ý.
  *    - Quản trị viên duyệt tại #ACP1122 mới được hiển thị.
+ *    - CẢI TIẾN: Màu chữ bình luận tự động điều chỉnh theo theme để luôn rõ nét.
  * 10. Hệ thống THỐNG KÊ ĐỒNG NHẤT:
  *    - Lượt xem (Visitor) được đồng bộ qua Supabase `site_stats`, thống nhất trên mọi thiết bị.
  *    - Cơ chế đếm thông minh: Mỗi khách truy cập được tính 1 lượt mỗi 30 phút (sử dụng LocalStorage).
  *    - Đã sửa lỗi bộ đếm bị nhảy lùi: Tự động lấy giá trị lớn nhất giữa Database và LocalStorage, khởi tạo tối thiểu 372.
  *    - Đếm số người đang Online thời gian thực.
- * 11. Cải tiến UI/UX:
+ * 11. Cải tiến UI/UX & THÔNG TIN LIÊN HỆ:
  *    - Modal chi tiết món ăn: Nhãn "CƠM PHẦN ÚT TRINH" nổi bật với nền đỏ, chữ trắng.
- *    - Tích hợp các liên kết Mạng xã hội (Facebook, Gmail...) ở chân trang.
+ *    - Tích hợp các liên kết Mạng xã hội (Facebook, Youtube, Gmail...) chính thức ở chân trang.
+ *    - Cập nhật địa chỉ mới: 158A đường Trần Vĩnh Kiết, Cần Thơ.
+ *    - Cập nhật bản quyền © 2026 và slogan "EST 2019".
  */
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
@@ -293,11 +296,7 @@ const ThemeSwitcher = ({ currentTheme, onThemeChange }: any) => {
   );
 };
 
-const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
-  const [currentTheme, setCurrentTheme] = useState<Theme>(() => {
-    const saved = localStorage.getItem(THEME_KEY);
-    return (saved as Theme) || Theme.White;
-  });
+const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onThemeChange }: any) => {
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const [activeFilter, setActiveFilter] = useState<Category>(Category.All);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -318,11 +317,6 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
   const itemsPerPage = 9;
 
   const themeData = THEMES[currentTheme];
-
-  const handleThemeChange = (t: Theme) => {
-    setCurrentTheme(t);
-    localStorage.setItem(THEME_KEY, t);
-  };
 
   // Fetch Quick Menu from Supabase
   useEffect(() => {
@@ -550,7 +544,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
 
   return (
     <div className={`min-h-screen ${themeData.bg} ${themeData.font} ${themeData.text} transition-colors duration-500`}>
-      <ThemeSwitcher currentTheme={currentTheme} onThemeChange={handleThemeChange} />
+      <ThemeSwitcher currentTheme={currentTheme} onThemeChange={onThemeChange} />
       <Nav 
         onShowQuickSelect={() => setShowQuickSelect(true)} 
         cartCount={cartCount}
@@ -1053,8 +1047,9 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
   );
 };
 
-const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase }: any) => {
+const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase, theme, onThemeChange }: any) => {
   const [activeTab, setActiveTab] = useState<'menu' | 'hero' | 'notifications' | 'quick' | 'guestbook' | 'stats'>('menu');
+  const themeData = THEMES[theme as Theme] || THEMES[Theme.White];
   const [notifications, setNotifications] = useState<any[]>([]);
   const [guestbookItems, setGuestbookItems] = useState<GuestbookEntry[]>([]);
   const [newNotif, setNewNotif] = useState('');
@@ -1353,8 +1348,9 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
   }, [quickMenuItems]);
 
   return (
-    <div className="min-h-screen bg-stone-100 pt-32 pb-20 px-4 md:px-6">
-      <Nav isAdmin />
+    <div className={`min-h-screen ${themeData.bg} pt-44 md:pt-52 pb-20 px-4 md:px-6 transition-colors duration-500`}>
+      <ThemeSwitcher currentTheme={theme} onThemeChange={onThemeChange} />
+      <Nav isAdmin theme={theme} />
       <div className="max-w-6xl mx-auto bg-white rounded-[40px] shadow-2xl overflow-hidden border border-stone-200">
         <div className="flex bg-stone-50 border-b p-3 gap-2">
           <button onClick={() => setActiveTab('menu')} className={`flex-1 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest ${activeTab === 'menu' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>🍱 THỰC ĐƠN</button>
@@ -1631,6 +1627,16 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
 };
 
 const App = () => {
+  const [currentTheme, setCurrentTheme] = useState<Theme>(() => {
+    const saved = localStorage.getItem(THEME_KEY);
+    return (saved as Theme) || Theme.White;
+  });
+
+  const handleThemeChange = (t: Theme) => {
+    setCurrentTheme(t);
+    localStorage.setItem(THEME_KEY, t);
+  };
+
   const [supabaseConfig] = useState(() => {
     const saved = localStorage.getItem(CONFIG_KEY);
     return saved ? JSON.parse(saved) : { url: DEFAULT_URL, key: DEFAULT_ANON_KEY };
@@ -1693,7 +1699,27 @@ const App = () => {
   };
 
   const isAcp = window.location.hash.toUpperCase().includes('ACP1122');
-  return isAcp ? <AdminPanel menu={menu} setMenu={setMenu} heroSlides={heroSlides} setHeroSlides={setHeroSlides} onSave={handleSave} supabase={supabase} /> : <HomePage menu={menu} heroSlides={heroSlides} isLoading={isLoading} supabase={supabase} />;
+  return isAcp ? (
+    <AdminPanel 
+      menu={menu} 
+      setMenu={setMenu} 
+      heroSlides={heroSlides} 
+      setHeroSlides={setHeroSlides} 
+      onSave={handleSave} 
+      supabase={supabase}
+      theme={currentTheme}
+      onThemeChange={handleThemeChange}
+    />
+  ) : (
+    <HomePage 
+      menu={menu} 
+      heroSlides={heroSlides} 
+      isLoading={isLoading} 
+      supabase={supabase}
+      currentTheme={currentTheme}
+      onThemeChange={handleThemeChange}
+    />
+  );
 };
 
 ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
