@@ -945,7 +945,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
                       return (
                         <div 
                           key={entry.id} 
-                          className={`p-8 rounded-[35px] shadow-sm border space-y-4 hover:shadow-md transition-all group ${themeData.bg === 'bg-white' ? colorSet.border : 'border-white/20'} ${themeData.bg === 'bg-white' ? colorSet.bg : 'bg-white/10'}`}
+                          className={`p-8 rounded-[35px] shadow-sm border space-y-4 hover:shadow-md transition-all group ${themeData.border} ${themeData.card}`}
                         >
                           <div className="flex justify-between items-start">
                             <div className="flex items-center gap-3">
@@ -955,14 +955,14 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
                               <div>
                                 <div className="flex items-center gap-2">
                                   <h4 className={`font-black ${themeData.text} uppercase text-sm tracking-tight`}>{entry.name}</h4>
-                                  <span className={`text-[8px] font-black ${themeData.text} opacity-40 bg-white/20 px-1.5 py-0.5 rounded-md tracking-widest`}>{maskedPhone}</span>
+                                  <span className={`text-[8px] font-black ${themeData.text} opacity-40 bg-stone-100 px-1.5 py-0.5 rounded-md tracking-widest`}>{maskedPhone}</span>
                                 </div>
                                 <p className="text-[9px] text-stone-400 font-bold uppercase tracking-widest">{new Date(entry.created_at).toLocaleDateString('vi-VN')}</p>
                               </div>
                             </div>
                             <CheckCircle2 size={16} className="text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity" />
                           </div>
-                          <p className={`text-sm font-bold italic leading-relaxed ${themeData.bg === 'bg-white' ? colorSet.content : 'text-white/80'}`}>"{entry.content}"</p>
+                          <p className={`text-sm font-bold italic leading-relaxed ${colorSet.content}`}>"{entry.content}"</p>
                         </div>
                       );
                     })}
