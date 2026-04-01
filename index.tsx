@@ -47,7 +47,7 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import ReactDOM from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
-import { ChevronRight, ChevronDown, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, MessageSquare, CheckCircle2, Facebook, Mail, Youtube } from 'lucide-react';
+import { ChevronRight, ChevronDown, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, MessageSquare, CheckCircle2, Facebook, Mail, Youtube, Users } from 'lucide-react';
 
 // --- CẤU HÌNH CỐ ĐỊNH ---
 const DEFAULT_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co';
@@ -930,7 +930,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
 };
 
 const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase }: any) => {
-  const [activeTab, setActiveTab] = useState<'menu' | 'hero' | 'notifications' | 'quick' | 'guestbook'>('menu');
+  const [activeTab, setActiveTab] = useState<'menu' | 'hero' | 'notifications' | 'quick' | 'guestbook' | 'stats'>('menu');
   const [notifications, setNotifications] = useState<any[]>([]);
   const [guestbookItems, setGuestbookItems] = useState<GuestbookEntry[]>([]);
   const [newNotif, setNewNotif] = useState('');
@@ -939,6 +939,28 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
   const [quickMenuItems, setQuickMenuItems] = useState<QuickMenuItem[]>([]);
   const [loadingQuick, setLoadingQuick] = useState(false);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [totalViews, setTotalViews] = useState<number>(0);
+  const [isUpdatingStats, setIsUpdatingStats] = useState(false);
+
+  const fetchStats = useCallback(async () => {
+    const { data } = await supabase.from('site_stats').select('total_views').eq('id', 1).maybeSingle();
+    if (data) setTotalViews(data.total_views);
+  }, [supabase]);
+
+  const updateStats = async () => {
+    setIsUpdatingStats(true);
+    try {
+      const { error } = await supabase.from('site_stats').upsert({ id: 1, total_views: totalViews });
+      if (error) throw error;
+      alert("Cập nhật số lượt truy cập thành công!");
+      // Update local storage to sync with DB
+      localStorage.setItem(VIEW_COUNT_KEY, totalViews.toString());
+    } catch (err: any) {
+      alert("Lỗi khi cập nhật: " + err.message);
+    } finally {
+      setIsUpdatingStats(false);
+    }
+  };
 
   const toggleExpand = (id: string) => {
     setExpandedIds(prev => {
@@ -970,7 +992,11 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
       // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchGuestbook();
     }
-  }, [activeTab, fetchQuickMenu, fetchGuestbook]);
+    if (activeTab === 'stats') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      fetchStats();
+    }
+  }, [activeTab, fetchQuickMenu, fetchGuestbook, fetchStats]);
 
   const approveGuestbook = async (id: string) => {
     const { error } = await supabase.from('guestbook').update({ is_approved: true }).eq('id', id);
@@ -1212,6 +1238,7 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
           <button onClick={() => setActiveTab('quick')} className={`flex-1 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest ${activeTab === 'quick' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>⚡ CHỌN NHANH</button>
           <button onClick={() => setActiveTab('notifications')} className={`flex-1 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest ${activeTab === 'notifications' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>🔔 THÔNG BÁO</button>
           <button onClick={() => setActiveTab('guestbook')} className={`flex-1 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest ${activeTab === 'guestbook' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>💬 GÓP Ý</button>
+          <button onClick={() => setActiveTab('stats')} className={`flex-1 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest ${activeTab === 'stats' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>📊 THỐNG KÊ</button>
         </div>
         
         <div className="p-12">
@@ -1369,6 +1396,46 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                     </div>
                   ))
                 )}
+              </div>
+            </div>
+          ) : activeTab === 'stats' ? (
+            <div className="space-y-10">
+              <div className="flex justify-between items-end border-b pb-6">
+                <h2 className="text-3xl font-black uppercase text-stone-900">THỐNG KÊ TRUY CẬP</h2>
+              </div>
+
+              <div className="bg-stone-50 p-10 rounded-[40px] border border-stone-100 flex flex-col items-center justify-center text-center space-y-8">
+                <div className="w-24 h-24 bg-white rounded-3xl flex items-center justify-center text-amber-800 shadow-sm">
+                  <Users size={48} />
+                </div>
+                <div className="space-y-2">
+                  <span className="text-[10px] font-black uppercase tracking-[0.4em] text-stone-400">Tổng lượt truy cập hiện tại</span>
+                  <div className="text-6xl font-black text-stone-900 tabular-nums">
+                    {totalViews.toLocaleString('vi-VN')}
+                  </div>
+                </div>
+
+                <div className="w-full max-w-md space-y-4 pt-6">
+                  <div className="space-y-2 text-left">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-amber-800 ml-4">Nhập số lượt truy cập mới</label>
+                    <input 
+                      type="number" 
+                      value={totalViews}
+                      onChange={(e) => setTotalViews(parseInt(e.target.value) || 0)}
+                      className="w-full bg-white border-2 border-stone-100 rounded-2xl px-8 py-5 text-2xl font-black text-stone-900 focus:border-amber-800 outline-none transition-all"
+                    />
+                  </div>
+                  <button 
+                    onClick={updateStats}
+                    disabled={isUpdatingStats}
+                    className="w-full bg-stone-900 text-white py-6 rounded-2xl text-xs font-black uppercase tracking-[0.4em] hover:bg-amber-800 transition-all shadow-xl disabled:opacity-50"
+                  >
+                    {isUpdatingStats ? 'ĐANG CẬP NHẬT...' : 'CẬP NHẬT SỐ LIỆU'}
+                  </button>
+                  <p className="text-[10px] text-stone-400 italic font-bold">
+                    * Lưu ý: Số liệu này sẽ được đồng bộ cho tất cả khách hàng truy cập website.
+                  </p>
+                </div>
               </div>
             </div>
           ) : (
