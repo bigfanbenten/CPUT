@@ -99,6 +99,78 @@ const GUESTBOOK_COLORS = [
   { avatar: 'bg-violet-100 text-violet-800', content: 'text-violet-600', border: 'border-violet-100', bg: 'bg-violet-50/30' },
 ];
 
+enum Theme {
+  White = 'White',
+  Yellow = 'Yellow',
+  Red = 'Red',
+  Blue = 'Blue'
+}
+
+const THEMES = {
+  [Theme.White]: {
+    name: 'TRẮNG',
+    bg: 'bg-white',
+    text: 'text-stone-900',
+    accent: 'text-amber-700',
+    button: 'bg-amber-800',
+    border: 'border-stone-100',
+    card: 'bg-white',
+    footer: 'bg-stone-900',
+    nav: 'bg-white/95',
+    font: 'font-sans',
+    primary: '#9a3412',
+    secondary: '#1c1917',
+    bgHex: '#ffffff'
+  },
+  [Theme.Yellow]: {
+    name: 'VÀNG',
+    bg: 'bg-amber-50',
+    text: 'text-amber-950',
+    accent: 'text-amber-600',
+    button: 'bg-amber-600',
+    border: 'border-amber-200',
+    card: 'bg-white',
+    footer: 'bg-amber-900',
+    nav: 'bg-amber-50/95',
+    font: 'font-serif-custom',
+    primary: '#d97706',
+    secondary: '#451a03',
+    bgHex: '#fffbeb'
+  },
+  [Theme.Red]: {
+    name: 'ĐỎ',
+    bg: 'bg-red-50',
+    text: 'text-red-950',
+    accent: 'text-red-700',
+    button: 'bg-red-700',
+    border: 'border-red-200',
+    card: 'bg-white',
+    footer: 'bg-red-900',
+    nav: 'bg-red-50/95',
+    font: 'font-oswald',
+    primary: '#b91c1c',
+    secondary: '#450a0a',
+    bgHex: '#fef2f2'
+  },
+  [Theme.Blue]: {
+    name: 'XANH BLUE',
+    bg: 'bg-sky-50',
+    text: 'text-sky-950',
+    accent: 'text-sky-700',
+    button: 'bg-sky-700',
+    border: 'border-sky-200',
+    card: 'bg-white',
+    footer: 'bg-sky-900',
+    nav: 'bg-sky-50/95',
+    font: 'font-space',
+    primary: '#0369a1',
+    secondary: '#082f49',
+    bgHex: '#f0f9ff'
+  }
+};
+
+const THEME_KEY = 'ut-trinh-theme-v1';
+
 interface CartItem {
   id: string;
   name: string;
@@ -115,12 +187,13 @@ interface QuickMenuItem {
 
 // --- COMPONENTS ---
 
-const Nav = ({ isAdmin = false, onShowQuickSelect, cartCount, onShowCart }: any) => {
+const Nav = ({ isAdmin = false, onShowQuickSelect, cartCount, onShowCart, theme }: any) => {
   const [showConciseMenu, setShowConciseMenu] = useState(false);
+  const themeData = THEMES[theme as Theme] || THEMES[Theme.White];
 
   return (
     <>
-      <nav className="fixed top-0 w-full z-[80] bg-white/95 backdrop-blur-xl border-b border-stone-100 px-2 md:px-20 h-24 md:h-32 flex items-center justify-between transition-all">
+      <nav className={`fixed top-10 md:top-12 w-full z-[80] ${themeData.nav} backdrop-blur-xl border-b ${themeData.border} px-2 md:px-20 h-24 md:h-32 flex items-center justify-between transition-all duration-500`}>
         <div className="flex items-center gap-2 md:gap-6 cursor-pointer group" onClick={() => window.location.hash = ''}>
           <img 
             src="https://i.postimg.cc/5tdmrBLb/6d45d4f.png" 
@@ -130,8 +203,8 @@ const Nav = ({ isAdmin = false, onShowQuickSelect, cartCount, onShowCart }: any)
           <div className="flex flex-col justify-center">
             <div className="flex flex-col whitespace-nowrap">
               <div className="flex items-center gap-1">
-                <span className="text-[11px] md:text-3xl lg:text-4xl font-black text-amber-700 uppercase tracking-tighter leading-none">CƠM PHẦN</span>
-                <span className="text-[11px] md:text-3xl lg:text-4xl font-black text-stone-900 uppercase tracking-tighter leading-none">ÚT TRINH</span>
+                <span className={`text-[11px] md:text-3xl lg:text-4xl font-black ${themeData.accent} uppercase tracking-tighter leading-none`}>CƠM PHẦN</span>
+                <span className={`text-[11px] md:text-3xl lg:text-4xl font-black ${themeData.text} uppercase tracking-tighter leading-none`}>ÚT TRINH</span>
               </div>
               <span className="text-[7px] md:text-xs lg:text-sm font-black text-red-600 uppercase tracking-widest animate-pulse mt-0.5 md:mt-1">
                 Đặt món ngay : 0939.70.90.20
@@ -142,20 +215,20 @@ const Nav = ({ isAdmin = false, onShowQuickSelect, cartCount, onShowCart }: any)
 
         <div className="flex gap-1 md:gap-8 items-center flex-1 justify-end md:justify-start">
           {isAdmin ? (
-            <button onClick={() => window.location.hash = ''} className="bg-amber-800 text-white px-4 md:px-8 py-2 md:py-3 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:bg-stone-900 transition-all">Thoát Quản Trị</button>
+            <button onClick={() => window.location.hash = ''} className={`${themeData.button} text-white px-4 md:px-8 py-2 md:py-3 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:bg-stone-900 transition-all`}>Thoát Quản Trị</button>
           ) : (
             <>
               <div className="flex items-center gap-2 md:gap-8 flex-1 justify-center">
-                <a href="#menu" className="text-stone-900 text-[8px] md:text-xs font-black uppercase tracking-widest hover:text-amber-700 whitespace-nowrap">THỰC ĐƠN</a>
+                <a href="#menu" className={`${themeData.text} text-[8px] md:text-xs font-black uppercase tracking-widest hover:${themeData.accent} whitespace-nowrap`}>THỰC ĐƠN</a>
                 <button 
                   onClick={onShowQuickSelect} 
-                  className="text-stone-900 text-[8px] md:text-xs font-black uppercase tracking-widest hover:text-amber-700 whitespace-nowrap"
+                  className={`${themeData.text} text-[8px] md:text-xs font-black uppercase tracking-widest hover:${themeData.accent} whitespace-nowrap`}
                 >
                   CHỌN MÓN NHANH
                 </button>
                 <button 
                   onClick={() => setShowConciseMenu(true)} 
-                  className="hidden xl:block bg-amber-800 text-white text-[9px] md:text-[10px] font-black uppercase tracking-widest px-5 py-2.5 rounded-full hover:bg-stone-900 transition-all"
+                  className={`hidden xl:block ${themeData.button} text-white text-[9px] md:text-[10px] font-black uppercase tracking-widest px-5 py-2.5 rounded-full hover:bg-stone-900 transition-all`}
                 >
                   MENU ẢNH
                 </button>
@@ -163,9 +236,9 @@ const Nav = ({ isAdmin = false, onShowQuickSelect, cartCount, onShowCart }: any)
               
               <button 
                 onClick={onShowCart}
-                className="relative p-2 md:p-3 bg-stone-100 rounded-full hover:bg-amber-100 transition-colors group"
+                className={`relative p-2 md:p-3 ${themeData.bg === 'bg-white' ? 'bg-stone-100' : 'bg-white/50'} rounded-full hover:bg-amber-100 transition-colors group`}
               >
-                <ShoppingBag className="w-4 h-4 md:w-6 md:h-6 text-stone-900 group-hover:text-amber-800" />
+                <ShoppingBag className={`w-4 h-4 md:w-6 md:h-6 ${themeData.text} group-hover:${themeData.accent}`} />
                 {cartCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[8px] md:text-[10px] font-black w-4 h-4 md:w-5 md:h-5 rounded-full flex items-center justify-center animate-bounce">
                     {cartCount}
@@ -173,7 +246,7 @@ const Nav = ({ isAdmin = false, onShowQuickSelect, cartCount, onShowCart }: any)
                 )}
               </button>
 
-              <div className="hidden sm:flex items-center gap-2 md:gap-4 border-l border-stone-100 pl-4">
+              <div className={`hidden sm:flex items-center gap-2 md:gap-4 border-l ${themeData.border} pl-4`}>
                 <img src="https://inkythuatso.com/uploads/thumbnails/800/2021/12/logo-grab-food-inkythuatso-20-15-57-46.jpg" className="h-6 md:h-12 object-contain rounded-sm" alt="Grab" />
                 <img src={SHOPEE_LOGO} className="h-6 md:h-12 object-contain" alt="Shopee" />
               </div>
@@ -192,7 +265,39 @@ const Nav = ({ isAdmin = false, onShowQuickSelect, cartCount, onShowCart }: any)
   );
 };
 
+const ThemeSwitcher = ({ currentTheme, onThemeChange }: any) => {
+  return (
+    <div className="fixed top-0 w-full z-[100] bg-white/95 backdrop-blur-xl border-b border-stone-100 h-10 md:h-12 flex items-center justify-center gap-3 md:gap-8 px-4 overflow-x-auto no-scrollbar shadow-sm transition-all duration-500">
+      <div className="flex items-center gap-2 md:gap-3 shrink-0">
+        <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-amber-800 rounded-full animate-pulse" />
+        <span className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] text-stone-500 whitespace-nowrap">CHỌN MÀU SITE:</span>
+      </div>
+      <div className="flex items-center gap-2 md:gap-4 py-1">
+        {(Object.keys(Theme) as Array<keyof typeof Theme>).map((key) => {
+          const t = Theme[key];
+          const themeData = THEMES[t];
+          const isActive = currentTheme === t;
+          return (
+            <button
+              key={t}
+              onClick={() => onThemeChange(t)}
+              className={`group flex items-center gap-1.5 md:gap-3 px-3 md:px-5 py-1 md:py-1.5 rounded-full transition-all duration-500 border-2 ${isActive ? 'bg-stone-900 border-stone-900 text-white shadow-lg scale-105' : 'bg-white border-stone-100 text-stone-500 hover:border-stone-300 hover:bg-stone-50'}`}
+            >
+              <div className={`w-3 h-3 md:w-4 md:h-4 rounded-full border-2 border-white shadow-sm transition-transform group-hover:scale-110 ${themeData.bg}`} />
+              <span className={`text-[8px] md:text-[10px] font-black uppercase tracking-tighter whitespace-nowrap ${isActive ? 'text-white' : 'text-stone-600'}`}>{themeData.name}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
 const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
+  const [currentTheme, setCurrentTheme] = useState<Theme>(() => {
+    const saved = localStorage.getItem(THEME_KEY);
+    return (saved as Theme) || Theme.White;
+  });
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const [activeFilter, setActiveFilter] = useState<Category>(Category.All);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -211,6 +316,13 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
   const [guestContent, setGuestContent] = useState('');
   const [isSubmittingGuestbook, setIsSubmittingGuestbook] = useState(false);
   const itemsPerPage = 9;
+
+  const themeData = THEMES[currentTheme];
+
+  const handleThemeChange = (t: Theme) => {
+    setCurrentTheme(t);
+    localStorage.setItem(THEME_KEY, t);
+  };
 
   // Fetch Quick Menu from Supabase
   useEffect(() => {
@@ -433,48 +545,47 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
     quickSelectPath.forEach(item => {
       if (item.price) total = item.price; // Lấy giá của cấp cao nhất có giá
     });
-    // Nếu món cuối cùng có giá riêng thì lấy giá đó
-    const lastItem = quickSelectPath[quickSelectPath.length - 1];
-    if (lastItem?.price) total = lastItem.price;
     return total;
   };
 
   return (
-    <div className="min-h-screen bg-[#fafafa]">
+    <div className={`min-h-screen ${themeData.bg} ${themeData.font} ${themeData.text} transition-colors duration-500`}>
+      <ThemeSwitcher currentTheme={currentTheme} onThemeChange={handleThemeChange} />
       <Nav 
         onShowQuickSelect={() => setShowQuickSelect(true)} 
         cartCount={cartCount}
         onShowCart={() => setShowCart(true)}
+        theme={currentTheme}
       />
       
       {/* Cart Modal */}
       {showCart && (
         <div className="fixed inset-0 z-[160] flex items-center justify-end bg-stone-950/60 backdrop-blur-sm" onClick={() => setShowCart(false)}>
-          <div className="bg-white w-full max-w-md h-full shadow-2xl flex flex-col animate-slide-left" onClick={e => e.stopPropagation()}>
-            <div className="p-6 border-b border-stone-100 flex justify-between items-center">
+          <div className={`${themeData.bg} w-full max-w-md h-full shadow-2xl flex flex-col animate-slide-left`} onClick={e => e.stopPropagation()}>
+            <div className={`p-6 border-b ${themeData.border} flex justify-between items-center`}>
               <div className="flex items-center gap-3">
-                <ShoppingBag className="text-amber-800" />
-                <h2 className="text-xl font-black uppercase tracking-tighter">GIỎ HÀNG CỦA BẠN</h2>
+                <ShoppingBag className={themeData.accent} />
+                <h2 className={`text-xl font-black uppercase tracking-tighter ${themeData.text}`}>GIỎ HÀNG CỦA BẠN</h2>
               </div>
-              <button onClick={() => setShowCart(false)} className="text-3xl text-stone-300 hover:text-stone-900">×</button>
+              <button onClick={() => setShowCart(false)} className={`text-3xl ${themeData.text} opacity-30 hover:opacity-100`}>×</button>
             </div>
 
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
               {cart.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-center space-y-4">
-                  <div className="w-20 h-20 bg-stone-50 rounded-full flex items-center justify-center text-stone-300">
+                  <div className={`w-20 h-20 ${themeData.bg === 'bg-white' ? 'bg-stone-50' : 'bg-white/30'} rounded-full flex items-center justify-center text-stone-300`}>
                     <ShoppingBag size={40} />
                   </div>
-                  <p className="text-stone-400 font-bold">Giỏ hàng đang trống.<br/>Hãy chọn món ngay!</p>
+                  <p className={`${themeData.text} opacity-40 font-bold`}>Giỏ hàng đang trống.<br/>Hãy chọn món ngay!</p>
                 </div>
               ) : (
                 cart.map(item => (
                   <div key={item.id} className="flex gap-4 items-center group">
                     <div className="flex-1 space-y-1">
-                      <h4 className="font-black text-stone-900 uppercase text-sm tracking-tight">{item.name}</h4>
-                      <p className="text-amber-800 font-black text-xs">{(item.price * item.quantity).toLocaleString('vi-VN')} VNĐ</p>
+                      <h4 className={`font-black ${themeData.text} uppercase text-sm tracking-tight`}>{item.name}</h4>
+                      <p className={`${themeData.accent} font-black text-xs`}>{(item.price * item.quantity).toLocaleString('vi-VN')} VNĐ</p>
                     </div>
-                    <div className="flex items-center gap-3 bg-stone-50 rounded-xl p-1">
+                    <div className={`flex items-center gap-3 ${themeData.bg === 'bg-white' ? 'bg-stone-50' : 'bg-white/50'} rounded-xl p-1`}>
                       <button onClick={() => updateQuantity(item.id, -1)} className="w-8 h-8 flex items-center justify-center hover:bg-white rounded-lg transition-colors"><Minus size={14}/></button>
                       <span className="text-xs font-black w-4 text-center">{item.quantity}</span>
                       <button onClick={() => updateQuantity(item.id, 1)} className="w-8 h-8 flex items-center justify-center hover:bg-white rounded-lg transition-colors"><Plus size={14}/></button>
@@ -485,18 +596,18 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
               )}
             </div>
 
-            <div className="p-6 bg-stone-50 border-t border-stone-100 space-y-4">
+            <div className={`p-6 ${themeData.bg === 'bg-white' ? 'bg-stone-50' : 'bg-white/30'} border-t ${themeData.border} space-y-4`}>
               <div className="flex justify-between items-end">
-                <span className="text-[10px] font-black uppercase tracking-widest text-stone-400">TỔNG CỘNG</span>
-                <span className="text-3xl font-black text-amber-800 tabular-nums">{cartTotal.toLocaleString('vi-VN')} VNĐ</span>
+                <span className={`text-[10px] font-black uppercase tracking-widest ${themeData.text} opacity-40`}>TỔNG CỘNG</span>
+                <span className={`text-3xl font-black ${themeData.accent} tabular-nums`}>{cartTotal.toLocaleString('vi-VN')} VNĐ</span>
               </div>
               <button 
                 onClick={() => { setShowOrderConfirmModal(true); setShowCart(false); }}
-                className="w-full bg-stone-900 text-white py-5 rounded-2xl text-xs font-black uppercase tracking-[0.3em] hover:bg-amber-800 transition-all shadow-xl"
+                className={`w-full ${themeData.button} text-white py-5 rounded-2xl text-xs font-black uppercase tracking-[0.3em] hover:brightness-110 transition-all shadow-xl`}
               >
                 XÁC NHẬN ĐƠN HÀNG
               </button>
-              <p className="text-[9px] text-stone-400 font-bold italic leading-relaxed text-center pt-2">
+              <p className={`text-[9px] ${themeData.text} opacity-40 font-bold italic leading-relaxed text-center pt-2`}>
                 Lưu ý: đây là chức năng giả lập chứ không phải đặt hàng Online hoặc đặt qua Apps các bạn nhé, nhưng các bạn cứ thoải mái chọn món cho vào giỏ hàng theo túi ví của mình rồi Alo theo số Hotline để các bạn tự lại quán lấy nhé ( Pre-Order ) !
               </p>
             </div>
@@ -507,18 +618,18 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
       {/* Quick Select Modal */}
       {showQuickSelect && (
         <div className="fixed inset-0 z-[150] flex items-center justify-center bg-stone-950/98 backdrop-blur-3xl p-2 md:p-4" onClick={() => { setShowQuickSelect(false); setQuickSelectPath([]); }}>
-          <div className="bg-white w-full max-w-4xl rounded-[30px] md:rounded-[40px] overflow-hidden shadow-2xl flex flex-col max-h-[95vh] md:max-h-[90vh]" onClick={e => e.stopPropagation()}>
-            <div className="p-4 md:p-8 border-b border-stone-100 flex justify-between items-center bg-stone-50">
+          <div className={`${themeData.bg} w-full max-w-4xl rounded-[30px] md:rounded-[40px] overflow-hidden shadow-2xl flex flex-col max-h-[95vh] md:max-h-[90vh]`} onClick={e => e.stopPropagation()}>
+            <div className={`p-4 md:p-8 border-b ${themeData.border} flex justify-between items-center ${themeData.bg === 'bg-white' ? 'bg-stone-50' : 'bg-white/20'}`}>
               <div className="space-y-1">
-                <h2 className="text-base md:text-2xl font-black uppercase tracking-tighter text-stone-900">CHỌN MÓN NHANH</h2>
+                <h2 className={`text-base md:text-2xl font-black uppercase tracking-tighter ${themeData.text}`}>CHỌN MÓN NHANH</h2>
                 <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-                  <button onClick={() => setQuickSelectPath([])} className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-amber-800 hover:underline">BẮT ĐẦU</button>
+                  <button onClick={() => setQuickSelectPath([])} className={`text-[8px] md:text-[10px] font-black uppercase tracking-widest ${themeData.accent} hover:underline`}>BẮT ĐẦU</button>
                   {quickSelectPath.map((item, idx) => (
                     <React.Fragment key={idx}>
                       <span className="text-stone-300">/</span>
                       <button 
                         onClick={() => setQuickSelectPath(quickSelectPath.slice(0, idx + 1))}
-                        className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-stone-900 whitespace-nowrap"
+                        className={`text-[8px] md:text-[10px] font-black uppercase tracking-widest ${themeData.text} whitespace-nowrap`}
                       >
                         {item.name}
                       </button>
@@ -526,7 +637,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
                   ))}
                 </div>
               </div>
-              <button onClick={() => { setShowQuickSelect(false); setQuickSelectPath([]); }} className="text-2xl md:text-4xl text-stone-300 hover:text-stone-900 transition-colors">×</button>
+              <button onClick={() => { setShowQuickSelect(false); setQuickSelectPath([]); }} className={`text-2xl md:text-4xl ${themeData.text} opacity-30 hover:opacity-100 transition-colors`}>×</button>
             </div>
 
             <div className="flex-1 p-4 md:p-8 overflow-y-auto">
@@ -536,30 +647,30 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
                     <button 
                       key={idx}
                       onClick={() => setQuickSelectPath([...quickSelectPath, option])}
-                      className="group p-4 md:p-6 border border-stone-100 rounded-2xl md:rounded-3xl hover:border-amber-800 hover:bg-amber-50/30 transition-all text-left flex justify-between items-center"
+                      className={`group p-4 md:p-6 border ${themeData.border} rounded-2xl md:rounded-3xl hover:border-amber-800 hover:bg-amber-50/30 transition-all text-left flex justify-between items-center bg-white/40`}
                     >
                       <div className="space-y-1">
-                        <span className="text-sm md:text-lg font-black uppercase tracking-tighter text-stone-900 group-hover:text-amber-800">{option.name}</span>
+                        <span className={`text-sm md:text-lg font-black uppercase tracking-tighter ${themeData.text} group-hover:${themeData.accent}`}>{option.name}</span>
                         {option.price && option.price > 0 ? (
-                          <p className="text-amber-800 font-black text-xs md:text-sm">{option.price.toLocaleString('vi-VN')} VNĐ</p>
+                          <p className={`${themeData.accent} font-black text-xs md:text-sm`}>{option.price.toLocaleString('vi-VN')} VNĐ</p>
                         ) : null}
                       </div>
-                      <ChevronRight className="w-4 h-4 md:w-6 md:h-6 text-stone-300 group-hover:text-amber-800 group-hover:translate-x-1 transition-all" />
+                      <ChevronRight className={`w-4 h-4 md:w-6 md:h-6 ${themeData.text} opacity-20 group-hover:opacity-100 group-hover:translate-x-1 transition-all`} />
                     </button>
                   ))}
                 </div>
               ) : (
                 <div className="text-center py-6 md:py-12 space-y-4 md:space-y-8">
-                  <div className="w-16 h-16 md:w-24 md:h-24 bg-amber-100 rounded-full flex items-center justify-center mx-auto text-amber-800">
+                  <div className={`w-16 h-16 md:w-24 md:h-24 ${themeData.bg === 'bg-white' ? 'bg-amber-100' : 'bg-white/50'} rounded-full flex items-center justify-center mx-auto ${themeData.accent}`}>
                     <UtensilsCrossed size={30} />
                   </div>
                   <div className="space-y-1 md:space-y-2">
-                    <h3 className="text-xl md:text-3xl font-black uppercase tracking-tighter text-stone-900">BẠN CÓ MUỐN CHỌN ?</h3>
-                    <p className="text-stone-500 italic text-sm md:text-lg">
+                    <h3 className={`text-xl md:text-3xl font-black uppercase tracking-tighter ${themeData.text}`}>BẠN CÓ MUỐN CHỌN ?</h3>
+                    <p className={`${themeData.text} opacity-60 italic text-sm md:text-lg`}>
                       {quickSelectPath.map(i => i.name).join(' - ')}
                     </p>
                   </div>
-                  <div className="text-3xl md:text-5xl font-black text-amber-800 tabular-nums">
+                  <div className={`text-3xl md:text-5xl font-black ${themeData.accent} tabular-nums`}>
                     {calculateTotalPrice().toLocaleString('vi-VN')} VNĐ
                   </div>
                   <div className="pt-4 md:pt-8 flex flex-col sm:flex-row gap-3 md:gap-4 justify-center">
@@ -571,13 +682,13 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
                         setShowQuickSelect(false);
                         setQuickSelectPath([]);
                       }}
-                      className="bg-amber-800 text-white px-8 md:px-12 py-4 md:py-5 rounded-full text-[10px] md:text-xs font-black uppercase tracking-[0.3em] hover:bg-stone-900 transition-all shadow-xl"
+                      className={`${themeData.button} text-white px-8 md:px-12 py-4 md:py-5 rounded-full text-[10px] md:text-xs font-black uppercase tracking-[0.3em] hover:brightness-110 transition-all shadow-xl`}
                     >
                       THÊM VÀO GIỎ
                     </button>
                     <button 
                       onClick={() => { setShowQuickSelect(false); setQuickSelectPath([]); }}
-                      className="bg-stone-100 text-stone-900 px-8 md:px-12 py-4 md:py-5 rounded-full text-[10px] md:text-xs font-black uppercase tracking-[0.3em] hover:bg-stone-200 transition-all"
+                      className={`bg-white/50 ${themeData.text} px-8 md:px-12 py-4 md:py-5 rounded-full text-[10px] md:text-xs font-black uppercase tracking-[0.3em] hover:bg-white transition-all border ${themeData.border}`}
                     >
                       CHỌN LẠI
                     </button>
@@ -585,12 +696,12 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
                 </div>
               )}
             </div>
-            
+
             {quickSelectPath.length > 0 && (
-              <div className="p-4 md:p-6 bg-stone-50 border-t border-stone-100 flex justify-center">
+              <div className={`p-4 md:p-6 ${themeData.bg === 'bg-white' ? 'bg-stone-50' : 'bg-white/20'} border-t ${themeData.border} flex justify-center`}>
                 <button 
                   onClick={() => setQuickSelectPath(quickSelectPath.slice(0, -1))} 
-                  className="text-xs md:text-sm font-black uppercase tracking-[0.2em] text-amber-500 hover:text-amber-700 transition-colors flex items-center gap-2"
+                  className={`text-xs md:text-sm font-black uppercase tracking-[0.2em] ${themeData.accent} hover:brightness-125 transition-colors flex items-center gap-2`}
                 >
                   <ChevronRight className="rotate-180" size={14} />
                   QUAY LẠI
@@ -604,22 +715,22 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
       {/* Order Confirmation Custom Modal */}
       {showOrderConfirmModal && (
         <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-stone-950/70 backdrop-blur-sm p-4" onClick={() => setShowOrderConfirmModal(false)}>
-          <div className="bg-white rounded-[40px] shadow-2xl max-w-2xl w-full p-10 md:p-16 relative overflow-hidden text-center border-t-[12px] border-amber-600 animate-[popIn_0.5s_ease-out]" onClick={e => e.stopPropagation()}>
-            <button onClick={() => setShowOrderConfirmModal(false)} className="absolute top-8 right-8 text-stone-400 hover:text-stone-900 text-4xl transition-all">×</button>
+          <div className={`${themeData.bg} rounded-[40px] shadow-2xl max-w-2xl w-full p-10 md:p-16 relative overflow-hidden text-center border-t-[12px] border-${themeData.primary} animate-[popIn_0.5s_ease-out]`} onClick={e => e.stopPropagation()}>
+            <button onClick={() => setShowOrderConfirmModal(false)} className={`absolute top-8 right-8 ${themeData.text} opacity-30 hover:opacity-100 text-4xl transition-all`}>×</button>
             <div className="space-y-8">
-              <span className="text-amber-600 font-black text-xs md:text-sm tracking-[0.6em] uppercase block">Xác nhận đơn hàng</span>
-              <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter text-stone-900 leading-tight">CẢM ƠN BẠN!</h2>
-              <div className="w-16 h-1 bg-amber-500 mx-auto rounded-full"></div>
-              <p className="text-stone-600 text-lg md:text-xl font-bold leading-relaxed">
+              <span className={`${themeData.accent} font-black text-xs md:text-sm tracking-[0.6em] uppercase block`}>Xác nhận đơn hàng</span>
+              <h2 className={`text-4xl md:text-5xl font-black uppercase tracking-tighter ${themeData.text} leading-tight`}>CẢM ƠN BẠN!</h2>
+              <div className={`w-16 h-1 ${themeData.button} mx-auto rounded-full`}></div>
+              <p className={`${themeData.text} opacity-70 text-lg md:text-xl font-bold leading-relaxed`}>
                 Cảm ơn bạn đã chọn món! Đây là chức năng tính món theo ví nên Quán không thể giao hàng cho bạn được.
               </p>
-              <div className="bg-amber-50 p-6 rounded-3xl border border-amber-100">
-                <p className="text-amber-900 text-base md:text-lg font-black leading-relaxed">
-                  Bạn có thể đặt hàng bằng cách gọi <span className="text-2xl block mt-2">0939.70.90.20</span>
+              <div className={`${themeData.bg === 'bg-white' ? 'bg-amber-50' : 'bg-white/20'} p-6 rounded-3xl border ${themeData.border}`}>
+                <p className={`${themeData.text} text-base md:text-lg font-black leading-relaxed`}>
+                  Bạn có thể đặt hàng bằng cách gọi <span className={`text-2xl block mt-2 ${themeData.accent}`}>0939.70.90.20</span>
                   <span className="text-sm block mt-2 opacity-70">Để LIỆT KÊ những món bạn đặt và vui lòng lại quán nhận đơn hàng nhé!</span>
                 </p>
               </div>
-              <button onClick={() => setShowOrderConfirmModal(false)} className="bg-stone-900 text-white px-12 py-4 rounded-full text-[10px] font-black uppercase tracking-[0.3em] hover:bg-amber-600 transition-all shadow-xl">ĐÃ HIỂU</button>
+              <button onClick={() => setShowOrderConfirmModal(false)} className={`${themeData.button} text-white px-12 py-4 rounded-full text-[10px] font-black uppercase tracking-[0.3em] hover:brightness-110 transition-all shadow-xl`}>ĐÃ HIỂU</button>
             </div>
           </div>
         </div>
@@ -628,21 +739,21 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
       {/* Dynamic Notification Popup */}
       {showTetPopup && activeNotif && (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-stone-950/70 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-[40px] shadow-2xl max-w-2xl w-full p-10 md:p-16 relative overflow-hidden text-center border-t-[12px] border-amber-600 animate-[popIn_0.5s_ease-out]">
-            <button onClick={() => setShowTetPopup(false)} className="absolute top-8 right-8 text-stone-400 hover:text-stone-900 text-4xl transition-all">×</button>
+          <div className={`${themeData.bg} rounded-[40px] shadow-2xl max-w-2xl w-full p-10 md:p-16 relative overflow-hidden text-center border-t-[12px] border-${themeData.primary} animate-[popIn_0.5s_ease-out]`}>
+            <button onClick={() => setShowTetPopup(false)} className={`absolute top-8 right-8 ${themeData.text} opacity-30 hover:opacity-100 text-4xl transition-all`}>×</button>
             <div className="space-y-8">
-              <span className="text-amber-600 font-black text-xs md:text-sm tracking-[0.6em] uppercase block">Thông báo từ quán</span>
-              <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter text-stone-900 leading-tight">THÔNG BÁO</h2>
-              <div className="w-16 h-1 bg-amber-500 mx-auto rounded-full"></div>
-              <p className="text-stone-600 text-lg md:text-2xl font-bold leading-relaxed whitespace-pre-line">
+              <span className={`${themeData.accent} font-black text-xs md:text-sm tracking-[0.6em] uppercase block`}>Thông báo từ quán</span>
+              <h2 className={`text-4xl md:text-6xl font-black uppercase tracking-tighter ${themeData.text} leading-tight`}>THÔNG BÁO</h2>
+              <div className={`w-16 h-1 ${themeData.button} mx-auto rounded-full`}></div>
+              <p className={`${themeData.text} text-lg md:text-2xl font-bold leading-relaxed whitespace-pre-line`}>
                 {activeNotif.message}
               </p>
               <div className="pt-6">
-                <p className="text-amber-600 text-sm md:text-lg italic font-black uppercase tracking-wide">
+                <p className={`${themeData.accent} text-sm md:text-lg italic font-black uppercase tracking-wide`}>
                   {activeNotif.footer || "XIN CHÚC BẠN VÀ GIA ĐÌNH SỨC KHỎE VÀ PHÁT TÀI."}
                 </p>
               </div>
-              <button onClick={() => setShowTetPopup(false)} className="bg-stone-900 text-white px-12 py-4 rounded-full text-[10px] font-black uppercase tracking-[0.3em] hover:bg-amber-600 transition-all shadow-xl">ĐÃ HIỂU</button>
+              <button onClick={() => setShowTetPopup(false)} className={`${themeData.button} text-white px-12 py-4 rounded-full text-[10px] font-black uppercase tracking-[0.3em] hover:brightness-110 transition-all shadow-xl`}>ĐÃ HIỂU</button>
             </div>
           </div>
           <style>{`@keyframes popIn { from { opacity: 0; transform: scale(0.9) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }`}</style>
@@ -658,8 +769,8 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
           </div>
         ))}
         <div className="relative z-20 text-center px-6 max-w-5xl pt-24">
-          <span className="text-amber-400 text-[10px] md:text-xs font-black uppercase tracking-[0.6em] mb-6 block animate-pulse">Tinh hoa ẩm thực Việt</span>
-          <h1 className="text-white text-5xl md:text-[130px] font-black tracking-tighter leading-none mb-8 drop-shadow-2xl">ÚT TRINH<br/><span className="text-amber-500 italic">KITCHEN</span></h1>
+          <span className={`${themeData.accent} text-[10px] md:text-xs font-black uppercase tracking-[0.6em] mb-6 block animate-pulse`}>Tinh hoa ẩm thực Việt</span>
+          <h1 className="text-white text-5xl md:text-[130px] font-black tracking-tighter leading-none mb-8 drop-shadow-2xl">ÚT TRINH<br/><span className={`${themeData.accent} italic`}>KITCHEN</span></h1>
           <p className="text-white/90 text-lg md:text-3xl font-light italic leading-relaxed">"{heroSlides[currentSlide]?.quote || 'Nơi lưu giữ hương vị cơm nhà truyền thống'}"</p>
         </div>
       </header>
@@ -667,25 +778,25 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
       {/* Menu List */}
       <main id="menu" className="max-w-7xl mx-auto py-24 px-6">
         <div className="text-center mb-20 space-y-6">
-          <h2 className="text-4xl md:text-8xl font-black tracking-tighter uppercase text-stone-900">Món Ăn Đặc Sắc</h2>
-          <div className="flex flex-wrap justify-center gap-4 md:gap-12 border-b border-stone-100 pb-8">
+          <h2 className={`text-4xl md:text-8xl font-black tracking-tighter uppercase ${themeData.text}`}>Món Ăn Đặc Sắc</h2>
+          <div className={`flex flex-wrap justify-center gap-4 md:gap-12 border-b ${themeData.border} pb-8`}>
             {Object.values(Category).map((cat) => (
-              <button key={cat} onClick={() => { setActiveFilter(cat); setCurrentPage(1); }} className={`text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] pb-3 border-b-2 transition-all ${activeFilter === cat ? 'border-amber-800 text-amber-800' : 'border-transparent text-stone-300 hover:text-stone-900'}`}>{cat}</button>
+              <button key={cat} onClick={() => { setActiveFilter(cat); setCurrentPage(1); }} className={`text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] pb-3 border-b-2 transition-all ${activeFilter === cat ? `border-${themeData.primary} ${themeData.accent}` : 'border-transparent text-stone-300 hover:text-stone-900'}`}>{cat}</button>
             ))}
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 md:gap-16">
           {paginatedMenu.map((dish: Dish) => (
-            <div key={dish.id} onClick={() => setSelectedIdx(filteredMenu.findIndex(d => d.id === dish.id))} className="bg-white rounded-[40px] overflow-hidden border border-stone-100 hover:shadow-2xl transition-all duration-700 cursor-pointer group p-6">
+            <div key={dish.id} onClick={() => setSelectedIdx(filteredMenu.findIndex(d => d.id === dish.id))} className={`${themeData.card} rounded-[40px] overflow-hidden border ${themeData.border} hover:shadow-2xl transition-all duration-700 cursor-pointer group p-6`}>
               <div className="aspect-square rounded-[35px] overflow-hidden mb-8 relative">
                 <img src={dish.image_url} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[2s]" />
-                <div className="absolute top-5 right-5 bg-stone-900/80 backdrop-blur-md text-white px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest">{dish.category}</div>
+                <div className={`absolute top-5 right-5 ${themeData.footer} backdrop-blur-md text-white px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest`}>{dish.category}</div>
               </div>
               <div className="px-2 space-y-4 text-center sm:text-left">
                 <div className="flex flex-col sm:flex-row justify-between items-center sm:items-start gap-2">
-                  <h3 className="font-black text-2xl md:text-3xl uppercase tracking-tighter leading-tight group-hover:text-amber-800 transition-colors">{dish.name}</h3>
-                  <span className="text-amber-800 font-black text-2xl tracking-tighter">{dish.price}</span>
+                  <h3 className={`font-black text-2xl md:text-3xl uppercase tracking-tighter leading-tight group-hover:${themeData.accent} transition-colors`}>{dish.name}</h3>
+                  <span className={`${themeData.accent} font-black text-2xl tracking-tighter`}>{dish.price}</span>
                 </div>
                 <p className="text-stone-400 text-sm italic line-clamp-2">"{dish.description || 'Hương vị gia truyền đậm đà.'}"</p>
               </div>
@@ -705,16 +816,16 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
       {/* Dish Modal */}
       {selectedDish && (
         <div className="fixed inset-0 z-[150] flex items-center justify-center bg-stone-950/98 backdrop-blur-3xl" onClick={() => setSelectedIdx(null)}>
-          <div key={selectedDish.id} className="w-full h-full md:w-[90vw] md:h-[85vh] bg-white md:rounded-[60px] overflow-hidden flex flex-col md:flex-row shadow-2xl relative transition-all duration-1000 animate-[fadeIn_0.8s_ease-out]" onClick={e => e.stopPropagation()}>
-            <button onClick={() => setSelectedIdx(null)} className="absolute top-8 right-8 z-[190] text-stone-300 hover:text-stone-900 text-5xl transition-all">×</button>
+          <div key={selectedDish.id} className={`w-full h-full md:w-[90vw] md:h-[85vh] ${themeData.bg} md:rounded-[60px] overflow-hidden flex flex-col md:flex-row shadow-2xl relative transition-all duration-1000 animate-[fadeIn_0.8s_ease-out]`} onClick={e => e.stopPropagation()}>
+            <button onClick={() => setSelectedIdx(null)} className={`absolute top-8 right-8 z-[190] ${themeData.text} opacity-30 hover:opacity-100 text-5xl transition-all`}>×</button>
             <div className="w-full h-[40vh] md:h-auto md:w-[55%] bg-black overflow-hidden">
               <img src={selectedDish.image_url} className="w-full h-full object-cover animate-[scaleSlow_10s_linear_infinite]" />
             </div>
-            <div className="flex-1 p-12 md:p-20 flex flex-col justify-center bg-white space-y-8">
+            <div className={`flex-1 p-12 md:p-20 flex flex-col justify-center ${themeData.bg} space-y-8`}>
               <span className="bg-red-600 text-white font-black uppercase tracking-[0.2em] text-[10px] px-4 py-2 rounded-md self-start">CƠM PHẦN ÚT TRINH</span>
-              <h2 className="text-4xl md:text-7xl font-black uppercase tracking-tighter leading-none text-stone-900">{selectedDish.name}</h2>
-              <div className="text-4xl md:text-6xl font-black text-amber-800 tabular-nums">{selectedDish.price}</div>
-              <p className="text-stone-500 text-lg md:text-xl italic font-light leading-relaxed max-w-lg">"{selectedDish.description || 'Món ăn truyền thống chuẩn vị mẹ nấu.'}"</p>
+              <h2 className={`text-4xl md:text-7xl font-black uppercase tracking-tighter leading-none ${themeData.text}`}>{selectedDish.name}</h2>
+              <div className={`text-4xl md:text-6xl font-black ${themeData.accent} tabular-nums`}>{selectedDish.price}</div>
+              <p className={`${themeData.text} opacity-60 text-lg md:text-xl italic font-light leading-relaxed max-w-lg`}>"{selectedDish.description || 'Món ăn truyền thống chuẩn vị mẹ nấu.'}"</p>
               <div className="flex flex-col gap-4 pt-4">
                 <button 
                   onClick={() => {
@@ -722,15 +833,15 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
                     addToCart(selectedDish.name, priceNum);
                     setSelectedIdx(null);
                   }}
-                  className="bg-amber-800 text-white px-12 py-5 rounded-full text-xs font-black uppercase tracking-[0.3em] hover:bg-stone-900 transition-all shadow-xl shadow-amber-900/10 active:scale-95"
+                  className={`${themeData.button} text-white px-12 py-5 rounded-full text-xs font-black uppercase tracking-[0.3em] hover:brightness-110 transition-all shadow-xl active:scale-95`}
                 >
                   THÊM VÀO GIỎ
                 </button>
-                <span className="bg-stone-100 text-stone-900 px-8 py-3 rounded-full text-[9px] font-black uppercase tracking-[0.3em] self-start">{selectedDish.category}</span>
+                <span className={`${themeData.bg === 'bg-white' ? 'bg-stone-100' : 'bg-white/30'} ${themeData.text} px-8 py-3 rounded-full text-[9px] font-black uppercase tracking-[0.3em] self-start`}>{selectedDish.category}</span>
               </div>
             </div>
-            <div className="absolute bottom-0 left-0 h-1 bg-amber-800/30 w-full">
-              <div key={`progress-${selectedDish.id}`} className="h-full bg-amber-800 animate-[progress_10s_linear_forwards]"></div>
+            <div className={`absolute bottom-0 left-0 h-1 ${themeData.accent} opacity-30 w-full`}>
+              <div key={`progress-${selectedDish.id}`} className={`h-full ${themeData.accent} animate-[progress_10s_linear_forwards]`}></div>
             </div>
           </div>
           <style>{`
@@ -744,53 +855,53 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
       )}
 
       {/* Guestbook Section */}
-      <section className="bg-stone-50 py-24 px-6">
+      <section className={`${themeData.bg === 'bg-white' ? 'bg-stone-50' : 'bg-white/10'} py-24 px-6`}>
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-20">
           {/* Form */}
           <div className="space-y-10">
             <div className="space-y-4">
-              <span className="text-amber-800 font-black uppercase tracking-[0.4em] text-[10px]">Kết nối với quán</span>
-              <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter text-stone-900">GÓP Ý & LỜI CHÚC</h2>
-              <p className="text-stone-500 italic">"Mọi ý kiến đóng góp của quý khách là động lực để Út Trinh hoàn thiện hơn mỗi ngày."</p>
+              <span className={`${themeData.accent} font-black uppercase tracking-[0.4em] text-[10px]`}>Kết nối với quán</span>
+              <h2 className={`text-4xl md:text-6xl font-black uppercase tracking-tighter ${themeData.text}`}>GÓP Ý & LỜI CHÚC</h2>
+              <p className={`${themeData.text} opacity-60 italic`}>"Mọi ý kiến đóng góp của quý khách là động lực để Út Trinh hoàn thiện hơn mỗi ngày."</p>
             </div>
 
-            <form onSubmit={handleGuestbookSubmit} className="space-y-6 bg-white p-8 md:p-12 rounded-[40px] shadow-xl border border-stone-100">
+            <form onSubmit={handleGuestbookSubmit} className={`${themeData.card} p-8 md:p-12 rounded-[40px] shadow-xl border ${themeData.border}`}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-stone-400 ml-4">Họ và Tên</label>
+                  <label className={`text-[10px] font-black uppercase tracking-widest ${themeData.text} opacity-40 ml-4`}>Họ và Tên</label>
                   <input 
                     type="text" 
                     value={guestName}
                     onChange={e => setGuestName(e.target.value)}
                     placeholder="Nguyễn Văn A"
-                    className="w-full bg-stone-50 border-none rounded-2xl px-6 py-4 text-sm font-bold focus:ring-2 focus:ring-amber-500 outline-none transition-all"
+                    className={`w-full ${themeData.bg === 'bg-white' ? 'bg-stone-50' : 'bg-white/30'} border-none rounded-2xl px-6 py-4 text-sm font-bold focus:ring-2 focus:ring-${themeData.primary} outline-none transition-all`}
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-stone-400 ml-4">Số điện thoại</label>
+                  <label className={`text-[10px] font-black uppercase tracking-widest ${themeData.text} opacity-40 ml-4`}>Số điện thoại</label>
                   <input 
                     type="tel" 
                     value={guestPhone}
                     onChange={e => setGuestPhone(e.target.value)}
                     placeholder="09xx xxx xxx"
-                    className="w-full bg-stone-50 border-none rounded-2xl px-6 py-4 text-sm font-bold focus:ring-2 focus:ring-amber-500 outline-none transition-all"
+                    className={`w-full ${themeData.bg === 'bg-white' ? 'bg-stone-50' : 'bg-white/30'} border-none rounded-2xl px-6 py-4 text-sm font-bold focus:ring-2 focus:ring-${themeData.primary} outline-none transition-all`}
                   />
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-stone-400 ml-4">Nội dung góp ý / Lời chúc</label>
+                <label className={`text-[10px] font-black uppercase tracking-widest ${themeData.text} opacity-40 ml-4`}>Nội dung góp ý / Lời chúc</label>
                 <textarea 
                   rows={4}
                   value={guestContent}
                   onChange={e => setGuestContent(e.target.value)}
                   placeholder="Nhập nội dung tại đây..."
-                  className="w-full bg-stone-50 border-none rounded-3xl px-6 py-4 text-sm font-bold focus:ring-2 focus:ring-amber-500 outline-none transition-all resize-none"
+                  className={`w-full ${themeData.bg === 'bg-white' ? 'bg-stone-50' : 'bg-white/30'} border-none rounded-3xl px-6 py-4 text-sm font-bold focus:ring-2 focus:ring-${themeData.primary} outline-none transition-all resize-none`}
                 ></textarea>
               </div>
               <button 
                 type="submit"
                 disabled={isSubmittingGuestbook}
-                className="w-full bg-stone-900 text-white py-5 rounded-2xl text-[10px] font-black uppercase tracking-[0.4em] hover:bg-amber-800 transition-all shadow-xl disabled:opacity-50 flex items-center justify-center gap-3"
+                className={`w-full ${themeData.button} text-white py-5 rounded-2xl text-[10px] font-black uppercase tracking-[0.4em] hover:brightness-110 transition-all shadow-xl disabled:opacity-50 flex items-center justify-center gap-3`}
               >
                 {isSubmittingGuestbook ? 'ĐANG GỬI...' : (
                   <>
@@ -805,12 +916,12 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
           {/* Entries List */}
           <div className="space-y-10 flex flex-col">
             <div className="flex justify-between items-end">
-              <h3 className="text-2xl font-black uppercase tracking-tighter text-stone-900">Lời chúc mới nhất</h3>
+              <h3 className={`text-2xl font-black uppercase tracking-tighter ${themeData.text}`}>Lời chúc mới nhất</h3>
             </div>
 
             <div className="flex-1 space-y-6 overflow-y-auto max-h-[600px] pr-4 no-scrollbar">
               {guestbookEntries.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-center space-y-4 py-20 bg-white rounded-[40px] border border-dashed border-stone-200">
+                <div className={`h-full flex flex-col items-center justify-center text-center space-y-4 py-20 ${themeData.card} rounded-[40px] border border-dashed ${themeData.border}`}>
                   <MessageSquare size={40} className="text-stone-200" />
                   <p className="text-stone-300 font-bold italic">Chưa có lời chúc nào được hiển thị.<br/>Hãy là người đầu tiên nhé!</p>
                 </div>
@@ -821,8 +932,6 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
                       const colorSet = GUESTBOOK_COLORS[index % GUESTBOOK_COLORS.length];
                       const maskedPhone = (() => {
                         if (!entry.phone || entry.phone.trim() === '') {
-                          // Generate a stable random number based on entry ID if possible, 
-                          // but for simplicity a random one is fine as it's just for display
                           const seed = entry.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
                           const randomSuffix = 100 + (seed % 900);
                           return `093xxxx${randomSuffix}`;
@@ -836,7 +945,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
                       return (
                         <div 
                           key={entry.id} 
-                          className={`p-8 rounded-[35px] shadow-sm border space-y-4 hover:shadow-md transition-all group ${colorSet.border} ${colorSet.bg}`}
+                          className={`p-8 rounded-[35px] shadow-sm border space-y-4 hover:shadow-md transition-all group ${themeData.bg === 'bg-white' ? colorSet.border : 'border-white/20'} ${themeData.bg === 'bg-white' ? colorSet.bg : 'bg-white/10'}`}
                         >
                           <div className="flex justify-between items-start">
                             <div className="flex items-center gap-3">
@@ -845,15 +954,15 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
                               </div>
                               <div>
                                 <div className="flex items-center gap-2">
-                                  <h4 className="font-black text-stone-900 uppercase text-sm tracking-tight">{entry.name}</h4>
-                                  <span className="text-[8px] font-black text-stone-400 bg-stone-100 px-1.5 py-0.5 rounded-md tracking-widest">{maskedPhone}</span>
+                                  <h4 className={`font-black ${themeData.text} uppercase text-sm tracking-tight`}>{entry.name}</h4>
+                                  <span className={`text-[8px] font-black ${themeData.text} opacity-40 bg-white/20 px-1.5 py-0.5 rounded-md tracking-widest`}>{maskedPhone}</span>
                                 </div>
                                 <p className="text-[9px] text-stone-400 font-bold uppercase tracking-widest">{new Date(entry.created_at).toLocaleDateString('vi-VN')}</p>
                               </div>
                             </div>
                             <CheckCircle2 size={16} className="text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity" />
                           </div>
-                          <p className={`text-sm font-bold italic leading-relaxed ${colorSet.content}`}>"{entry.content}"</p>
+                          <p className={`text-sm font-bold italic leading-relaxed ${themeData.bg === 'bg-white' ? colorSet.content : 'text-white/80'}`}>"{entry.content}"</p>
                         </div>
                       );
                     })}
@@ -862,7 +971,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
                   {guestbookEntries.length > 5 && !showAllGuestbook && (
                     <button 
                       onClick={() => setShowAllGuestbook(true)}
-                      className="w-full py-4 text-[10px] font-black text-amber-800 uppercase tracking-widest hover:bg-amber-50 rounded-2xl transition-all border border-dashed border-amber-200 mt-4"
+                      className={`w-full py-4 text-[10px] font-black ${themeData.accent} uppercase tracking-widest hover:bg-white/20 rounded-2xl transition-all border border-dashed ${themeData.border} mt-4`}
                     >
                       Xem tất cả {guestbookEntries.length} góp ý
                     </button>
@@ -871,7 +980,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
                   {showAllGuestbook && (
                     <button 
                       onClick={() => setShowAllGuestbook(false)}
-                      className="w-full py-4 text-[10px] font-black text-stone-400 uppercase tracking-widest hover:bg-stone-50 rounded-2xl transition-all border border-dashed border-stone-200 mt-4"
+                      className={`w-full py-4 text-[10px] font-black ${themeData.text} opacity-40 uppercase tracking-widest hover:bg-white/20 rounded-2xl transition-all border border-dashed ${themeData.border} mt-4`}
                     >
                       Thu gọn
                     </button>
@@ -884,46 +993,61 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase }: any) => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-stone-950 text-white pt-32 pb-16 px-10 relative">
+      <footer className={`${themeData.footer} text-white pt-32 pb-16 px-10 relative`}>
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-16 mb-24">
           <div className="space-y-8">
             <div className="flex items-center gap-4"><img src="https://i.postimg.cc/5tdmrBLb/6d45d4f.png" className="w-16 h-16 md:w-20 md:h-20" /><span className="text-2xl font-black">ÚT TRINH</span></div>
-            <p className="text-stone-500 text-sm italic leading-relaxed">"Hương vị quê nhà, đậm đà tình thân."</p>
+            <p className="text-white/60 text-sm leading-relaxed font-medium italic">"Hương vị cơm nhà tinh túy – Nơi tìm lại những giá trị nguyên bản nhất của ẩm thực Việt"</p>
+            <div className="flex gap-4">
+              <a href="#" className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white hover:text-stone-900 transition-all"><Facebook size={18} /></a>
+              <a href="#" className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white hover:text-stone-900 transition-all"><Mail size={18} /></a>
+              <a href="#" className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white hover:text-stone-900 transition-all"><Youtube size={18} /></a>
+            </div>
           </div>
-          <div className="space-y-6">
-            <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-amber-600">Liên hệ</h4>
-            <div className="space-y-4 text-stone-400 text-sm">
-              <p className="font-bold text-white">158A/5 Trần Vĩnh Kiết, Cần Thơ</p>
-              <p className="font-black text-2xl text-white">0939.70.90.20</p>
-              <div className="flex gap-4 pt-2">
-                <a href="https://www.facebook.com/comphanuttrinh" target="_blank" rel="noopener noreferrer" className="text-stone-500 hover:text-blue-500 transition-colors">
-                  <Facebook size={20} />
-                </a>
-                <a href="mailto:comphanuttrinh@gmail.com" className="text-stone-500 hover:text-red-400 transition-colors">
-                  <Mail size={20} />
-                </a>
-                <a href="https://www.youtube.com/@comphanuttrinh" target="_blank" rel="noopener noreferrer" className="text-stone-500 hover:text-red-600 transition-colors">
-                  <Youtube size={20} />
-                </a>
+          
+          <div className="space-y-8">
+            <h4 className="text-xs font-black uppercase tracking-[0.3em] text-white/40">Thực đơn</h4>
+            <ul className="space-y-4">
+              {Object.values(Category).slice(1).map(cat => (
+                <li key={cat}><a href="#menu" onClick={() => setActiveFilter(cat)} className="text-sm font-bold hover:text-amber-500 transition-colors uppercase tracking-tight">{cat}</a></li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="space-y-8">
+            <h4 className="text-xs font-black uppercase tracking-[0.3em] text-white/40">Liên hệ</h4>
+            <div className="space-y-4">
+              <p className="text-sm font-bold leading-relaxed">Địa chỉ: 123 Đường Ẩm Thực, Quận 1, TP. Hồ Chí Minh</p>
+              <p className="text-sm font-bold">Hotline: 0939.70.90.20</p>
+              <p className="text-sm font-bold">Email: uttrinhkitchen@gmail.com</p>
+            </div>
+          </div>
+
+          <div className="space-y-8">
+            <h4 className="text-xs font-black uppercase tracking-[0.3em] text-white/40">Thống kê</h4>
+            <div className="space-y-6">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-amber-500"><Users size={20} /></div>
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Tổng lượt xem</p>
+                  <p className="text-2xl font-black tabular-nums">{totalViews.toLocaleString('vi-VN')}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-emerald-500/20 rounded-2xl flex items-center justify-center text-emerald-500 animate-pulse"><div className="w-2 h-2 bg-emerald-500 rounded-full"></div></div>
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Đang trực tuyến</p>
+                  <p className="text-2xl font-black tabular-nums">{onlineCount}</p>
+                </div>
               </div>
             </div>
           </div>
-          <div className="space-y-6">
-            <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-amber-600">Thống kê</h4>
-            <div className="space-y-4">
-              <p className="text-2xl font-black">{totalViews.toLocaleString()} lượt xem</p>
-              <p className="text-amber-500 font-black">{onlineCount} đang online</p>
-            </div>
-          </div>
-          <div className="space-y-6">
-            <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-amber-600">Đối tác</h4>
-            <div className="flex gap-4">
-               <img src="https://inkythuatso.com/uploads/thumbnails/800/2021/12/logo-grab-food-inkythuatso-20-15-57-46.jpg" className="h-10 md:h-14 rounded-sm" />
-               <img src={SHOPEE_LOGO} className="h-10 md:h-14" />
-            </div>
-          </div>
         </div>
-        <div className="text-center text-stone-600 text-[8px] font-black uppercase tracking-[0.5em] pt-10 border-t border-white/5">© 2026 CƠM PHẦN ÚT TRINH - EST 2019</div>
+
+        <div className={`pt-16 border-t border-white/10 text-center space-y-4`}>
+          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30">© 2024 CƠM PHẦN ÚT TRINH. ALL RIGHTS RESERVED.</p>
+          <p className="text-[9px] font-bold italic text-amber-500/60 tracking-widest">DESIGNED BY ÚT TRINH KITCHEN</p>
+        </div>
       </footer>
     </div>
   );
