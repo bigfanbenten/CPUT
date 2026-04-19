@@ -190,9 +190,10 @@ interface QuickMenuItem {
 
 // --- COMPONENTS ---
 
-const Nav = ({ isAdmin = false, onShowQuickSelect, cartCount, onShowCart, theme }: any) => {
+const Nav = ({ isAdmin = false, onShowQuickSelect, cartCount, onShowCart, theme, menuImageUrl }: any) => {
   const [showConciseMenu, setShowConciseMenu] = useState(false);
   const themeData = THEMES[theme as Theme] || THEMES[Theme.White];
+  const defaultMenuPhoto = "https://i.postimg.cc/FRJy6Vds/3083583a-d289-482f-9d4e-09d3f06f8893.jpg";
 
   return (
     <>
@@ -260,7 +261,12 @@ const Nav = ({ isAdmin = false, onShowQuickSelect, cartCount, onShowCart, theme 
 
       {showConciseMenu && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-stone-950/95 backdrop-blur-2xl p-4" onClick={() => setShowConciseMenu(false)}>
-          <img src="https://i.postimg.cc/FRJy6Vds/3083583a-d289-482f-9d4e-09d3f06f8893.jpg" className="max-h-[90vh] object-contain rounded-2xl shadow-2xl border border-white/20" alt="Menu" />
+          <img 
+            src={menuImageUrl || defaultMenuPhoto} 
+            className="max-h-[90vh] object-contain rounded-2xl shadow-2xl border border-white/20" 
+            alt="Menu" 
+            referrerPolicy="no-referrer"
+          />
           <button className="absolute top-5 right-5 text-white text-5xl hover:scale-120 transition-transform">×</button>
         </div>
       )}
@@ -296,7 +302,7 @@ const ThemeSwitcher = ({ currentTheme, onThemeChange }: any) => {
   );
 };
 
-const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onThemeChange }: any) => {
+const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onThemeChange, menuImageUrl }: any) => {
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const [activeFilter, setActiveFilter] = useState<Category>(Category.All);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -550,6 +556,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
         cartCount={cartCount}
         onShowCart={() => setShowCart(true)}
         theme={currentTheme}
+        menuImageUrl={menuImageUrl}
       />
       
       {/* Cart Modal */}
@@ -1047,7 +1054,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
   );
 };
 
-const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase, theme, onThemeChange }: any) => {
+const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase, theme, onThemeChange, menuImageUrl, setMenuImageUrl }: any) => {
   const [activeTab, setActiveTab] = useState<'menu' | 'hero' | 'notifications' | 'quick' | 'guestbook' | 'stats'>('menu');
   const themeData = THEMES[theme as Theme] || THEMES[Theme.White];
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -1055,23 +1062,35 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
   const [newNotif, setNewNotif] = useState('');
   const [newFooter, setNewFooter] = useState('XIN CHÚC BẠN VÀ GIA ĐÌNH SỨC KHỎE VÀ PHÁT TÀI.');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [quickMenuItems, setQuickMenuItems] = useState<QuickMenuItem[]>([]);
+  const [quickMenuItems, setQuickMenuItems] = useState<any[]>([]);
   const [loadingQuick, setLoadingQuick] = useState(false);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [totalViews, setTotalViews] = useState<number>(0);
+  const [localMenuImageUrl, setLocalMenuImageUrl] = useState<string>(menuImageUrl || '');
   const [isUpdatingStats, setIsUpdatingStats] = useState(false);
 
   const fetchStats = useCallback(async () => {
-    const { data } = await supabase.from('site_stats').select('total_views').eq('id', 1).maybeSingle();
-    if (data) setTotalViews(data.total_views);
-  }, [supabase]);
+    const { data } = await supabase.from('site_stats').select('total_views, menu_image_url').eq('id', 1).maybeSingle();
+    if (data) {
+      setTotalViews(data.total_views);
+      if (data.menu_image_url) {
+        setMenuImageUrl(data.menu_image_url);
+        setLocalMenuImageUrl(data.menu_image_url);
+      }
+    }
+  }, [supabase, setMenuImageUrl]);
 
   const updateStats = async () => {
     setIsUpdatingStats(true);
     try {
-      const { error } = await supabase.from('site_stats').upsert({ id: 1, total_views: totalViews });
+      const { error } = await supabase.from('site_stats').upsert({ 
+        id: 1, 
+        total_views: totalViews,
+        menu_image_url: localMenuImageUrl
+      });
       if (error) throw error;
-      alert("Cập nhật số lượt truy cập thành công!");
+      setMenuImageUrl(localMenuImageUrl);
+      alert("Cập nhật thành công!");
       // Update local storage to sync with DB
       localStorage.setItem(VIEW_COUNT_KEY, totalViews.toString());
     } catch (err: any) {
@@ -1350,7 +1369,7 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
   return (
     <div className={`min-h-screen ${themeData.bg} pt-44 md:pt-52 pb-20 px-4 md:px-6 transition-colors duration-500`}>
       <ThemeSwitcher currentTheme={theme} onThemeChange={onThemeChange} />
-      <Nav isAdmin theme={theme} />
+      <Nav isAdmin theme={theme} menuImageUrl={menuImageUrl} />
       <div className="max-w-6xl mx-auto bg-white rounded-[40px] shadow-2xl overflow-hidden border border-stone-200">
         <div className="flex bg-stone-50 border-b p-3 gap-2">
           <button onClick={() => setActiveTab('menu')} className={`flex-1 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest ${activeTab === 'menu' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>🍱 THỰC ĐƠN</button>
@@ -1521,41 +1540,75 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
           ) : activeTab === 'stats' ? (
             <div className="space-y-10">
               <div className="flex justify-between items-end border-b pb-6">
-                <h2 className="text-3xl font-black uppercase text-stone-900">THỐNG KÊ TRUY CẬP</h2>
+                <h2 className="text-3xl font-black uppercase text-stone-900">CẤU HÌNH & THỐNG KÊ</h2>
               </div>
 
-              <div className="bg-stone-50 p-10 rounded-[40px] border border-stone-100 flex flex-col items-center justify-center text-center space-y-8">
-                <div className="w-24 h-24 bg-white rounded-3xl flex items-center justify-center text-amber-800 shadow-sm">
-                  <Users size={48} />
-                </div>
-                <div className="space-y-2">
-                  <span className="text-[10px] font-black uppercase tracking-[0.4em] text-stone-400">Tổng lượt truy cập hiện tại</span>
-                  <div className="text-6xl font-black text-stone-900 tabular-nums">
-                    {totalViews.toLocaleString('vi-VN')}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Panel Thống kê */}
+                <div className="bg-stone-50 p-8 rounded-[40px] border border-stone-100 space-y-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-amber-800 shadow-sm">
+                      <Users size={32} />
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-stone-400 block">Lượt truy cập</span>
+                      <div className="text-3xl font-black text-stone-900 tabular-nums">
+                        {totalViews.toLocaleString('vi-VN')}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-amber-800 ml-2">Chỉnh sửa số lượt</label>
+                      <input 
+                        type="number" 
+                        value={totalViews}
+                        onChange={(e) => setTotalViews(parseInt(e.target.value) || 0)}
+                        className="w-full bg-white border-2 border-stone-100 rounded-2xl px-6 py-4 text-xl font-black text-stone-900 focus:border-amber-800 outline-none transition-all"
+                      />
+                    </div>
                   </div>
                 </div>
 
-                <div className="w-full max-w-md space-y-4 pt-6">
-                  <div className="space-y-2 text-left">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-amber-800 ml-4">Nhập số lượt truy cập mới</label>
-                    <input 
-                      type="number" 
-                      value={totalViews}
-                      onChange={(e) => setTotalViews(parseInt(e.target.value) || 0)}
-                      className="w-full bg-white border-2 border-stone-100 rounded-2xl px-8 py-5 text-2xl font-black text-stone-900 focus:border-amber-800 outline-none transition-all"
-                    />
+                {/* Panel Menu Ảnh */}
+                <div className="bg-stone-50 p-8 rounded-[40px] border border-stone-100 space-y-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-amber-800 shadow-sm">
+                      <CheckCircle2 size={32} />
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-stone-400 block">MENU ẢNH ( TRANG CHỦ )</span>
+                      <div className="text-xs font-bold text-stone-500">Cập nhật hình ảnh menu rút gọn</div>
+                    </div>
                   </div>
-                  <button 
-                    onClick={updateStats}
-                    disabled={isUpdatingStats}
-                    className="w-full bg-stone-900 text-white py-6 rounded-2xl text-xs font-black uppercase tracking-[0.4em] hover:bg-amber-800 transition-all shadow-xl disabled:opacity-50"
-                  >
-                    {isUpdatingStats ? 'ĐANG CẬP NHẬT...' : 'CẬP NHẬT SỐ LIỆU'}
-                  </button>
-                  <p className="text-[10px] text-stone-400 italic font-bold">
-                    * Lưu ý: Số liệu này sẽ được đồng bộ cho tất cả khách hàng truy cập website.
-                  </p>
+                  
+                  <div className="space-y-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-amber-800 ml-2">Link hình ảnh MENU</label>
+                      <input 
+                        type="text" 
+                        value={localMenuImageUrl}
+                        onChange={(e) => setLocalMenuImageUrl(e.target.value)}
+                        placeholder="Dán link ảnh tại đây..."
+                        className="w-full bg-white border-2 border-stone-100 rounded-2xl px-6 py-4 text-sm font-bold text-stone-900 focus:border-amber-800 outline-none transition-all"
+                      />
+                    </div>
+                  </div>
                 </div>
+              </div>
+
+              <div className="bg-amber-50 p-6 rounded-3xl border border-amber-100">
+                <button 
+                  onClick={updateStats}
+                  disabled={isUpdatingStats}
+                  className="w-full bg-stone-900 text-white py-6 rounded-2xl text-xs font-black uppercase tracking-[0.4em] hover:bg-amber-800 transition-all shadow-xl disabled:opacity-50"
+                >
+                  {isUpdatingStats ? 'ĐANG LƯU THAY ĐỔI...' : 'LƯU TẤT CẢ CẤU HÌNH'}
+                </button>
+                <p className="text-[10px] text-stone-400 italic font-bold mt-4 text-center">
+                  * Sau khi Lưu, hình ảnh Menu mới sẽ được cập nhật ngay lập tức cho tất cả khách hàng.
+                </p>
               </div>
             </div>
           ) : (
@@ -1631,6 +1684,7 @@ const App = () => {
     const saved = localStorage.getItem(THEME_KEY);
     return (saved as Theme) || Theme.White;
   });
+  const [menuImageUrl, setMenuImageUrl] = useState<string>('');
 
   const handleThemeChange = (t: Theme) => {
     setCurrentTheme(t);
@@ -1651,8 +1705,11 @@ const App = () => {
     try {
       const { data: dishes } = await supabase.from('dishes').select('*').order('created_at', { ascending: false });
       const { data: slides } = await supabase.from('hero_slides').select('*').order('created_at', { ascending: true });
+      const { data: stats } = await supabase.from('site_stats').select('menu_image_url').eq('id', 1).maybeSingle();
+      
       if (dishes) setMenu(dishes);
       if (slides) setHeroSlides(slides);
+      if (stats?.menu_image_url) setMenuImageUrl(stats.menu_image_url);
     } catch (e) { console.error(e); } finally { setIsLoading(false); }
   }, [supabase]);
 
@@ -1709,6 +1766,8 @@ const App = () => {
       supabase={supabase}
       theme={currentTheme}
       onThemeChange={handleThemeChange}
+      menuImageUrl={menuImageUrl}
+      setMenuImageUrl={setMenuImageUrl}
     />
   ) : (
     <HomePage 
@@ -1718,6 +1777,7 @@ const App = () => {
       supabase={supabase}
       currentTheme={currentTheme}
       onThemeChange={handleThemeChange}
+      menuImageUrl={menuImageUrl}
     />
   );
 };
