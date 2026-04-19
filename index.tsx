@@ -1589,11 +1589,31 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                       <input 
                         type="text" 
                         value={localMenuImageUrl}
-                        onChange={(e) => setLocalMenuImageUrl(e.target.value)}
+                        onChange={(e) => setLocalMenuImageUrl(e.target.value.trim())}
                         placeholder="Dán link ảnh tại đây..."
                         className="w-full bg-white border-2 border-stone-100 rounded-2xl px-6 py-4 text-sm font-bold text-stone-900 focus:border-amber-800 outline-none transition-all"
                       />
                     </div>
+                    {localMenuImageUrl && (
+                      <div className="mt-2 text-center">
+                        <p className="text-[9px] font-bold text-stone-400 uppercase mb-2">Xem trước ảnh:</p>
+                        <div className="relative group mx-auto max-w-[150px]">
+                          <img 
+                            src={localMenuImageUrl} 
+                            alt="Menu Preview" 
+                            className="w-full h-auto rounded-xl border-2 border-amber-100 shadow-sm"
+                            referrerPolicy="no-referrer"
+                            onError={(e: any) => {
+                              e.target.onerror = null;
+                              // Do not show anything if error
+                            }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                    <p className="text-[9px] text-stone-400 italic">
+                      * Mẹo: Tại Postimage, bạn hãy chọn link tên là <span className="font-bold text-amber-800">"Mã trực tiếp" (Direct Link)</span> để ảnh hiện lên đúng nhé!
+                    </p>
                   </div>
                 </div>
               </div>
