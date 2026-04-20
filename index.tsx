@@ -1204,7 +1204,7 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
   const deleteSelected = () => {
     if (selectedIds.length === 0) return;
     if (confirm(`Xóa ${selectedIds.length} món đã chọn?`)) {
-      setMenu(menu.filter((d: any) => !selectedIds.includes(d.id)));
+      setMenu((prev: any[]) => prev.filter((d: any) => !selectedIds.includes(d.id)));
       setSelectedIds([]);
     }
   };
@@ -1424,12 +1424,54 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                     </div>
                     <div className="w-40 h-40 rounded-[25px] overflow-hidden bg-stone-200 border-4 border-white shrink-0"><img src={dish.image_url || 'https://placehold.co/400x400'} className="w-full h-full object-cover" /></div>
                     <div className="flex-1 grid grid-cols-3 gap-5">
-                      <input value={dish.name} onChange={e => { const m = [...menu]; m[i].name = e.target.value; setMenu(m); }} className="p-4 border rounded-2xl text-sm font-bold" placeholder="Tên món" />
-                      <input value={dish.price} onChange={e => { const m = [...menu]; m[i].price = e.target.value; setMenu(m); }} className="p-4 border rounded-2xl text-sm font-black text-amber-800" placeholder="Giá" />
-                      <select value={dish.category} onChange={e => { const m = [...menu]; m[i].category = e.target.value as Category; setMenu(m); }} className="p-4 border rounded-2xl text-sm font-bold">{Object.values(Category).filter(c => c !== Category.All).map(c => <option key={c} value={c}>{c}</option>)}</select>
-                      <input value={dish.image_url} onChange={e => { const m = [...menu]; m[i].image_url = e.target.value; setMenu(m); }} className="col-span-3 p-4 border rounded-2xl text-[10px] font-mono" placeholder="Link ảnh (URL)" />
+                      <input 
+                        value={dish.name} 
+                        onChange={e => { 
+                          const newMenu = menu.map((d: any, idx: number) => idx === i ? { ...d, name: e.target.value } : d);
+                          setMenu(newMenu);
+                        }} 
+                        className="p-4 border rounded-2xl text-sm font-bold" 
+                        placeholder="Tên món" 
+                      />
+                      <input 
+                        value={dish.price} 
+                        onChange={e => { 
+                          const newMenu = menu.map((d: any, idx: number) => idx === i ? { ...d, price: e.target.value } : d);
+                          setMenu(newMenu);
+                        }} 
+                        className="p-4 border rounded-2xl text-sm font-black text-amber-800" 
+                        placeholder="Giá" 
+                      />
+                      <select 
+                        value={dish.category} 
+                        onChange={e => { 
+                          const newMenu = menu.map((d: any, idx: number) => idx === i ? { ...d, category: e.target.value as Category } : d);
+                          setMenu(newMenu);
+                        }} 
+                        className="p-4 border rounded-2xl text-sm font-bold"
+                      >
+                        {Object.values(Category).filter(c => c !== Category.All).map(c => <option key={c} value={c}>{c}</option>)}
+                      </select>
+                      <input 
+                        value={dish.image_url} 
+                        onChange={e => { 
+                          const newMenu = menu.map((d: any, idx: number) => idx === i ? { ...d, image_url: e.target.value } : d);
+                          setMenu(newMenu);
+                        }} 
+                        className="col-span-3 p-4 border rounded-2xl text-[10px] font-mono" 
+                        placeholder="Link ảnh (URL)" 
+                      />
                     </div>
-                    <button onClick={() => { if(confirm('Xóa món này?')) setMenu(menu.filter(d => d.id !== dish.id)) }} className="w-14 h-14 bg-red-50 text-red-500 rounded-2xl text-2xl font-bold shrink-0">×</button>
+                    <button 
+                      onClick={() => { 
+                        if(confirm('Xóa món này?')) {
+                          setMenu((prev: any[]) => prev.filter(d => d.id !== dish.id));
+                        }
+                      }} 
+                      className="w-14 h-14 bg-red-50 text-red-500 rounded-2xl text-2xl font-bold shrink-0"
+                    >
+                      ×
+                    </button>
                   </div>
                 ))}
               </div>
@@ -1736,46 +1778,63 @@ const App = () => {
   useEffect(() => { fetchData(); }, [fetchData]);
   
   const handleSave = async () => {
-    if (isLoading) return;
+    if (isLoading) {
+      alert("Hệ thống đang tải, vui lòng đợi trong giây lát...");
+      return;
+    }
+    
+    // Yêu cầu xác nhận trước khi đồng bộ
+    if (!confirm("Bạn có chắc chắn muốn đồng bộ tất cả thay đổi? Thao tác này sẽ cập nhật dữ liệu lên hệ thống và hiển thị cho mọi khách hàng.")) return;
+
     setIsLoading(true);
     try {
-      // 1. Xóa dữ liệu cũ - Kiểm tra lỗi chặt chẽ
-      const { error: delDishesError } = await supabase.from('dishes').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-      if (delDishesError) throw new Error("Không thể xóa món ăn cũ: " + delDishesError.message);
+      // 1. Xóa dữ liệu cũ - Sử dụng filter rộng hơn để đảm bảo xóa sạch
+      const { error: delDishesError } = await supabase.from('dishes').delete().filter('id', 'neq', '00000000-0000-0000-0000-000000000000');
+      if (delDishesError) throw new Error("Không thể xóa danh sách cũ: " + delDishesError.message);
 
-      const { error: delSlidesError } = await supabase.from('hero_slides').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      const { error: delSlidesError } = await supabase.from('hero_slides').delete().filter('id', 'neq', '00000000-0000-0000-0000-000000000000');
       if (delSlidesError) throw new Error("Không thể xóa banner cũ: " + delSlidesError.message);
 
-      // 2. Chuẩn bị dữ liệu để lưu (loại bỏ id cũ để Supabase tự tạo id mới)
+      // 2. Chuẩn bị dữ liệu sạch
       const sanitize = (list: any[]) => list.map((item) => {
         const newItem = { ...item };
+        // Đảm bảo không gửi Id cũ để tránh xung đột
         delete newItem.id;
         delete newItem.created_at;
         return newItem;
       });
       
-      // 3. Lưu dữ liệu mới
-      if (menu.length) {
+      // 3. Chèn dữ liệu mới từ state hiện tại
+      // Chèn Dishes
+      if (menu && menu.length > 0) {
         const { error: insDishesError } = await supabase.from('dishes').insert(sanitize(menu));
-        if (insDishesError) throw new Error("Lỗi khi lưu danh sách món ăn: " + insDishesError.message);
-      }
-      
-      if (heroSlides.length) {
-        const { error: insSlidesError } = await supabase.from('hero_slides').insert(sanitize(heroSlides));
-        if (insSlidesError) throw new Error("Lỗi khi lưu banner: " + insSlidesError.message);
+        if (insDishesError) throw new Error("Lỗi khi chèn dữ liệu món ăn: " + insDishesError.message);
       }
 
-      alert("Đồng bộ dữ liệu thành công! Dữ liệu đã được làm mới."); 
-      fetchData();
+      // Chèn Slides
+      if (heroSlides && heroSlides.length > 0) {
+        const { error: insSlidesError } = await supabase.from('hero_slides').insert(sanitize(heroSlides));
+        if (insSlidesError) throw new Error("Lỗi khi chèn dữ liệu banner: " + insSlidesError.message);
+      }
+
+      alert("🎉 ĐỒNG BỘ THÀNH CÔNG! Dữ liệu đã được cập nhật mới nhất."); 
+      fetchData(); // Làm mới state từ database
     } catch (e: any) { 
-      console.error(e);
-      alert("LỖI ĐỒNG BỘ: " + (e.message || "Vui lòng kiểm tra quyền xóa (Delete Policy) trong Supabase.")); 
+      console.error("Lỗi đồng bộ:", e);
+      alert("❌ LỖI ĐỒNG BỘ: " + (e.message || "Vui lòng kiểm tra lại kết nối mạng hoặc quyền hạn bảng dữ liệu.")); 
     } finally { 
       setIsLoading(false); 
     }
   };
 
-  const isAcp = window.location.hash.toUpperCase().includes('ACP1122');
+  const [hash, setHash] = useState(window.location.hash);
+  useEffect(() => {
+    const handleHashChange = () => setHash(window.location.hash);
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  const isAcp = hash.toUpperCase().includes('ACP1122');
   return isAcp ? (
     <AdminPanel 
       menu={menu} 
