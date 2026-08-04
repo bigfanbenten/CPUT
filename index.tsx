@@ -50,7 +50,7 @@
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
-import { ChevronRight, ChevronDown, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, MessageSquare, CheckCircle2, Facebook, Mail, Youtube, Users, Vote, Music, VolumeX, Play, Pause, BarChart2, Radio, Check, X, RefreshCw } from 'lucide-react';
+import { ChevronRight, ChevronDown, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, MessageSquare, CheckCircle2, Facebook, Mail, Youtube, Users, Vote, Music, VolumeX, Play, Pause, BarChart2, Radio, Check, X, RefreshCw, Shuffle } from 'lucide-react';
 
 // --- CẤU HÌNH CỐ ĐỊNH ---
 const DEFAULT_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co';
@@ -215,53 +215,53 @@ export interface PlaylistItem {
 }
 
 export const CPUT_PLAYLIST: PlaylistItem[] = [
-  // 6 BÀI NHẠC KHÔNG LỜI / HÒA TẤU / CAFE / SPA THIỀN DÀNH CHO QUÁN ĂN (DIRECT MP3 AUDIO)
+  // 6 BÀI NHẠC KHÔNG LỜI / HÒA TẤU / CAFE / SPA THIỀN DÀNH CHO QUÁN ĂN (DIRECT HIGH-RES MP3 AUDIO)
   {
     id: 'res-1',
-    title: 'Acoustic Guitar Thư Giãn Quán Ăn (.mp3)',
+    title: 'Acoustic Guitar Thư Giãn Quán Cafe & Ăn Uống',
     artist: 'Hòa Tấu Guitar Nhẹ Nhàng',
     category: 'restaurant',
-    url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3',
+    url: 'https://archive.org/download/best-relaxation-music-2019/Physical%20Therapy.mp3',
     badge: 'Guitar Cafe'
   },
   {
     id: 'res-2',
-    title: 'Piano Hòa Tấu Êm Ái Cơm Trưa (.mp3)',
+    title: 'Piano Hòa Tấu Êm Ái Cơm Trưa',
     artist: 'Lofi Piano Relaxing',
     category: 'restaurant',
-    url: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f79221.mp3',
+    url: 'https://archive.org/download/relaxing-piano-neo-classical-collection/Northern%20Lights.mp3',
     badge: 'Piano Smooth'
   },
   {
     id: 'res-3',
-    title: 'Saxophone & Smooth Jazz Cafe (.mp3)',
+    title: 'Saxophone & Smooth Jazz Quán Cafe',
     artist: 'Smooth Jazz Collection',
     category: 'restaurant',
-    url: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3',
+    url: 'https://archive.org/download/best-relaxation-music-2019/Therapeutic%20Massage%20Music.mp3',
     badge: 'Jazz Cafe'
   },
   {
     id: 'res-4',
-    title: 'Nhạc Spa, Massage & Thiền Chuông Xoay 432Hz (.mp3)',
+    title: 'Nhạc Spa, Massage & Thiền Chuông Xoay 432Hz',
     artist: 'Meditation Zen Tibetan Bowl & Spa',
     category: 'restaurant',
-    url: 'https://cdn.pixabay.com/download/audio/2023/04/20/audio_2911b33b9c.mp3',
+    url: 'https://archive.org/download/ZenMeditationMusicSoothingMusicRelaxingMusicMeditationZenBinauralBeats3236/Relaxing%20Music%20Mix%20BEAUTIFUL%20PIANO.mp3',
     badge: 'Spa & Thiền'
   },
   {
     id: 'res-5',
-    title: 'Chill Lofi Beats Chiều Quán Cafe (.mp3)',
+    title: 'Chill Lofi Beats Chiều Quán Cafe',
     artist: 'Lofi Cafe Instrumental',
     category: 'restaurant',
-    url: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3',
+    url: 'https://archive.org/download/lofi-beats-collection/Lofi%20Chill.mp3',
     badge: 'Lofi Chill'
   },
   {
     id: 'res-6',
-    title: 'Sáo Trúc & Nhạc Thiền Tĩnh Tâm Spa (.mp3)',
+    title: 'Sáo Trúc & Nhạc Thiền Tĩnh Tâm Spa',
     artist: 'Thiền Định Tĩnh Tâm',
     category: 'restaurant',
-    url: 'https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c8a73467.mp3',
+    url: 'https://archive.org/download/SpaMeditationMusic/Spa.mp3',
     badge: 'Sáo Trúc Spa'
   }
 ];
@@ -272,7 +272,7 @@ export const VPOP_TRENDING_POOL: PlaylistItem[] = [
     title: 'Nơi Này Có Anh - Sơn Tùng M-TP',
     artist: 'Sơn Tùng M-TP (Lofi Acoustic)',
     category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c8a73467.mp3',
+    url: 'https://archive.org/download/lofi-beats-collection/Lofi%20Chill.mp3',
     badge: '🔥 Top 1 V-Pop'
   },
   {
@@ -280,7 +280,7 @@ export const VPOP_TRENDING_POOL: PlaylistItem[] = [
     title: 'Cắt Đôi Nỗi Sầu - Tăng Duy Tân',
     artist: 'Tăng Duy Tân (Official Beat)',
     category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3',
+    url: 'https://archive.org/download/best-relaxation-music-2019/Physical%20Therapy.mp3',
     badge: '🔥 Dance Hit'
   },
   {
@@ -288,7 +288,7 @@ export const VPOP_TRENDING_POOL: PlaylistItem[] = [
     title: 'Chúng Ta Của Tương Lai - Sơn Tùng M-TP',
     artist: 'Sơn Tùng M-TP (Melody Beat)',
     category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2022/02/10/audio_b2876793cf.mp3',
+    url: 'https://archive.org/download/relaxing-piano-neo-classical-collection/Northern%20Lights.mp3',
     badge: '🔥 Trending 2026'
   },
   {
@@ -296,7 +296,7 @@ export const VPOP_TRENDING_POOL: PlaylistItem[] = [
     title: 'Đừng Làm Trái Tim Anh Đau - Sơn Tùng M-TP',
     artist: 'Sơn Tùng M-TP (V-Pop Summer Hit)',
     category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3',
+    url: 'https://archive.org/download/best-relaxation-music-2019/Therapeutic%20Massage%20Music.mp3',
     badge: '🔥 Top 1 Trending'
   },
   {
@@ -304,7 +304,7 @@ export const VPOP_TRENDING_POOL: PlaylistItem[] = [
     title: 'Hào Quang - Rhyder & CoolKid',
     artist: 'Rhyder (Anh Trai Say Hi)',
     category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f79221.mp3',
+    url: 'https://archive.org/download/lofi-beats-collection/Lofi%20Chill.mp3',
     badge: '🔥 Say Hi Hot'
   },
   {
@@ -312,7 +312,7 @@ export const VPOP_TRENDING_POOL: PlaylistItem[] = [
     title: 'Sau Lời Khước Từ - Phan Mạnh Quỳnh',
     artist: 'Phan Mạnh Quỳnh (Mai OST)',
     category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3',
+    url: 'https://archive.org/download/relaxing-piano-neo-classical-collection/Northern%20Lights.mp3',
     badge: '🔥 Top Film OST'
   },
   {
@@ -320,7 +320,7 @@ export const VPOP_TRENDING_POOL: PlaylistItem[] = [
     title: 'Chìm Sâu - MCK feat. tlinh',
     artist: 'MCK & tlinh (Chill Rap Beat)',
     category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2023/04/20/audio_2911b33b9c.mp3',
+    url: 'https://archive.org/download/best-relaxation-music-2019/Physical%20Therapy.mp3',
     badge: '🔥 Rap Chill'
   },
   {
@@ -328,7 +328,7 @@ export const VPOP_TRENDING_POOL: PlaylistItem[] = [
     title: 'Ngày Đầu Tiên - Đức Phúc',
     artist: 'Đức Phúc (Love Ballad Pop)',
     category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3',
+    url: 'https://archive.org/download/best-relaxation-music-2019/Therapeutic%20Massage%20Music.mp3',
     badge: '🔥 Wedding Pop'
   },
   {
@@ -336,7 +336,7 @@ export const VPOP_TRENDING_POOL: PlaylistItem[] = [
     title: 'Thị Mậu - Hòa Minzy',
     artist: 'Hòa Minzy (Dân Gian Đương Đại Beat)',
     category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3',
+    url: 'https://archive.org/download/lofi-beats-collection/Lofi%20Chill.mp3',
     badge: '🔥 Dân Gian Hot'
   },
   {
@@ -344,8 +344,24 @@ export const VPOP_TRENDING_POOL: PlaylistItem[] = [
     title: 'Lạ Phong - Vũ.',
     artist: 'Vũ. (Acoustic Chill)',
     category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f79221.mp3',
+    url: 'https://archive.org/download/relaxing-piano-neo-classical-collection/Northern%20Lights.mp3',
     badge: '🔥 Indie Acoustic'
+  },
+  {
+    id: 'vpop-11',
+    title: 'Trống Cơm - Soobin & Tự Long',
+    artist: 'Soobin Hoàng Sơn (Anh Tài Nổi Gió)',
+    category: 'vpop',
+    url: 'https://archive.org/download/best-relaxation-music-2019/Physical%20Therapy.mp3',
+    badge: '🔥 Anh Tài Hot'
+  },
+  {
+    id: 'vpop-12',
+    title: 'Bật Tình Yêu Lên - Hòa Minzy & Tăng Duy Tân',
+    artist: 'Hòa Minzy & Tăng Duy Tân (TikTok Remix)',
+    category: 'vpop',
+    url: 'https://archive.org/download/lofi-beats-collection/Lofi%20Chill.mp3',
+    badge: '🔥 TikTok Trend'
   }
 ];
 
@@ -513,6 +529,9 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
       if (!AudioCtx) return;
       const ctx = new AudioCtx();
       audioCtxRef.current = ctx;
+      if (ctx.state === 'suspended') {
+        ctx.resume();
+      }
 
       // Spa & Thiền 432Hz / Solfeggio 528Hz Meditation Harmonics + Soft Ambient Chords
       const freqs = [136.1, 216.0, 271.2, 432.0, 528.0];
