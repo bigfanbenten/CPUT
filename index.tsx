@@ -50,7 +50,7 @@
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
-import { ChevronRight, ChevronDown, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, MessageSquare, CheckCircle2, Facebook, Mail, Youtube, Users, Vote, Music, VolumeX, Play, Pause, BarChart2, Radio, Check, X, RefreshCw, Shuffle } from 'lucide-react';
+import { ChevronRight, ChevronDown, ChevronUp, Maximize2, Minimize2, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, MessageSquare, CheckCircle2, Facebook, Mail, Youtube, Users, Vote, Music, VolumeX, Play, Pause, BarChart2, Radio, Check, X, RefreshCw, Shuffle } from 'lucide-react';
 
 // --- CẤU HÌNH CỐ ĐỊNH ---
 const DEFAULT_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co';
@@ -503,6 +503,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
   const [showPollModal, setShowPollModal] = useState(false);
   const [votedChoice, setVotedChoice] = useState<string | null>(() => localStorage.getItem(VOTED_KEY));
   const [isPlayingMusic, setIsPlayingMusic] = useState(false);
+  const [isPlayerMinimized, setIsPlayerMinimized] = useState(false);
   const [customTrackUrl, setCustomTrackUrl] = useState<string>('');
   const [randomBannerMessage, setRandomBannerMessage] = useState<string>('');
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -595,6 +596,8 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
 
   const activeMusicUrl = customTrackUrl || pollData?.music_url || CPUT_PLAYLIST[0].url;
   const youtubeId = useMemo(() => getYouTubeId(activeMusicUrl), [activeMusicUrl]);
+  const allTracks = useMemo(() => [...CPUT_PLAYLIST, ...VPOP_TRENDING_POOL], []);
+  const currentTrackObj = useMemo(() => allTracks.find(t => t.url === activeMusicUrl), [allTracks, activeMusicUrl]);
 
   const togglePlayMusic = () => {
     if (!activeMusicUrl) return;
@@ -1391,26 +1394,80 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
         </div>
       </footer>
 
-      {/* Audio / YouTube Player Element */}
+      {/* Floating YouTube / MP3 Player Widget */}
       {isPlayingMusic && activeMusicUrl && (
-        youtubeId ? (
-          <iframe
-            key={`${youtubeId}-${activeMusicUrl}`}
-            src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&enablejsapi=1&loop=1&playlist=${youtubeId}`}
-            allow="autoplay; encrypted-media"
-            className="fixed -top-[9999px] -left-[9999px] w-1 h-1 opacity-0 pointer-events-none z-[-1]"
-            title="YouTube Background Music"
-          />
-        ) : (
-          <audio 
-            ref={audioRef} 
-            src={activeMusicUrl} 
-            autoPlay
-            loop 
-            onPlay={() => setIsPlayingMusic(true)}
-            onPause={() => setIsPlayingMusic(false)}
-          />
-        )
+        <div className="fixed bottom-20 right-4 sm:right-6 z-[100] bg-stone-950/95 border-2 border-amber-500/50 text-white rounded-3xl p-3 shadow-2xl backdrop-blur-md flex flex-col gap-2 w-[280px] sm:w-[320px] transition-all duration-300 animate-slide-up">
+          {/* Header Track Info & Quick Controls */}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <div className="w-8 h-8 rounded-full bg-amber-600/30 border border-amber-500/50 flex items-center justify-center shrink-0 animate-pulse">
+                <Music size={16} className="text-amber-400" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] font-black truncate text-amber-300">
+                  {currentTrackObj ? currentTrackObj.title : 'Đang phát nhạc nền CPUT'}
+                </p>
+                <p className="text-[9px] text-stone-400 truncate">
+                  {currentTrackObj ? currentTrackObj.artist : 'Phát tự động'}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1 shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsPlayerMinimized(prev => !prev)}
+                className="p-1.5 hover:bg-white/10 rounded-full text-stone-300 hover:text-white transition-all cursor-pointer"
+                title={isPlayerMinimized ? "Mở rộng khung phát" : "Thu gọn"}
+              >
+                {isPlayerMinimized ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+              </button>
+              <button
+                type="button"
+                onClick={togglePlayMusic}
+                className="p-1.5 bg-amber-600 hover:bg-amber-500 rounded-full text-white transition-all cursor-pointer shadow-md"
+                title="Tạm dừng / Phát tiếp"
+              >
+                <Pause size={14} />
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsPlayingMusic(false);
+                  stopAmbientSynth();
+                }}
+                className="p-1.5 hover:bg-red-500/20 rounded-full text-stone-400 hover:text-red-400 transition-all cursor-pointer"
+                title="Tắt nhạc"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          </div>
+
+          {/* Player Display Container */}
+          {youtubeId ? (
+            <div className={`overflow-hidden rounded-2xl border border-stone-800 transition-all duration-300 ${isPlayerMinimized ? 'h-[100px] opacity-90' : 'h-[160px] opacity-100'}`}>
+              <iframe
+                key={`${youtubeId}-${activeMusicUrl}`}
+                src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&enablejsapi=1&loop=1&playlist=${youtubeId}&controls=1`}
+                allow="autoplay; encrypted-media; picture-in-picture"
+                className="w-full h-full rounded-2xl"
+                title="YouTube Background Music Player"
+              />
+            </div>
+          ) : (
+            <audio 
+              ref={audioRef} 
+              src={activeMusicUrl} 
+              autoPlay
+              loop 
+              controls
+              onPlay={() => setIsPlayingMusic(true)}
+              onPause={() => setIsPlayingMusic(false)}
+              className="w-full mt-1 h-8"
+            />
+          )}
+        </div>
       )}
 
       {/* Floating Poll & Music Button */}
