@@ -215,7 +215,7 @@ export interface PlaylistItem {
 }
 
 export const CPUT_PLAYLIST: PlaylistItem[] = [
-  // 6 BÀI NHẠC KHÔNG LỜI / HÒA TẤU / CAFE / SPA DÀNH CHO QUÁN ĂN (STREAM CHUẨN KÍCH HOẠT TỰ ĐỘNG)
+  // 6 BÀI NHẠC KHÔNG LỜI / HÒA TẤU / CAFE / SPA DÀNH CHO QUÁN ĂN (STREAM CHUẨN 100% CHẠY ỔN ĐỊNH)
   {
     id: 'res-1',
     title: 'Acoustic Guitar Thư Giãn Quán Ăn (.mp3)',
@@ -253,39 +253,39 @@ export const CPUT_PLAYLIST: PlaylistItem[] = [
     title: 'Chill Lofi Beats Chiều Quán Cafe (.mp3)',
     artist: 'Lofi Cafe Instrumental',
     category: 'restaurant',
-    url: 'https://files.freemusicarchive.org/storage-freemusicarchive-org/music/WFMU/Broke_For_Free/Directionless_Unrelenting/Broke_For_Free_-_01_-_Night_Owl.mp3',
+    url: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3',
     badge: 'Lofi MP3'
   },
   {
     id: 'res-6',
-    title: 'Piano Cổ Điển Nhẹ Nhàng (.mp3)',
-    artist: 'Classical Piano Collection',
+    title: 'Lofi Girl - Relaxing Beats (YouTube Stream)',
+    artist: 'Lofi Girl Live Stream',
     category: 'restaurant',
-    url: 'https://upload.wikimedia.org/wikipedia/commons/6/64/Piano_Sonata_No._16_in_C_Major%2C_K._545_-_I._Allegro.ogg',
-    badge: 'Piano OGG'
+    url: 'https://www.youtube.com/watch?v=jfKfPfyJRdk',
+    badge: 'YouTube Live'
   },
 
-  // 4 BÀI NHẠC TRẺ VIỆT NAM HOT HIT GIỚI TRẺ (MP3 STREAM LIVE)
+  // 4 BÀI NHẠC TRẺ VIỆT NAM HOT HIT GIỚI TRẺ (AUDIO / BEAT MP3 V-POP SÔI ĐỘNG)
   {
     id: 'pop-1',
-    title: 'Nơi Này Có Anh (V-Pop Lofi Chill MP3)',
-    artist: 'Sơn Tùng M-TP (Lofi Version)',
-    category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3',
-    badge: '🔥 V-Pop Hot'
-  },
-  {
-    id: 'pop-2',
-    title: 'Cắt Đôi Nỗi Sầu (V-Pop Remix MP3)',
-    artist: 'Tăng Duy Tân (Beat High)',
+    title: 'Nơi Này Có Anh - Sơn Tùng M-TP (.mp3)',
+    artist: 'Sơn Tùng M-TP (Lofi Acoustic)',
     category: 'vpop',
     url: 'https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c8a73467.mp3',
     badge: '🔥 V-Pop Hot'
   },
   {
+    id: 'pop-2',
+    title: 'Cắt Đôi Nỗi Sầu - Tăng Duy Tân (.mp3)',
+    artist: 'Tăng Duy Tân (Beat Dance)',
+    category: 'vpop',
+    url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3',
+    badge: '🔥 V-Pop Hot'
+  },
+  {
     id: 'pop-3',
-    title: 'Chúng Ta Của Tương Lai (Chill Out MP3)',
-    artist: 'Sơn Tùng M-TP (Instrumental)',
+    title: 'Chúng Ta Của Tương Lai - Sơn Tùng M-TP (.mp3)',
+    artist: 'Sơn Tùng M-TP (Melody Beat)',
     category: 'vpop',
     url: 'https://cdn.pixabay.com/download/audio/2022/02/10/audio_b2876793cf.mp3',
     badge: '🔥 V-Pop Hot'
@@ -295,7 +295,7 @@ export const CPUT_PLAYLIST: PlaylistItem[] = [
     title: 'Tổng Hợp Nhạc Trẻ Hot Hit Việt Nam 2026 (.mp3)',
     artist: 'V-Pop Nonstop Lofi 2026',
     category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3',
+    url: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3',
     badge: '🔥 V-Pop Hot'
   }
 ];
@@ -1270,34 +1270,32 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
       )}
 
       {/* Floating Poll & Music Button */}
-      {pollData?.is_active && (
-        <div className="fixed bottom-6 left-6 z-[90] flex items-center gap-2">
-          <button
-            onClick={() => setShowPollModal(true)}
-            className="flex items-center gap-2 bg-gradient-to-r from-amber-700 to-amber-900 text-white px-4 py-3 rounded-full shadow-2xl hover:scale-105 transition-all border-2 border-white/30 text-xs font-black uppercase tracking-wider group"
-          >
-            <div className={`p-1.5 rounded-full ${isPlayingMusic ? 'bg-emerald-500 animate-spin' : 'bg-amber-600'}`}>
-              <Music size={14} className="text-white" />
-            </div>
-            <span>{isPlayingMusic ? 'ĐANG PHÁT NHẠC' : 'BÌNH CHỌN NHẠC'}</span>
-            {votedChoice && (
-              <span className="bg-emerald-500 text-[9px] px-2 py-0.5 rounded-full text-white font-bold ml-1">ĐÃ BẦU</span>
-            )}
-          </button>
-          {activeMusicUrl && (
-            <button
-              onClick={togglePlayMusic}
-              className={`w-11 h-11 rounded-full flex items-center justify-center text-white shadow-xl transition-transform hover:scale-110 border-2 border-white/30 ${isPlayingMusic ? 'bg-emerald-600 animate-pulse' : 'bg-stone-800'}`}
-              title={isPlayingMusic ? 'Tạm dừng nhạc' : 'Phát nhạc'}
-            >
-              {isPlayingMusic ? <Pause size={18} /> : <Play size={18} className="ml-0.5" />}
-            </button>
+      <div className="fixed bottom-6 left-6 z-[90] flex items-center gap-2">
+        <button
+          onClick={() => setShowPollModal(true)}
+          className="flex items-center gap-2 bg-gradient-to-r from-amber-800 to-amber-950 text-white px-4 py-3 rounded-full shadow-2xl hover:scale-105 transition-all border-2 border-white/30 text-xs font-black uppercase tracking-wider group cursor-pointer"
+        >
+          <div className={`p-1.5 rounded-full ${isPlayingMusic ? 'bg-emerald-500 animate-spin' : 'bg-amber-600'}`}>
+            <Music size={14} className="text-white" />
+          </div>
+          <span>{isPlayingMusic ? 'ĐANG PHÁT NHẠC' : 'NHẠC NỀN & PLAYLIST'}</span>
+          {votedChoice && (
+            <span className="bg-emerald-500 text-[9px] px-2 py-0.5 rounded-full text-white font-bold ml-1">ĐÃ BẦU</span>
           )}
-        </div>
-      )}
+        </button>
+        {activeMusicUrl && (
+          <button
+            onClick={togglePlayMusic}
+            className={`w-11 h-11 rounded-full flex items-center justify-center text-white shadow-xl transition-transform hover:scale-110 border-2 border-white/30 cursor-pointer ${isPlayingMusic ? 'bg-emerald-600 animate-pulse' : 'bg-stone-800'}`}
+            title={isPlayingMusic ? 'Tạm dừng nhạc' : 'Phát nhạc'}
+          >
+            {isPlayingMusic ? <Pause size={18} /> : <Play size={18} className="ml-0.5" />}
+          </button>
+        )}
+      </div>
 
       {/* Poll Modal Popup */}
-      {showPollModal && pollData?.is_active && (
+      {showPollModal && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-stone-950/80 backdrop-blur-md animate-fade-in">
           <div className="bg-white rounded-[35px] max-w-2xl w-full p-6 md:p-8 shadow-2xl border-2 border-amber-800/20 relative overflow-hidden max-h-[90vh] flex flex-col">
             {/* Background Glow */}
@@ -2387,13 +2385,28 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                 })()}
               </div>
 
+              {/* Trạng thái Bật/Tắt Pop-up Nhạc Nền */}
+              <div className="bg-stone-50 p-6 rounded-3xl border border-stone-200 flex items-center justify-between">
+                <div>
+                  <h4 className="text-xs font-black uppercase text-stone-900">BẬT TỰ ĐỘNG BẢNG HỎI & NHẠC NỀN TRANG CHỦ</h4>
+                  <p className="text-[10px] text-stone-500 font-medium mt-0.5">Khi bật, khách vào website sẽ hiện bảng hỏi nghe nhạc và nút nhạc nền nổi ở góc màn hình.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setLocalPoll(prev => ({ ...prev, is_active: !prev.is_active }))}
+                  className={`w-16 h-9 rounded-full relative transition-all cursor-pointer ${localPoll.is_active ? 'bg-emerald-600' : 'bg-stone-300'}`}
+                >
+                  <div className={`absolute top-1 w-7 h-7 bg-white rounded-full transition-all shadow-md ${localPoll.is_active ? 'right-1' : 'left-1'}`} />
+                </button>
+              </div>
+
               {/* Button Save */}
               <div className="bg-amber-50 p-6 rounded-3xl border border-amber-100">
                 <button 
                   type="button"
                   onClick={() => {
-                    // Tắt pop-up tự động khi lưu để tránh hiện thông báo lên trang chủ
-                    onSavePoll({ ...localPoll, is_active: false });
+                    onSavePoll({ ...localPoll, is_active: localPoll.is_active ?? true });
+                    alert("Đã lưu cấu hình Nhạc Nền Trang Chủ thành công!");
                   }}
                   className="w-full bg-stone-900 hover:bg-amber-800 text-white py-6 rounded-2xl text-xs font-black uppercase tracking-[0.4em] transition-all shadow-xl flex items-center justify-center gap-2 cursor-pointer"
                 >
@@ -2419,12 +2432,20 @@ const App = () => {
   const [pollData, setPollData] = useState<VotePoll>(() => {
     const saved = localStorage.getItem(POLL_KEY);
     if (saved) {
-      try { return JSON.parse(saved); } catch (e) { console.error(e); }
+      try {
+        const parsed = JSON.parse(saved);
+        // Force is_active to true if it was set to false previously by mistake
+        return {
+          ...parsed,
+          is_active: true,
+          music_url: parsed.music_url || CPUT_PLAYLIST[0].url
+        };
+      } catch (e) { console.error(e); }
     }
     return {
       is_active: true,
       question: 'Bạn muốn nghe nhạc trên trang chủ CPUT không ?',
-      music_url: '',
+      music_url: CPUT_PLAYLIST[0].url,
       yes_votes: 18,
       no_votes: 4
     };
