@@ -363,14 +363,18 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
   };
 
   const handleUserVote = (option: 'yes' | 'no') => {
-    onVote(option);
-    setVotedChoice(option);
-    if (option === 'yes' && pollData?.music_url) {
-      setTimeout(() => {
-        if (audioRef.current) {
-          audioRef.current.play().then(() => setIsPlayingMusic(true)).catch(err => console.error("Audio play error:", err));
-        }
-      }, 300);
+    try {
+      if (onVote) onVote(option);
+      setVotedChoice(option);
+      if (option === 'yes' && pollData?.music_url) {
+        setTimeout(() => {
+          if (audioRef.current) {
+            audioRef.current.play().then(() => setIsPlayingMusic(true)).catch(err => console.error("Audio play error:", err));
+          }
+        }, 300);
+      }
+    } catch (err) {
+      console.error("Error handling vote:", err);
     }
   };
 
@@ -1193,15 +1197,17 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-black uppercase text-amber-900 tracking-wider">KẾT QUẢ BÌNH CHỌN TRỰC TUYẾN</span>
                     <span className="text-[10px] font-black uppercase text-stone-400">
-                      TỔNG: {((pollData.yes_votes || 0) + (pollData.no_votes || 0)).toLocaleString('vi-VN')} PHIẾU
+                      TỔNG: {(((pollData?.yes_votes || 0)) + ((pollData?.no_votes || 0))).toLocaleString('vi-VN')} PHIẾU
                     </span>
                   </div>
 
                   {/* Percentage Bar */}
                   {(() => {
-                    const total = (pollData.yes_votes || 0) + (pollData.no_votes || 0);
-                    const yesPct = total > 0 ? Math.round(((pollData.yes_votes || 0) / total) * 100) : 0;
-                    const noPct = total > 0 ? Math.round(((pollData.no_votes || 0) / total) * 100) : 0;
+                    const yesVotes = Number(pollData?.yes_votes) || 0;
+                    const noVotes = Number(pollData?.no_votes) || 0;
+                    const total = yesVotes + noVotes;
+                    const yesPct = total > 0 ? Math.round((yesVotes / total) * 100) : 0;
+                    const noPct = total > 0 ? Math.round((noVotes / total) * 100) : 0;
 
                     return (
                       <div className="space-y-4">
@@ -1211,7 +1217,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
                             <span className="flex items-center gap-1.5 text-emerald-700">
                               <Check size={14} /> Có, Muốn nghe nhạc {votedChoice === 'yes' && <span className="bg-emerald-100 text-emerald-800 text-[8px] px-1.5 py-0.5 rounded font-black">(Lựa chọn của bạn)</span>}
                             </span>
-                            <span className="font-black tabular-nums">{yesPct}% ({pollData.yes_votes || 0})</span>
+                            <span className="font-black tabular-nums">{yesPct}% ({yesVotes})</span>
                           </div>
                           <div className="w-full bg-stone-200 h-3.5 rounded-full overflow-hidden p-0.5">
                             <div 
@@ -1227,7 +1233,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
                             <span className="flex items-center gap-1.5 text-stone-600">
                               <X size={14} /> Không muốn nghe {votedChoice === 'no' && <span className="bg-stone-200 text-stone-700 text-[8px] px-1.5 py-0.5 rounded font-black">(Lựa chọn của bạn)</span>}
                             </span>
-                            <span className="font-black tabular-nums">{noPct}% ({pollData.no_votes || 0})</span>
+                            <span className="font-black tabular-nums">{noPct}% ({noVotes})</span>
                           </div>
                           <div className="w-full bg-stone-200 h-3.5 rounded-full overflow-hidden p-0.5">
                             <div 
@@ -1620,7 +1626,7 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
           <button onClick={() => setActiveTab('hero')} className={`flex-1 py-4 px-3 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${activeTab === 'hero' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>🖼️ HERO SLIDES</button>
           <button onClick={() => setActiveTab('quick')} className={`flex-1 py-4 px-3 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${activeTab === 'quick' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>⚡ CHỌN NHANH</button>
           <button onClick={() => setActiveTab('notifications')} className={`flex-1 py-4 px-3 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${activeTab === 'notifications' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>🔔 THÔNG BÁO</button>
-          <button onClick={() => setActiveTab('poll')} className={`flex-1 py-4 px-3 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${activeTab === 'poll' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>🗳️ BÌNH CHỌN</button>
+          <button onClick={() => setActiveTab('poll')} className={`flex-1 py-4 px-3 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${activeTab === 'poll' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>🎵 QUẢN LÝ NHẠC & BÌNH CHỌN</button>
           <button onClick={() => setActiveTab('guestbook')} className={`flex-1 py-4 px-3 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${activeTab === 'guestbook' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>💬 GÓP Ý</button>
           <button onClick={() => setActiveTab('stats')} className={`flex-1 py-4 px-3 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${activeTab === 'stats' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>📊 THỐNG KÊ</button>
         </div>
@@ -1985,8 +1991,11 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
             <div className="space-y-10">
               <div className="flex justify-between items-end border-b pb-6">
                 <div>
-                  <h2 className="text-3xl font-black uppercase text-stone-900">QUẢN LÝ BÌNH CHỌN (VOTE POLL)</h2>
-                  <p className="text-xs font-bold text-stone-400 mt-1">Cấu hình câu hỏi thăm dò ý kiến khách truy cập và link nhạc nền trang chủ</p>
+                  <h2 className="text-3xl font-black uppercase text-stone-900 flex items-center gap-3">
+                    <Music size={28} className="text-amber-800" />
+                    QUẢN LÝ NHẠC NỀN & BÌNH CHỌN TRANG CHỦ
+                  </h2>
+                  <p className="text-xs font-bold text-stone-400 mt-1">Quản lý file nhạc MP3 phát nền trên trang chủ và bật/tắt pop-up bình chọn cho khách ghé thăm</p>
                 </div>
               </div>
 
@@ -2028,8 +2037,11 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                 </div>
 
                 {/* Input Link Nhạc */}
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-amber-800 ml-2 block">Đường link MP3 / Nhạc nền (Audio URL):</label>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-amber-800 ml-2 block">Đường link MP3 / Nhạc nền Trang Chủ (Audio URL):</label>
+                  </div>
+
                   <input 
                     type="text"
                     value={localPoll.music_url}
@@ -2037,8 +2049,37 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                     placeholder="Dán link file nhạc .mp3 tại đây (Ví dụ: https://.../music.mp3)"
                     className="w-full bg-white border-2 border-stone-200 rounded-2xl px-6 py-4 text-xs font-mono text-stone-900 focus:border-amber-800 outline-none transition-all"
                   />
+
+                  {/* Sample Links Quick Selector */}
+                  <div className="bg-white p-4 rounded-2xl border border-stone-200 space-y-2">
+                    <span className="text-[10px] font-black uppercase text-stone-400 tracking-wider block">GỢI Ý LINK NHẠC MẪU (CLICK ĐỂ DÁN NHANH):</span>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setLocalPoll(prev => ({ ...prev, music_url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3' }))}
+                        className="bg-stone-100 hover:bg-amber-100 hover:text-amber-900 text-stone-700 text-xs px-3 py-1.5 rounded-xl font-bold transition-all border border-stone-200"
+                      >
+                        🎹 Piano thư giãn (.mp3)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setLocalPoll(prev => ({ ...prev, music_url: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3' }))}
+                        className="bg-stone-100 hover:bg-amber-100 hover:text-amber-900 text-stone-700 text-xs px-3 py-1.5 rounded-xl font-bold transition-all border border-stone-200"
+                      >
+                        🎸 Acoustic Guitar nhẹ nhàng (.mp3)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setLocalPoll(prev => ({ ...prev, music_url: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f79221.mp3' }))}
+                        className="bg-stone-100 hover:bg-amber-100 hover:text-amber-900 text-stone-700 text-xs px-3 py-1.5 rounded-xl font-bold transition-all border border-stone-200"
+                      >
+                        ☕ Chill Lofi Không Lời (.mp3)
+                      </button>
+                    </div>
+                  </div>
+
                   <p className="text-[9px] text-stone-400 italic ml-2">
-                    * Khi khách chọn "Có", nhạc từ link này sẽ tự động được phát nền trên website.
+                    * Khi khách chọn "Có", nhạc từ đường link này sẽ được tự động phát làm nhạc nền trang chủ CPUT.
                   </p>
 
                   {/* Audio Preview in Admin */}
@@ -2046,7 +2087,7 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                     <div className="mt-4 bg-white p-4 rounded-2xl border border-stone-200 flex flex-col md:flex-row items-center justify-between gap-4">
                       <div className="flex items-center gap-3">
                         <Music size={20} className="text-amber-800 animate-bounce" />
-                        <span className="text-xs font-bold text-stone-800">Nghe thử nhạc nền Admin:</span>
+                        <span className="text-xs font-bold text-stone-800">Trình phát nhạc kiểm tra trực tiếp:</span>
                       </div>
                       <audio src={localPoll.music_url} controls className="h-10 w-full md:w-auto" />
                     </div>
