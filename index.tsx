@@ -218,35 +218,35 @@ export const CPUT_PLAYLIST: PlaylistItem[] = [
   // 6 BÀI NHẠC KHÔNG LỜI / HÒA TẤU / CAFE / SPA DÀNH CHO QUÁN ĂN
   {
     id: 'res-1',
-    title: 'Acoustic Guitar Cơm Trưa & Cafe Thư Giãn',
+    title: 'Acoustic Guitar Cơm Trưa & Cafe Thư Giãn (.mp3)',
     artist: 'Hòa Tấu Guitar Nhẹ Nhàng',
     category: 'restaurant',
-    url: 'https://www.youtube.com/watch?v=2O4NfQ29zGg',
-    badge: 'Quán Ăn & Cafe'
+    url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3',
+    badge: 'Guitar MP3'
   },
   {
     id: 'res-2',
-    title: 'Piano Hòa Tấu Thư Giãn Qua Ngày',
+    title: 'Piano Hòa Tấu Êm Ái Qua Ngày (.mp3)',
     artist: 'Lofi Piano Relaxing',
     category: 'restaurant',
-    url: 'https://www.youtube.com/watch?v=5qap5aO4i9A',
-    badge: 'Piano Thư Giãn'
+    url: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f79221.mp3',
+    badge: 'Piano MP3'
   },
   {
     id: 'res-3',
-    title: 'Saxophone & Jazz Cafe Sang Trọng',
-    artist: 'Smooth Jazz Vietnam',
+    title: 'Saxophone & Jazz Cafe Sang Trọng (.mp3)',
+    artist: 'Smooth Jazz Cafe',
     category: 'restaurant',
-    url: 'https://www.youtube.com/watch?v=DWcJFNfaw9c',
-    badge: 'Jazz & Saxophone'
+    url: 'https://cdn.pixabay.com/download/audio/2022/11/06/audio_c795d3a39e.mp3',
+    badge: 'Jazz MP3'
   },
   {
     id: 'res-4',
-    title: 'Nhạc Spa, Massage & Thiền Thư Giãn',
+    title: 'Nhạc Spa, Massage & Thiền Thư Giãn (.mp3)',
     artist: 'Meditation Instrumental',
     category: 'restaurant',
-    url: 'https://www.youtube.com/watch?v=1ZYbU87A7FU',
-    badge: 'Spa & Massage'
+    url: 'https://cdn.pixabay.com/download/audio/2023/04/20/audio_2911b33b9c.mp3',
+    badge: 'Spa MP3'
   },
   {
     id: 'res-5',
@@ -258,11 +258,11 @@ export const CPUT_PLAYLIST: PlaylistItem[] = [
   },
   {
     id: 'res-6',
-    title: 'Piano Cổ Điển Êm Ái (.mp3)',
-    artist: 'Classical Piano MP3',
+    title: 'Lofi Hip Hop Chill Cơm Trưa & Cafe (YouTube)',
+    artist: 'Lofi Girl Streams',
     category: 'restaurant',
-    url: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f79221.mp3',
-    badge: 'Piano MP3'
+    url: 'https://www.youtube.com/watch?v=jfKfPfyJRdk',
+    badge: 'YouTube Live'
   },
 
   // 4 BÀI NHẠC TRẺ VIỆT NAM HOT HIT GIỚI TRẺ
