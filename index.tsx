@@ -205,6 +205,101 @@ interface QuickMenuItem {
   children?: QuickMenuItem[];
 }
 
+export interface PlaylistItem {
+  id: string;
+  title: string;
+  artist: string;
+  category: 'restaurant' | 'vpop';
+  url: string;
+  badge: string;
+}
+
+export const CPUT_PLAYLIST: PlaylistItem[] = [
+  // 6 BÀI NHẠC KHÔNG LỜI / HÒA TẤU / CAFE / SPA DÀNH CHO QUÁN ĂN
+  {
+    id: 'res-1',
+    title: 'Acoustic Guitar Cơm Trưa & Cafe Thư Giãn',
+    artist: 'Hòa Tấu Guitar Nhẹ Nhàng',
+    category: 'restaurant',
+    url: 'https://www.youtube.com/watch?v=2O4NfQ29zGg',
+    badge: 'Quán Ăn & Cafe'
+  },
+  {
+    id: 'res-2',
+    title: 'Piano Hòa Tấu Thư Giãn Qua Ngày',
+    artist: 'Lofi Piano Relaxing',
+    category: 'restaurant',
+    url: 'https://www.youtube.com/watch?v=5qap5aO4i9A',
+    badge: 'Piano Thư Giãn'
+  },
+  {
+    id: 'res-3',
+    title: 'Saxophone & Jazz Cafe Sang Trọng',
+    artist: 'Smooth Jazz Vietnam',
+    category: 'restaurant',
+    url: 'https://www.youtube.com/watch?v=DWcJFNfaw9c',
+    badge: 'Jazz & Saxophone'
+  },
+  {
+    id: 'res-4',
+    title: 'Nhạc Spa, Massage & Thiền Thư Giãn',
+    artist: 'Meditation Instrumental',
+    category: 'restaurant',
+    url: 'https://www.youtube.com/watch?v=1ZYbU87A7FU',
+    badge: 'Spa & Massage'
+  },
+  {
+    id: 'res-5',
+    title: 'Chill Lofi Beats Chiều Quán Ăn (.mp3)',
+    artist: 'Pixabay Chill MP3',
+    category: 'restaurant',
+    url: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3',
+    badge: 'Lofi MP3'
+  },
+  {
+    id: 'res-6',
+    title: 'Piano Cổ Điển Êm Ái (.mp3)',
+    artist: 'Classical Piano MP3',
+    category: 'restaurant',
+    url: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f79221.mp3',
+    badge: 'Piano MP3'
+  },
+
+  // 4 BÀI NHẠC TRẺ VIỆT NAM HOT HIT GIỚI TRẺ
+  {
+    id: 'pop-1',
+    title: 'Nơi Này Có Anh',
+    artist: 'Sơn Tùng M-TP',
+    category: 'vpop',
+    url: 'https://www.youtube.com/watch?v=FN7ALfpGxiI',
+    badge: '🔥 V-Pop Hot'
+  },
+  {
+    id: 'pop-2',
+    title: 'Cắt Đôi Nỗi Sầu',
+    artist: 'Tăng Duy Tân',
+    category: 'vpop',
+    url: 'https://www.youtube.com/watch?v=1fT3X_R3Ubc',
+    badge: '🔥 V-Pop Hot'
+  },
+  {
+    id: 'pop-3',
+    title: 'Chúng Ta Của Tương Lai',
+    artist: 'Sơn Tùng M-TP',
+    category: 'vpop',
+    url: 'https://www.youtube.com/watch?v=xlqfeR4S9mE',
+    badge: '🔥 V-Pop Hot'
+  },
+  {
+    id: 'pop-4',
+    title: 'Lofi Chill Nhạc Trẻ Hot Hit Việt Nam',
+    artist: 'V-Pop Lofi Chill 2026',
+    category: 'vpop',
+    url: 'https://www.youtube.com/watch?v=g3-S_eZ9g6w',
+    badge: '🔥 V-Pop Hot'
+  }
+];
+
 // --- COMPONENTS ---
 
 const Nav = ({ isAdmin = false, onShowQuickSelect, cartCount, onShowCart, theme, menuImageUrl }: any) => {
@@ -343,6 +438,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
   const [showPollModal, setShowPollModal] = useState(false);
   const [votedChoice, setVotedChoice] = useState<string | null>(() => localStorage.getItem(VOTED_KEY));
   const [isPlayingMusic, setIsPlayingMusic] = useState(false);
+  const [customTrackUrl, setCustomTrackUrl] = useState<string>('');
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Auto show poll modal if active and user hasn't voted or dismissed in session
@@ -359,10 +455,11 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
     }
   }, [pollData?.is_active]);
 
-  const youtubeId = useMemo(() => getYouTubeId(pollData?.music_url), [pollData?.music_url]);
+  const activeMusicUrl = customTrackUrl || pollData?.music_url || CPUT_PLAYLIST[0].url;
+  const youtubeId = useMemo(() => getYouTubeId(activeMusicUrl), [activeMusicUrl]);
 
   const togglePlayMusic = () => {
-    if (!pollData?.music_url) return;
+    if (!activeMusicUrl) return;
     if (youtubeId) {
       setIsPlayingMusic(prev => !prev);
       return;
@@ -376,6 +473,19 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
     }
   };
 
+  const handleSelectPlaylistTrack = (trackUrl: string) => {
+    setCustomTrackUrl(trackUrl);
+    setIsPlayingMusic(true);
+    const trackYtId = getYouTubeId(trackUrl);
+    if (!trackYtId) {
+      setTimeout(() => {
+        if (audioRef.current) {
+          audioRef.current.play().then(() => setIsPlayingMusic(true)).catch(err => console.error("Audio play error:", err));
+        }
+      }, 200);
+    }
+  };
+
   const handleUserVote = (option: 'yes' | 'no') => {
     try {
       if (onVote) onVote(option);
@@ -385,10 +495,9 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
       } catch (e) {
         console.error("LocalStorage save vote error:", e);
       }
-      if (option === 'yes' && pollData?.music_url) {
-        if (youtubeId) {
-          setIsPlayingMusic(true);
-        } else {
+      if (option === 'yes') {
+        setIsPlayingMusic(true);
+        if (!youtubeId) {
           setTimeout(() => {
             if (audioRef.current) {
               audioRef.current.play().then(() => setIsPlayingMusic(true)).catch(err => console.error("Audio play error:", err));
@@ -1140,9 +1249,10 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
       </footer>
 
       {/* Audio / YouTube Player Element */}
-      {pollData?.music_url && (
+      {activeMusicUrl && (
         youtubeId ? (
           <iframe
+            key={activeMusicUrl}
             src={`https://www.youtube.com/embed/${youtubeId}?autoplay=${isPlayingMusic ? 1 : 0}&enablejsapi=1&loop=1&playlist=${youtubeId}`}
             allow="autoplay"
             className="fixed -top-[9999px] -left-[9999px] w-1 h-1 opacity-0 pointer-events-none"
@@ -1151,7 +1261,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
         ) : (
           <audio 
             ref={audioRef} 
-            src={pollData?.music_url || ''} 
+            src={activeMusicUrl} 
             loop 
             onPlay={() => setIsPlayingMusic(true)}
             onPause={() => setIsPlayingMusic(false)}
@@ -1174,7 +1284,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
               <span className="bg-emerald-500 text-[9px] px-2 py-0.5 rounded-full text-white font-bold ml-1">ĐÃ BẦU</span>
             )}
           </button>
-          {pollData?.music_url && (
+          {activeMusicUrl && (
             <button
               onClick={togglePlayMusic}
               className={`w-11 h-11 rounded-full flex items-center justify-center text-white shadow-xl transition-transform hover:scale-110 border-2 border-white/30 ${isPlayingMusic ? 'bg-emerald-600 animate-pulse' : 'bg-stone-800'}`}
@@ -1189,7 +1299,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
       {/* Poll Modal Popup */}
       {showPollModal && pollData?.is_active && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-stone-950/80 backdrop-blur-md animate-fade-in">
-          <div className="bg-white rounded-[35px] max-w-md w-full p-8 shadow-2xl border-2 border-amber-800/20 relative overflow-hidden">
+          <div className="bg-white rounded-[35px] max-w-2xl w-full p-6 md:p-8 shadow-2xl border-2 border-amber-800/20 relative overflow-hidden max-h-[90vh] flex flex-col">
             {/* Background Glow */}
             <div className="absolute -top-20 -right-20 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
             
@@ -1198,12 +1308,12 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
                 setShowPollModal(false);
                 sessionStorage.setItem('ut-trinh-poll-dismissed', 'true');
               }}
-              className="absolute top-5 right-5 w-10 h-10 bg-stone-100 hover:bg-stone-200 text-stone-600 rounded-full flex items-center justify-center text-xl font-bold transition-all"
+              className="absolute top-5 right-5 w-10 h-10 bg-stone-100 hover:bg-stone-200 text-stone-600 rounded-full flex items-center justify-center text-xl font-bold transition-all z-10"
             >
               ×
             </button>
 
-            <div className="text-center space-y-4">
+            <div className="text-center space-y-4 overflow-y-auto pr-1">
               <div className="inline-flex items-center gap-2 bg-amber-100 text-amber-900 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">
                 <Vote size={14} className="text-amber-800" />
                 <span>BÌNH CHỌN Ý KIẾN KHÁCH HÀNG</span>
@@ -1244,7 +1354,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
                   </div>
                 </div>
               ) : (
-                <div className="pt-4 space-y-5 text-left bg-stone-50 p-6 rounded-2xl border border-stone-200">
+                <div className="pt-4 space-y-5 text-left bg-stone-50 p-5 md:p-6 rounded-2xl border border-stone-200">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-black uppercase text-amber-900 tracking-wider">KẾT QUẢ BÌNH CHỌN TRỰC TUYẾN</span>
                     <span className="text-[10px] font-black uppercase text-stone-400">
@@ -1297,22 +1407,99 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
                     );
                   })()}
 
-                  {/* Music playback control if Yes */}
-                  {pollData?.music_url && (
-                    <div className="pt-3 border-t border-stone-200 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-3 h-3 rounded-full ${isPlayingMusic ? 'bg-emerald-500 animate-ping' : 'bg-stone-300'}`} />
-                        <span className="text-xs font-bold text-stone-700">
-                          {isPlayingMusic ? '🎵 Đang phát nhạc nền...' : '🔇 Nhạc nền chưa phát'}
-                        </span>
+                  {/* Music Playlist Table for YES votes */}
+                  {votedChoice === 'yes' && (
+                    <div className="pt-4 border-t border-stone-200 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <h4 className="text-xs font-black uppercase text-amber-900 tracking-wider flex items-center gap-1.5">
+                            <Music size={16} className="text-emerald-600 animate-bounce" />
+                            📻 BẢNG PLAYLIST DÀNH CHO KHÁCH HÀNG TỰ CHỌN BÀI
+                          </h4>
+                          <p className="text-[10px] text-stone-500 font-medium">Click vào bài hát bất kỳ bên dưới để phát hoặc chuyển nhạc ngay lập tức:</p>
+                        </div>
+                        <button
+                          onClick={togglePlayMusic}
+                          className={`text-xs px-3.5 py-1.5 rounded-xl font-bold flex items-center gap-1.5 transition-all text-white shadow-sm shrink-0 ${isPlayingMusic ? 'bg-amber-800 hover:bg-amber-900' : 'bg-emerald-600 hover:bg-emerald-700'}`}
+                        >
+                          {isPlayingMusic ? <Pause size={12} /> : <Play size={12} />}
+                          <span>{isPlayingMusic ? 'Tạm Dừng' : 'Phát Nhạc'}</span>
+                        </button>
                       </div>
-                      <button
-                        onClick={togglePlayMusic}
-                        className="bg-amber-800 hover:bg-amber-900 text-white text-xs px-4 py-2 rounded-xl font-bold flex items-center gap-1.5 transition-all"
-                      >
-                        {isPlayingMusic ? <Pause size={14} /> : <Play size={14} />}
-                        <span>{isPlayingMusic ? 'Tạm dừng' : 'Phát Nhạc'}</span>
-                      </button>
+
+                      <div className="space-y-4 max-h-[300px] overflow-y-auto pr-1">
+                        {/* Nhóm 1: 6 Bài Nhạc Quán Ăn / Cafe / Spa */}
+                        <div className="space-y-2">
+                          <span className="text-[10px] font-black uppercase text-stone-500 tracking-wider block">
+                            ☕ 6 BÀI NHẠC KHÔNG LỜI / CAFE / SPA THƯ GIÃN DÀNH CHO QUÁN ĂN:
+                          </span>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {CPUT_PLAYLIST.filter(p => p.category === 'restaurant').map(track => {
+                              const isActive = activeMusicUrl === track.url;
+                              return (
+                                <button
+                                  key={track.id}
+                                  type="button"
+                                  onClick={() => handleSelectPlaylistTrack(track.url)}
+                                  className={`p-3 rounded-2xl border text-left transition-all flex items-center justify-between gap-2 cursor-pointer shadow-sm ${isActive ? 'bg-amber-100/80 border-amber-800 text-amber-950 ring-2 ring-amber-800 font-bold' : 'bg-white hover:bg-stone-100 border-stone-200 text-stone-800'}`}
+                                >
+                                  <div className="space-y-0.5 min-w-0 flex-1">
+                                    <span className="text-xs font-black truncate block">{track.title}</span>
+                                    <span className="text-[9px] text-stone-500 block truncate">{track.artist}</span>
+                                  </div>
+                                  <div className="shrink-0">
+                                    {isActive && isPlayingMusic ? (
+                                      <span className="bg-emerald-600 text-white text-[9px] px-2 py-1 rounded-lg font-black flex items-center gap-1 animate-pulse">
+                                        <Pause size={10} /> ĐANG PHÁT
+                                      </span>
+                                    ) : (
+                                      <span className="bg-stone-100 hover:bg-amber-100 text-stone-700 hover:text-amber-900 text-[9px] px-2 py-1 rounded-lg font-bold flex items-center gap-1">
+                                        <Play size={10} /> Phát
+                                      </span>
+                                    )}
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Nhóm 2: 4 Bài V-Pop Hot Hit */}
+                        <div className="space-y-2 pt-2 border-t border-stone-200">
+                          <span className="text-[10px] font-black uppercase text-stone-500 tracking-wider block">
+                            🔥 4 BÀI NHẠC TRẺ VIỆT NAM HOT HIT GIỚI TRẺ:
+                          </span>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {CPUT_PLAYLIST.filter(p => p.category === 'vpop').map(track => {
+                              const isActive = activeMusicUrl === track.url;
+                              return (
+                                <button
+                                  key={track.id}
+                                  type="button"
+                                  onClick={() => handleSelectPlaylistTrack(track.url)}
+                                  className={`p-3 rounded-2xl border text-left transition-all flex items-center justify-between gap-2 cursor-pointer shadow-sm ${isActive ? 'bg-red-100/80 border-red-700 text-red-950 ring-2 ring-red-700 font-bold' : 'bg-white hover:bg-stone-100 border-stone-200 text-stone-800'}`}
+                                >
+                                  <div className="space-y-0.5 min-w-0 flex-1">
+                                    <span className="text-xs font-black truncate block">{track.title}</span>
+                                    <span className="text-[9px] text-stone-500 block truncate">{track.artist}</span>
+                                  </div>
+                                  <div className="shrink-0">
+                                    {isActive && isPlayingMusic ? (
+                                      <span className="bg-red-600 text-white text-[9px] px-2 py-1 rounded-lg font-black flex items-center gap-1 animate-pulse">
+                                        <Pause size={10} /> ĐANG PHÁT
+                                      </span>
+                                    ) : (
+                                      <span className="bg-stone-100 hover:bg-red-100 text-stone-700 hover:text-red-900 text-[9px] px-2 py-1 rounded-lg font-bold flex items-center gap-1">
+                                        <Play size={10} /> Phát
+                                      </span>
+                                    )}
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   )}
 
@@ -2067,47 +2254,57 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                     className="w-full bg-white border-2 border-stone-200 rounded-2xl px-6 py-4 text-xs font-mono text-stone-900 focus:border-amber-800 outline-none transition-all shadow-sm"
                   />
 
-                  {/* Sample Hot Music Selector */}
-                  <div className="bg-white p-5 rounded-3xl border border-stone-200 space-y-3">
-                    <span className="text-[10px] font-black uppercase text-stone-500 tracking-wider flex items-center gap-2">
-                      <span>🔥 GỢI Ý NHẠC HOT GIỚI TRẺ VIỆT NAM (CLICK CHỌN DÁN NGAY):</span>
+                  {/* Sample Music Suggestions for ACP */}
+                  <div className="bg-white p-6 rounded-3xl border border-stone-200 space-y-6">
+                    <span className="text-[11px] font-black uppercase text-amber-900 tracking-wider flex items-center gap-2 border-b pb-3">
+                      <Music size={16} className="text-amber-800" />
+                      DANH SÁCH GỢI Ý NHẠC DÀNH CHO QUẢN TRỊ (CLICK DÁN LINK TỰ ĐỘNG):
                     </span>
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setLocalPoll(prev => ({ ...prev, music_url: 'https://www.youtube.com/watch?v=FN7ALfpGxiI' }))}
-                        className="bg-red-50 hover:bg-red-100 hover:text-red-900 text-red-700 text-xs px-3.5 py-2 rounded-xl font-bold transition-all border border-red-200 flex items-center gap-1.5 cursor-pointer shadow-sm"
-                      >
-                        🔥 Nơi Này Có Anh - Sơn Tùng M-TP
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setLocalPoll(prev => ({ ...prev, music_url: 'https://www.youtube.com/watch?v=g3-S_eZ9g6w' }))}
-                        className="bg-red-50 hover:bg-red-100 hover:text-red-900 text-red-700 text-xs px-3.5 py-2 rounded-xl font-bold transition-all border border-red-200 flex items-center gap-1.5 cursor-pointer shadow-sm"
-                      >
-                        ☕ Lofi Chill Nhạc Trẻ Hot Hit 2026
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setLocalPoll(prev => ({ ...prev, music_url: 'https://www.youtube.com/watch?v=2O4NfQ29zGg' }))}
-                        className="bg-red-50 hover:bg-red-100 hover:text-red-900 text-red-700 text-xs px-3.5 py-2 rounded-xl font-bold transition-all border border-red-200 flex items-center gap-1.5 cursor-pointer shadow-sm"
-                      >
-                        🎸 Acoustic Guitar Cơm Trưa Thư Giãn
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setLocalPoll(prev => ({ ...prev, music_url: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3' }))}
-                        className="bg-amber-50 hover:bg-amber-100 hover:text-amber-900 text-amber-800 text-xs px-3.5 py-2 rounded-xl font-bold transition-all border border-amber-200 flex items-center gap-1.5 cursor-pointer shadow-sm"
-                      >
-                        🎧 Lofi Beats Nhẹ Nhàng (.mp3)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setLocalPoll(prev => ({ ...prev, music_url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3' }))}
-                        className="bg-amber-50 hover:bg-amber-100 hover:text-amber-900 text-amber-800 text-xs px-3.5 py-2 rounded-xl font-bold transition-all border border-amber-200 flex items-center gap-1.5 cursor-pointer shadow-sm"
-                      >
-                        🎹 Piano Không Lời Ém Áu (.mp3)
-                      </button>
+
+                    {/* Nhóm 1: 6 Bài Nhạc Không Lời / Hòa Tấu / Cafe / Spa */}
+                    <div className="space-y-3">
+                      <span className="text-[10px] font-black uppercase text-stone-600 tracking-wider flex items-center gap-1.5">
+                        ☕ 6 BÀI NHẠC KHÔNG LỜI / HÒA TẤU / CAFE / SPA DÀNH CHO QUÁN ĂN:
+                      </span>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                        {CPUT_PLAYLIST.filter(p => p.category === 'restaurant').map(p => (
+                          <button
+                            key={p.id}
+                            type="button"
+                            onClick={() => setLocalPoll(prev => ({ ...prev, music_url: p.url }))}
+                            className={`text-left p-3 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between gap-1 shadow-sm ${localPoll.music_url === p.url ? 'bg-amber-100 border-amber-800 text-amber-950 font-black ring-2 ring-amber-800' : 'bg-amber-50/60 hover:bg-amber-100/80 border-amber-200/80 text-stone-800'}`}
+                          >
+                            <div className="flex items-center justify-between gap-1">
+                              <span className="text-xs font-black truncate">{p.title}</span>
+                              <span className="text-[8px] bg-amber-200 text-amber-900 px-1.5 py-0.5 rounded font-bold shrink-0">{p.badge}</span>
+                            </div>
+                            <span className="text-[9px] text-stone-500 font-medium truncate">{p.artist}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Nhóm 2: 4 Bài Nhạc Trẻ Việt Nam Hot Hit */}
+                    <div className="space-y-3 pt-3 border-t border-stone-100">
+                      <span className="text-[10px] font-black uppercase text-stone-600 tracking-wider flex items-center gap-1.5">
+                        🔥 4 BÀI NHẠC TRẺ VIỆT NAM HOT HIT GIỚI TRẺ:
+                      </span>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+                        {CPUT_PLAYLIST.filter(p => p.category === 'vpop').map(p => (
+                          <button
+                            key={p.id}
+                            type="button"
+                            onClick={() => setLocalPoll(prev => ({ ...prev, music_url: p.url }))}
+                            className={`text-left p-3 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between gap-1 shadow-sm ${localPoll.music_url === p.url ? 'bg-red-100 border-red-700 text-red-950 font-black ring-2 ring-red-700' : 'bg-red-50/60 hover:bg-red-100/80 border-red-200/80 text-stone-800'}`}
+                          >
+                            <div className="flex items-center justify-between gap-1">
+                              <span className="text-xs font-black truncate">{p.title}</span>
+                              <span className="text-[8px] bg-red-200 text-red-900 px-1.5 py-0.5 rounded font-bold shrink-0">{p.badge}</span>
+                            </div>
+                            <span className="text-[9px] text-stone-500 font-medium truncate">{p.artist}</span>
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
 
