@@ -390,6 +390,15 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
             }
           }, 300);
         }
+      } else if (option === 'no') {
+        setIsPlayingMusic(false);
+        if (audioRef.current) {
+          try { 
+            audioRef.current.pause(); 
+          } catch (err) {
+            console.error("Audio pause error:", err);
+          }
+        }
       }
     } catch (err) {
       console.error("Error handling vote:", err);
@@ -1137,7 +1146,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
         ) : (
           <audio 
             ref={audioRef} 
-            src={pollData.music_url} 
+            src={pollData?.music_url || ''} 
             loop 
             onPlay={() => setIsPlayingMusic(true)}
             onPause={() => setIsPlayingMusic(false)}
@@ -1196,7 +1205,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
               </div>
 
               <h3 className="text-xl md:text-2xl font-black text-stone-900 leading-tight">
-                {pollData.question || "Bạn muốn nghe nhạc trên trang chủ CPUT không ?"}
+                {pollData?.question || "Bạn muốn nghe nhạc trên trang chủ CPUT không ?"}
               </h3>
 
               {!votedChoice ? (
@@ -1274,7 +1283,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
                   })()}
 
                   {/* Music playback control if Yes */}
-                  {pollData.music_url && (
+                  {pollData?.music_url && (
                     <div className="pt-3 border-t border-stone-200 flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <div className={`w-3 h-3 rounded-full ${isPlayingMusic ? 'bg-emerald-500 animate-ping' : 'bg-stone-300'}`} />
@@ -1951,7 +1960,7 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                 </p>
               </div>
             </div>
-          ) : (
+          ) : activeTab === 'notifications' ? (
             <div className="space-y-10">
               <div className="flex justify-between items-end border-b pb-6">
                 <h2 className="text-3xl font-black uppercase text-stone-900">QUẢN LÝ THÔNG BÁO</h2>
@@ -2012,7 +2021,7 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                 ))}
               </div>
             </div>
-          )}
+          ) : null}
 
           {activeTab === 'poll' && (
             <div className="space-y-10">
