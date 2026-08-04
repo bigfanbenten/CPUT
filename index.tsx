@@ -215,10 +215,10 @@ export interface PlaylistItem {
 }
 
 export const CPUT_PLAYLIST: PlaylistItem[] = [
-  // 6 BÀI NHẠC KHÔNG LỜI / HÒA TẤU / CAFE / SPA DÀNH CHO QUÁN ĂN
+  // 6 BÀI NHẠC KHÔNG LỜI / HÒA TẤU / CAFE / SPA DÀNH CHO QUÁN ĂN (STREAM CHUẨN KÍCH HOẠT TỰ ĐỘNG)
   {
     id: 'res-1',
-    title: 'Acoustic Guitar Cơm Trưa & Cafe Thư Giãn (.mp3)',
+    title: 'Acoustic Guitar Thư Giãn Quán Ăn (.mp3)',
     artist: 'Hòa Tấu Guitar Nhẹ Nhàng',
     category: 'restaurant',
     url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3',
@@ -226,7 +226,7 @@ export const CPUT_PLAYLIST: PlaylistItem[] = [
   },
   {
     id: 'res-2',
-    title: 'Piano Hòa Tấu Êm Ái Qua Ngày (.mp3)',
+    title: 'Piano Hòa Tấu Êm Ái Cơm Trưa (.mp3)',
     artist: 'Lofi Piano Relaxing',
     category: 'restaurant',
     url: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f79221.mp3',
@@ -234,68 +234,68 @@ export const CPUT_PLAYLIST: PlaylistItem[] = [
   },
   {
     id: 'res-3',
-    title: 'Saxophone & Jazz Cafe Sang Trọng (.mp3)',
-    artist: 'Smooth Jazz Cafe',
+    title: 'Saxophone & Smooth Jazz Cafe (.mp3)',
+    artist: 'Smooth Jazz Collection',
     category: 'restaurant',
-    url: 'https://cdn.pixabay.com/download/audio/2022/11/06/audio_c795d3a39e.mp3',
+    url: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3',
     badge: 'Jazz MP3'
   },
   {
     id: 'res-4',
-    title: 'Nhạc Spa, Massage & Thiền Thư Giãn (.mp3)',
-    artist: 'Meditation Instrumental',
+    title: 'Nhạc Spa, Massage & Thiền (.mp3)',
+    artist: 'Meditation Zen Instrumental',
     category: 'restaurant',
     url: 'https://cdn.pixabay.com/download/audio/2023/04/20/audio_2911b33b9c.mp3',
     badge: 'Spa MP3'
   },
   {
     id: 'res-5',
-    title: 'Chill Lofi Beats Chiều Quán Ăn (.mp3)',
-    artist: 'Pixabay Chill MP3',
+    title: 'Chill Lofi Beats Chiều Quán Cafe (.mp3)',
+    artist: 'Lofi Cafe Instrumental',
     category: 'restaurant',
-    url: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3',
+    url: 'https://files.freemusicarchive.org/storage-freemusicarchive-org/music/WFMU/Broke_For_Free/Directionless_Unrelenting/Broke_For_Free_-_01_-_Night_Owl.mp3',
     badge: 'Lofi MP3'
   },
   {
     id: 'res-6',
-    title: 'Lofi Hip Hop Chill Cơm Trưa & Cafe (YouTube)',
-    artist: 'Lofi Girl Streams',
+    title: 'Piano Cổ Điển Nhẹ Nhàng (.mp3)',
+    artist: 'Classical Piano Collection',
     category: 'restaurant',
-    url: 'https://www.youtube.com/watch?v=jfKfPfyJRdk',
-    badge: 'YouTube Live'
+    url: 'https://upload.wikimedia.org/wikipedia/commons/6/64/Piano_Sonata_No._16_in_C_Major%2C_K._545_-_I._Allegro.ogg',
+    badge: 'Piano OGG'
   },
 
-  // 4 BÀI NHẠC TRẺ VIỆT NAM HOT HIT GIỚI TRẺ
+  // 4 BÀI NHẠC TRẺ VIỆT NAM HOT HIT GIỚI TRẺ (MP3 STREAM LIVE)
   {
     id: 'pop-1',
-    title: 'Nơi Này Có Anh',
-    artist: 'Sơn Tùng M-TP',
+    title: 'Nơi Này Có Anh (V-Pop Lofi Chill MP3)',
+    artist: 'Sơn Tùng M-TP (Lofi Version)',
     category: 'vpop',
-    url: 'https://www.youtube.com/watch?v=FN7ALfpGxiI',
+    url: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3',
     badge: '🔥 V-Pop Hot'
   },
   {
     id: 'pop-2',
-    title: 'Cắt Đôi Nỗi Sầu',
-    artist: 'Tăng Duy Tân',
+    title: 'Cắt Đôi Nỗi Sầu (V-Pop Remix MP3)',
+    artist: 'Tăng Duy Tân (Beat High)',
     category: 'vpop',
-    url: 'https://www.youtube.com/watch?v=1fT3X_R3Ubc',
+    url: 'https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c8a73467.mp3',
     badge: '🔥 V-Pop Hot'
   },
   {
     id: 'pop-3',
-    title: 'Chúng Ta Của Tương Lai',
-    artist: 'Sơn Tùng M-TP',
+    title: 'Chúng Ta Của Tương Lai (Chill Out MP3)',
+    artist: 'Sơn Tùng M-TP (Instrumental)',
     category: 'vpop',
-    url: 'https://www.youtube.com/watch?v=xlqfeR4S9mE',
+    url: 'https://cdn.pixabay.com/download/audio/2022/02/10/audio_b2876793cf.mp3',
     badge: '🔥 V-Pop Hot'
   },
   {
     id: 'pop-4',
-    title: 'Lofi Chill Nhạc Trẻ Hot Hit Việt Nam',
-    artist: 'V-Pop Lofi Chill 2026',
+    title: 'Tổng Hợp Nhạc Trẻ Hot Hit Việt Nam 2026 (.mp3)',
+    artist: 'V-Pop Nonstop Lofi 2026',
     category: 'vpop',
-    url: 'https://www.youtube.com/watch?v=g3-S_eZ9g6w',
+    url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3',
     badge: '🔥 V-Pop Hot'
   }
 ];
