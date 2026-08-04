@@ -380,6 +380,11 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
     try {
       if (onVote) onVote(option);
       setVotedChoice(option);
+      try {
+        localStorage.setItem(VOTED_KEY, option);
+      } catch (e) {
+        console.error("LocalStorage save vote error:", e);
+      }
       if (option === 'yes' && pollData?.music_url) {
         if (youtubeId) {
           setIsPlayingMusic(true);
@@ -1213,15 +1218,25 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
                   <p className="text-xs text-stone-500 font-medium italic">Vui lòng chọn ý kiến của bạn:</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <button
-                      onClick={() => handleUserVote('yes')}
-                      className="flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-700 text-white p-4 rounded-2xl font-black text-sm uppercase tracking-wider shadow-lg hover:brightness-110 active:scale-95 transition-all"
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleUserVote('yes');
+                      }}
+                      className="flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-700 text-white p-4 rounded-2xl font-black text-sm uppercase tracking-wider shadow-lg hover:brightness-110 active:scale-95 transition-all cursor-pointer"
                     >
                       <Music size={18} />
                       <span>Có, Muốn Nghe 🎵</span>
                     </button>
                     <button
-                      onClick={() => handleUserVote('no')}
-                      className="flex items-center justify-center gap-2 bg-stone-100 hover:bg-stone-200 text-stone-700 p-4 rounded-2xl font-black text-sm uppercase tracking-wider active:scale-95 transition-all border border-stone-200"
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleUserVote('no');
+                      }}
+                      className="flex items-center justify-center gap-2 bg-stone-100 hover:bg-stone-200 text-stone-700 p-4 rounded-2xl font-black text-sm uppercase tracking-wider active:scale-95 transition-all border border-stone-200 cursor-pointer"
                     >
                       <VolumeX size={18} />
                       <span>Không, Cảm Ơn 🔇</span>
@@ -2029,54 +2044,18 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                 <div>
                   <h2 className="text-3xl font-black uppercase text-stone-900 flex items-center gap-3">
                     <Music size={28} className="text-amber-800" />
-                    QUẢN LÝ NHẠC NỀN & BÌNH CHỌN TRANG CHỦ
+                    QUẢN LÝ NHẠC NỀN TRANG CHỦ CPUT
                   </h2>
-                  <p className="text-xs font-bold text-stone-400 mt-1">Quản lý file nhạc MP3 phát nền trên trang chủ và bật/tắt pop-up bình chọn cho khách ghé thăm</p>
+                  <p className="text-xs font-bold text-stone-400 mt-1">Cấu hình đường link nhạc nền (YouTube / MP3) phát trực tiếp trên website Cơm Phần Út Trinh</p>
                 </div>
               </div>
 
-              {/* Section 1: Cấu hình Công tắc & Nội dung */}
-              <div className="bg-stone-50 p-8 rounded-[40px] border border-stone-100 space-y-8">
-                {/* Toggle Bật/Tắt */}
-                <div className="flex items-center justify-between bg-white p-6 rounded-3xl border border-stone-200">
-                  <div className="space-y-1">
-                    <h4 className="font-black text-stone-900 uppercase text-sm tracking-tight flex items-center gap-2">
-                      <Radio size={18} className={localPoll.is_active ? 'text-green-600 animate-pulse' : 'text-stone-400'} />
-                      TRẠNG THÁI HIỂN THỊ TRÊN TRANG CHỦ
-                    </h4>
-                    <p className="text-xs text-stone-500 font-medium">Bật để hiển thị pop-up bình chọn cho khách ghé thăm trang chủ CPUT</p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className={`text-[10px] font-black uppercase tracking-widest ${localPoll.is_active ? 'text-green-600' : 'text-stone-400'}`}>
-                      {localPoll.is_active ? 'ĐANG BẬT' : 'ĐÃ TẮT'}
-                    </span>
-                    <button 
-                      type="button"
-                      onClick={() => setLocalPoll(prev => ({ ...prev, is_active: !prev.is_active }))}
-                      className={`w-16 h-9 rounded-full relative transition-all shadow-inner ${localPoll.is_active ? 'bg-green-500' : 'bg-stone-300'}`}
-                    >
-                      <div className={`absolute top-1 w-7 h-7 bg-white rounded-full transition-all shadow-md ${localPoll.is_active ? 'right-1' : 'left-1'}`} />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Input Câu hỏi */}
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-amber-800 ml-2 block">Nội dung câu hỏi bình chọn (Vote Question):</label>
-                  <input 
-                    type="text"
-                    value={localPoll.question}
-                    onChange={(e) => setLocalPoll(prev => ({ ...prev, question: e.target.value }))}
-                    placeholder="Ví dụ: Bạn muốn nghe nhạc trên trang chủ CPUT không ?"
-                    className="w-full bg-white border-2 border-stone-200 rounded-2xl px-6 py-4 text-base font-bold text-stone-900 focus:border-amber-800 outline-none transition-all"
-                  />
-                </div>
-
-                {/* Input Link Nhạc */}
+              {/* Nhập Link Nhạc */}
+              <div className="bg-stone-50 p-8 rounded-[40px] border border-stone-100 space-y-6">
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <label className="text-[10px] font-black uppercase tracking-widest text-amber-800 ml-2 block">
-                      Đường link Nhạc nền Trang Chủ (Hỗ trợ Link YouTube hoặc Link MP3/Audio):
+                      Đường link Nhạc nền Trang Chủ (Nhập Link YouTube hoặc Link MP3/Audio):
                     </label>
                   </div>
 
@@ -2085,61 +2064,73 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                     value={localPoll.music_url}
                     onChange={(e) => setLocalPoll(prev => ({ ...prev, music_url: e.target.value.trim() }))}
                     placeholder="Dán link YouTube (youtube.com/watch?v=...) HOẶC link file MP3 (.mp3)"
-                    className="w-full bg-white border-2 border-stone-200 rounded-2xl px-6 py-4 text-xs font-mono text-stone-900 focus:border-amber-800 outline-none transition-all"
+                    className="w-full bg-white border-2 border-stone-200 rounded-2xl px-6 py-4 text-xs font-mono text-stone-900 focus:border-amber-800 outline-none transition-all shadow-sm"
                   />
 
-                  {/* Sample Links Quick Selector */}
-                  <div className="bg-white p-4 rounded-2xl border border-stone-200 space-y-2">
-                    <span className="text-[10px] font-black uppercase text-stone-400 tracking-wider block">GỢI Ý LINK NHẠC MẪU (CLICK ĐỂ DÁN NHANH):</span>
+                  {/* Sample Hot Music Selector */}
+                  <div className="bg-white p-5 rounded-3xl border border-stone-200 space-y-3">
+                    <span className="text-[10px] font-black uppercase text-stone-500 tracking-wider flex items-center gap-2">
+                      <span>🔥 GỢI Ý NHẠC HOT GIỚI TRẺ VIỆT NAM (CLICK CHỌN DÁN NGAY):</span>
+                    </span>
                     <div className="flex flex-wrap gap-2">
                       <button
                         type="button"
-                        onClick={() => setLocalPoll(prev => ({ ...prev, music_url: 'https://www.youtube.com/watch?v=5qap5aO4i9A' }))}
-                        className="bg-red-50 hover:bg-red-100 hover:text-red-900 text-red-700 text-xs px-3 py-1.5 rounded-xl font-bold transition-all border border-red-200 flex items-center gap-1"
+                        onClick={() => setLocalPoll(prev => ({ ...prev, music_url: 'https://www.youtube.com/watch?v=FN7ALfpGxiI' }))}
+                        className="bg-red-50 hover:bg-red-100 hover:text-red-900 text-red-700 text-xs px-3.5 py-2 rounded-xl font-bold transition-all border border-red-200 flex items-center gap-1.5 cursor-pointer shadow-sm"
                       >
-                        ▶️ YouTube Lofi Chill (Chạy Youtube)
+                        🔥 Nơi Này Có Anh - Sơn Tùng M-TP
                       </button>
                       <button
                         type="button"
-                        onClick={() => setLocalPoll(prev => ({ ...prev, music_url: 'https://www.youtube.com/watch?v=DWcJFNfaw9c' }))}
-                        className="bg-red-50 hover:bg-red-100 hover:text-red-900 text-red-700 text-xs px-3 py-1.5 rounded-xl font-bold transition-all border border-red-200 flex items-center gap-1"
+                        onClick={() => setLocalPoll(prev => ({ ...prev, music_url: 'https://www.youtube.com/watch?v=g3-S_eZ9g6w' }))}
+                        className="bg-red-50 hover:bg-red-100 hover:text-red-900 text-red-700 text-xs px-3.5 py-2 rounded-xl font-bold transition-all border border-red-200 flex items-center gap-1.5 cursor-pointer shadow-sm"
                       >
-                        ▶️ YouTube Nhạc Thư Giãn (Chạy Youtube)
+                        ☕ Lofi Chill Nhạc Trẻ Hot Hit 2026
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setLocalPoll(prev => ({ ...prev, music_url: 'https://www.youtube.com/watch?v=2O4NfQ29zGg' }))}
+                        className="bg-red-50 hover:bg-red-100 hover:text-red-900 text-red-700 text-xs px-3.5 py-2 rounded-xl font-bold transition-all border border-red-200 flex items-center gap-1.5 cursor-pointer shadow-sm"
+                      >
+                        🎸 Acoustic Guitar Cơm Trưa Thư Giãn
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setLocalPoll(prev => ({ ...prev, music_url: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3' }))}
+                        className="bg-amber-50 hover:bg-amber-100 hover:text-amber-900 text-amber-800 text-xs px-3.5 py-2 rounded-xl font-bold transition-all border border-amber-200 flex items-center gap-1.5 cursor-pointer shadow-sm"
+                      >
+                        🎧 Lofi Beats Nhẹ Nhàng (.mp3)
                       </button>
                       <button
                         type="button"
                         onClick={() => setLocalPoll(prev => ({ ...prev, music_url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3' }))}
-                        className="bg-stone-100 hover:bg-amber-100 hover:text-amber-900 text-stone-700 text-xs px-3 py-1.5 rounded-xl font-bold transition-all border border-stone-200"
+                        className="bg-amber-50 hover:bg-amber-100 hover:text-amber-900 text-amber-800 text-xs px-3.5 py-2 rounded-xl font-bold transition-all border border-amber-200 flex items-center gap-1.5 cursor-pointer shadow-sm"
                       >
-                        🎹 Piano nhẹ nhàng (.mp3)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setLocalPoll(prev => ({ ...prev, music_url: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f79221.mp3' }))}
-                        className="bg-stone-100 hover:bg-amber-100 hover:text-amber-900 text-stone-700 text-xs px-3 py-1.5 rounded-xl font-bold transition-all border border-stone-200"
-                      >
-                        ☕ Chill Lofi Không Lời (.mp3)
+                        🎹 Piano Không Lời Ém Áu (.mp3)
                       </button>
                     </div>
                   </div>
 
-                  <p className="text-[9px] text-stone-400 italic ml-2">
-                    * Bạn có thể dán CẢ ĐƯỜNG LINK YOUTUBE lẫn LINK FILE MP3 TRỰC TIẾP. Hệ thống sẽ tự động phân loại và phát làm nhạc nền trang chủ!
+                  <p className="text-[10px] text-stone-400 italic ml-2 font-medium">
+                    * Bạn có thể dán link YouTube bất kỳ hoặc link trực tiếp file MP3. Hệ thống sẽ tự động phân loại và phát làm nhạc nền cho khách ghé thăm!
                   </p>
 
                   {/* Audio / YouTube Preview in Admin */}
                   {localPoll.music_url && (
-                    <div className="mt-4 bg-white p-4 rounded-2xl border border-stone-200 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div className="mt-4 bg-white p-5 rounded-3xl border border-stone-200 flex flex-col md:flex-row items-center justify-between gap-4">
                       <div className="flex items-center gap-3">
-                        <Music size={20} className="text-amber-800 animate-bounce" />
-                        <span className="text-xs font-bold text-stone-800">
-                          {getYouTubeId(localPoll.music_url) ? 'Xem / Nghe thử YouTube nhúng Admin:' : 'Trình phát nhạc MP3 kiểm tra:'}
-                        </span>
+                        <Music size={22} className="text-amber-800 animate-bounce" />
+                        <div>
+                          <span className="text-xs font-black text-stone-800 block">
+                            {getYouTubeId(localPoll.music_url) ? 'Xem / Nghe thử YouTube nhúng Admin:' : 'Trình phát nhạc MP3 kiểm tra:'}
+                          </span>
+                          <span className="text-[10px] text-stone-400 font-mono break-all">{localPoll.music_url}</span>
+                        </div>
                       </div>
                       {getYouTubeId(localPoll.music_url) ? (
                         <iframe 
                           src={`https://www.youtube.com/embed/${getYouTubeId(localPoll.music_url)}`} 
-                          className="w-full md:w-64 h-36 rounded-xl border border-stone-200"
+                          className="w-full md:w-72 h-40 rounded-2xl border border-stone-200 shadow-sm"
                           title="YouTube Preview"
                         />
                       ) : (
@@ -2150,12 +2141,12 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                 </div>
               </div>
 
-              {/* Section 2: Thống kê phiếu bầu */}
+              {/* Thống kê phiếu bầu hiện tại */}
               <div className="bg-stone-50 p-8 rounded-[40px] border border-stone-100 space-y-6">
                 <div className="flex items-center justify-between border-b pb-4">
                   <h3 className="text-lg font-black uppercase text-stone-900 flex items-center gap-2">
                     <BarChart2 size={20} className="text-amber-800" />
-                    THỐNG KÊ LƯỢT BÌNH CHỌN THỰC TẾ
+                    THỐNG KÊ Ý KIẾN KHÁCH HÀNG
                   </h3>
                   <button
                     type="button"
@@ -2164,7 +2155,7 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                         setLocalPoll(prev => ({ ...prev, yes_votes: 0, no_votes: 0 }));
                       }
                     }}
-                    className="bg-red-50 hover:bg-red-100 text-red-600 text-[10px] px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all flex items-center gap-1.5"
+                    className="bg-red-50 hover:bg-red-100 text-red-600 text-[10px] px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all flex items-center gap-1.5 cursor-pointer"
                   >
                     <RefreshCw size={12} />
                     Đặt lại lượt bầu về 0
@@ -2179,41 +2170,19 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                   return (
                     <div className="space-y-6">
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {/* Total Card */}
                         <div className="bg-white p-6 rounded-3xl border border-stone-200 text-center space-y-1">
                           <span className="text-[10px] font-black uppercase tracking-widest text-stone-400 block">Tổng số phiếu</span>
                           <div className="text-3xl font-black text-stone-900 tabular-nums">{total.toLocaleString('vi-VN')}</div>
                         </div>
 
-                        {/* Yes Card */}
                         <div className="bg-emerald-50 p-6 rounded-3xl border border-emerald-200 text-center space-y-1">
-                          <span className="text-[10px] font-black uppercase tracking-widest text-emerald-700 block">Có (Đồng ý)</span>
+                          <span className="text-[10px] font-black uppercase tracking-widest text-emerald-700 block">Có (Đồng ý nghe nhạc)</span>
                           <div className="text-3xl font-black text-emerald-800 tabular-nums">{yesPct}% <span className="text-sm font-bold text-emerald-600">({localPoll.yes_votes || 0})</span></div>
                         </div>
 
-                        {/* No Card */}
                         <div className="bg-rose-50 p-6 rounded-3xl border border-rose-200 text-center space-y-1">
                           <span className="text-[10px] font-black uppercase tracking-widest text-rose-700 block">Không (Cảm ơn)</span>
                           <div className="text-3xl font-black text-rose-800 tabular-nums">{noPct}% <span className="text-sm font-bold text-rose-600">({localPoll.no_votes || 0})</span></div>
-                        </div>
-                      </div>
-
-                      {/* Visual Bar */}
-                      <div className="space-y-2">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-stone-400">Tỷ lệ phiếu bầu (Có vs Không):</span>
-                        <div className="w-full bg-stone-200 h-6 rounded-full overflow-hidden flex p-1 shadow-inner">
-                          <div 
-                            className="bg-emerald-500 h-full rounded-l-full transition-all duration-700 flex items-center justify-center text-[10px] text-white font-black"
-                            style={{ width: `${yesPct}%` }}
-                          >
-                            {yesPct > 10 ? `${yesPct}%` : ''}
-                          </div>
-                          <div 
-                            className="bg-stone-400 h-full rounded-r-full transition-all duration-700 flex items-center justify-center text-[10px] text-white font-black"
-                            style={{ width: `${noPct}%` }}
-                          >
-                            {noPct > 10 ? `${noPct}%` : ''}
-                          </div>
                         </div>
                       </div>
                     </div>
@@ -2221,15 +2190,18 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                 })()}
               </div>
 
-              {/* Section 3: Save button */}
+              {/* Button Save */}
               <div className="bg-amber-50 p-6 rounded-3xl border border-amber-100">
                 <button 
                   type="button"
-                  onClick={() => onSavePoll(localPoll)}
-                  className="w-full bg-stone-900 text-white py-6 rounded-2xl text-xs font-black uppercase tracking-[0.4em] hover:bg-amber-800 transition-all shadow-xl flex items-center justify-center gap-2"
+                  onClick={() => {
+                    // Tắt pop-up tự động khi lưu để tránh hiện thông báo lên trang chủ
+                    onSavePoll({ ...localPoll, is_active: false });
+                  }}
+                  className="w-full bg-stone-900 hover:bg-amber-800 text-white py-6 rounded-2xl text-xs font-black uppercase tracking-[0.4em] transition-all shadow-xl flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <CheckCircle2 size={18} />
-                  <span>LƯU CẤU HÌNH BÌNH CHỌN</span>
+                  <span>LƯU CẤU HÌNH NHẠC NỀN TRANG CHỦ</span>
                 </button>
               </div>
             </div>
@@ -2304,34 +2276,61 @@ const App = () => {
   useEffect(() => { fetchData(); }, [fetchData]);
 
   const handleVote = useCallback((option: 'yes' | 'no') => {
-    setPollData(prev => {
-      const newYes = option === 'yes' ? prev.yes_votes + 1 : prev.yes_votes;
-      const newNo = option === 'no' ? prev.no_votes + 1 : prev.no_votes;
-      const updated: VotePoll = {
-        ...prev,
-        yes_votes: newYes,
-        no_votes: newNo
-      };
-      localStorage.setItem(POLL_KEY, JSON.stringify(updated));
-      localStorage.setItem(VOTED_KEY, option);
+    try {
+      setPollData(prev => {
+        const safePrev: VotePoll = prev || {
+          is_active: true,
+          question: 'Bạn muốn nghe nhạc trên trang chủ CPUT không ?',
+          music_url: '',
+          yes_votes: 18,
+          no_votes: 4
+        };
+        const curYes = typeof safePrev.yes_votes === 'number' && !isNaN(safePrev.yes_votes) ? safePrev.yes_votes : 0;
+        const curNo = typeof safePrev.no_votes === 'number' && !isNaN(safePrev.no_votes) ? safePrev.no_votes : 0;
+        const newYes = option === 'yes' ? curYes + 1 : curYes;
+        const newNo = option === 'no' ? curNo + 1 : curNo;
+        const updated: VotePoll = {
+          is_active: safePrev.is_active ?? true,
+          question: safePrev.question || 'Bạn muốn nghe nhạc trên trang chủ CPUT không ?',
+          music_url: safePrev.music_url || '',
+          yes_votes: newYes,
+          no_votes: newNo
+        };
 
-      // Async sync to Supabase
-      supabase.from('site_stats').upsert({
-        id: 1,
-        poll_is_active: updated.is_active,
-        poll_question: updated.question,
-        poll_music_url: updated.music_url,
-        poll_yes_votes: newYes,
-        poll_no_votes: newNo
-      }).catch(err => console.error("Lỗi cập nhật phiếu bầu Supabase:", err));
+        try {
+          localStorage.setItem(POLL_KEY, JSON.stringify(updated));
+          localStorage.setItem(VOTED_KEY, option);
+        } catch (e) {
+          console.error("LocalStorage save error:", e);
+        }
 
-      return updated;
-    });
+        if (supabase) {
+          supabase.from('site_stats').upsert({
+            id: 1,
+            poll_is_active: updated.is_active,
+            poll_question: updated.question,
+            poll_music_url: updated.music_url,
+            poll_yes_votes: newYes,
+            poll_no_votes: newNo
+          }).then(({ error }) => {
+            if (error) console.warn("Lỗi cập nhật phiếu bầu Supabase:", error.message);
+          }).catch(err => console.error("Lỗi cập nhật phiếu bầu Supabase:", err));
+        }
+
+        return updated;
+      });
+    } catch (err) {
+      console.error("Lỗi handleVote:", err);
+    }
   }, [supabase]);
 
   const handleSavePoll = async (updatedPoll: VotePoll) => {
     setPollData(updatedPoll);
-    localStorage.setItem(POLL_KEY, JSON.stringify(updatedPoll));
+    try {
+      localStorage.setItem(POLL_KEY, JSON.stringify(updatedPoll));
+    } catch (e) {
+      console.error("LocalStorage poll error:", e);
+    }
 
     try {
       const { error } = await supabase.from('site_stats').upsert({
@@ -2345,10 +2344,10 @@ const App = () => {
       if (error && !error.message.includes("column")) {
         console.warn("Lỗi lưu site_stats poll:", error.message);
       }
-      alert("🎉 ĐÃ LƯU CẤU HÌNH BÌNH CHỌN THÀNH CÔNG!");
+      alert("🎉 ĐÃ LƯU CẤU HÌNH NHẠC & BÌNH CHỌN THÀNH CÔNG!");
     } catch (err: any) {
       console.error("Lỗi lưu poll:", err);
-      alert("Đã lưu cấu hình bình chọn!");
+      alert("🎉 Đã lưu cấu hình nhạc & bình chọn!");
     }
   };
   
@@ -2440,4 +2439,52 @@ const App = () => {
   );
 };
 
-ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; error: any }> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: any, errorInfo: any) {
+    console.error("ErrorBoundary caught an error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-stone-900 text-white flex flex-col items-center justify-center p-6 text-center">
+          <div className="bg-stone-800 p-8 rounded-3xl border border-stone-700 max-w-md w-full space-y-4 shadow-2xl">
+            <div className="w-16 h-16 bg-amber-500/20 text-amber-500 rounded-2xl flex items-center justify-center mx-auto text-2xl font-black">
+              🌾
+            </div>
+            <h2 className="text-xl font-black text-amber-500 uppercase tracking-tight">CƠM PHẦN ÚT TRINH</h2>
+            <p className="text-xs text-stone-300 leading-relaxed font-medium">
+              Đã xảy ra sự cố hiển thị nhỏ. Dữ liệu của bạn vẫn an toàn. Vui lòng bấm bên dưới để khôi phục lại trang.
+            </p>
+            <button
+              onClick={() => {
+                this.setState({ hasError: false, error: null });
+                window.location.hash = '';
+                window.location.reload();
+              }}
+              className="w-full bg-amber-700 hover:bg-amber-800 text-white font-black py-3.5 px-6 rounded-2xl uppercase tracking-wider text-xs transition-all cursor-pointer shadow-lg"
+            >
+              TẢI LẠI TRANG CHỦ
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <ErrorBoundary>
+    <App />
+  </ErrorBoundary>
+);
