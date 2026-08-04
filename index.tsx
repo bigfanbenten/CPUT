@@ -64,6 +64,13 @@ interface VotePoll {
   no_votes: number;
 }
 
+const getYouTubeId = (url: string | null | undefined): string | null => {
+  if (!url) return null;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : null;
+};
+
 enum Category {
   All = 'Tất Cả',
   MainCourse = 'Món Chính',
@@ -352,8 +359,15 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
     }
   }, [pollData?.is_active]);
 
+  const youtubeId = useMemo(() => getYouTubeId(pollData?.music_url), [pollData?.music_url]);
+
   const togglePlayMusic = () => {
-    if (!audioRef.current || !pollData?.music_url) return;
+    if (!pollData?.music_url) return;
+    if (youtubeId) {
+      setIsPlayingMusic(prev => !prev);
+      return;
+    }
+    if (!audioRef.current) return;
     if (isPlayingMusic) {
       audioRef.current.pause();
       setIsPlayingMusic(false);
@@ -367,11 +381,15 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
       if (onVote) onVote(option);
       setVotedChoice(option);
       if (option === 'yes' && pollData?.music_url) {
-        setTimeout(() => {
-          if (audioRef.current) {
-            audioRef.current.play().then(() => setIsPlayingMusic(true)).catch(err => console.error("Audio play error:", err));
-          }
-        }, 300);
+        if (youtubeId) {
+          setIsPlayingMusic(true);
+        } else {
+          setTimeout(() => {
+            if (audioRef.current) {
+              audioRef.current.play().then(() => setIsPlayingMusic(true)).catch(err => console.error("Audio play error:", err));
+            }
+          }, 300);
+        }
       }
     } catch (err) {
       console.error("Error handling vote:", err);
@@ -1107,15 +1125,24 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
         </div>
       </footer>
 
-      {/* Audio Element */}
+      {/* Audio / YouTube Player Element */}
       {pollData?.music_url && (
-        <audio 
-          ref={audioRef} 
-          src={pollData.music_url} 
-          loop 
-          onPlay={() => setIsPlayingMusic(true)}
-          onPause={() => setIsPlayingMusic(false)}
-        />
+        youtubeId ? (
+          <iframe
+            src={`https://www.youtube.com/embed/${youtubeId}?autoplay=${isPlayingMusic ? 1 : 0}&enablejsapi=1&loop=1&playlist=${youtubeId}`}
+            allow="autoplay"
+            className="fixed -top-[9999px] -left-[9999px] w-1 h-1 opacity-0 pointer-events-none"
+            title="YouTube Background Music"
+          />
+        ) : (
+          <audio 
+            ref={audioRef} 
+            src={pollData.music_url} 
+            loop 
+            onPlay={() => setIsPlayingMusic(true)}
+            onPause={() => setIsPlayingMusic(false)}
+          />
+        )
       )}
 
       {/* Floating Poll & Music Button */}
@@ -2039,14 +2066,16 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                 {/* Input Link Nhạc */}
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-amber-800 ml-2 block">Đường link MP3 / Nhạc nền Trang Chủ (Audio URL):</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-amber-800 ml-2 block">
+                      Đường link Nhạc nền Trang Chủ (Hỗ trợ Link YouTube hoặc Link MP3/Audio):
+                    </label>
                   </div>
 
                   <input 
                     type="text"
                     value={localPoll.music_url}
                     onChange={(e) => setLocalPoll(prev => ({ ...prev, music_url: e.target.value.trim() }))}
-                    placeholder="Dán link file nhạc .mp3 tại đây (Ví dụ: https://.../music.mp3)"
+                    placeholder="Dán link YouTube (youtube.com/watch?v=...) HOẶC link file MP3 (.mp3)"
                     className="w-full bg-white border-2 border-stone-200 rounded-2xl px-6 py-4 text-xs font-mono text-stone-900 focus:border-amber-800 outline-none transition-all"
                   />
 
@@ -2056,17 +2085,24 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                     <div className="flex flex-wrap gap-2">
                       <button
                         type="button"
-                        onClick={() => setLocalPoll(prev => ({ ...prev, music_url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3' }))}
-                        className="bg-stone-100 hover:bg-amber-100 hover:text-amber-900 text-stone-700 text-xs px-3 py-1.5 rounded-xl font-bold transition-all border border-stone-200"
+                        onClick={() => setLocalPoll(prev => ({ ...prev, music_url: 'https://www.youtube.com/watch?v=5qap5aO4i9A' }))}
+                        className="bg-red-50 hover:bg-red-100 hover:text-red-900 text-red-700 text-xs px-3 py-1.5 rounded-xl font-bold transition-all border border-red-200 flex items-center gap-1"
                       >
-                        🎹 Piano thư giãn (.mp3)
+                        ▶️ YouTube Lofi Chill (Chạy Youtube)
                       </button>
                       <button
                         type="button"
-                        onClick={() => setLocalPoll(prev => ({ ...prev, music_url: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3' }))}
+                        onClick={() => setLocalPoll(prev => ({ ...prev, music_url: 'https://www.youtube.com/watch?v=DWcJFNfaw9c' }))}
+                        className="bg-red-50 hover:bg-red-100 hover:text-red-900 text-red-700 text-xs px-3 py-1.5 rounded-xl font-bold transition-all border border-red-200 flex items-center gap-1"
+                      >
+                        ▶️ YouTube Nhạc Thư Giãn (Chạy Youtube)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setLocalPoll(prev => ({ ...prev, music_url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3' }))}
                         className="bg-stone-100 hover:bg-amber-100 hover:text-amber-900 text-stone-700 text-xs px-3 py-1.5 rounded-xl font-bold transition-all border border-stone-200"
                       >
-                        🎸 Acoustic Guitar nhẹ nhàng (.mp3)
+                        🎹 Piano nhẹ nhàng (.mp3)
                       </button>
                       <button
                         type="button"
@@ -2079,17 +2115,27 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                   </div>
 
                   <p className="text-[9px] text-stone-400 italic ml-2">
-                    * Khi khách chọn "Có", nhạc từ đường link này sẽ được tự động phát làm nhạc nền trang chủ CPUT.
+                    * Bạn có thể dán CẢ ĐƯỜNG LINK YOUTUBE lẫn LINK FILE MP3 TRỰC TIẾP. Hệ thống sẽ tự động phân loại và phát làm nhạc nền trang chủ!
                   </p>
 
-                  {/* Audio Preview in Admin */}
+                  {/* Audio / YouTube Preview in Admin */}
                   {localPoll.music_url && (
                     <div className="mt-4 bg-white p-4 rounded-2xl border border-stone-200 flex flex-col md:flex-row items-center justify-between gap-4">
                       <div className="flex items-center gap-3">
                         <Music size={20} className="text-amber-800 animate-bounce" />
-                        <span className="text-xs font-bold text-stone-800">Trình phát nhạc kiểm tra trực tiếp:</span>
+                        <span className="text-xs font-bold text-stone-800">
+                          {getYouTubeId(localPoll.music_url) ? 'Xem / Nghe thử YouTube nhúng Admin:' : 'Trình phát nhạc MP3 kiểm tra:'}
+                        </span>
                       </div>
-                      <audio src={localPoll.music_url} controls className="h-10 w-full md:w-auto" />
+                      {getYouTubeId(localPoll.music_url) ? (
+                        <iframe 
+                          src={`https://www.youtube.com/embed/${getYouTubeId(localPoll.music_url)}`} 
+                          className="w-full md:w-64 h-36 rounded-xl border border-stone-200"
+                          title="YouTube Preview"
+                        />
+                      ) : (
+                        <audio src={localPoll.music_url} controls className="h-10 w-full md:w-auto" />
+                      )}
                     </div>
                   )}
                 </div>
