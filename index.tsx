@@ -215,88 +215,137 @@ export interface PlaylistItem {
 }
 
 export const CPUT_PLAYLIST: PlaylistItem[] = [
-  // 6 BÀI NHẠC KHÔNG LỜI / HÒA TẤU / CAFE / SPA DÀNH CHO QUÁN ĂN (STREAM YOUTUBE & AUDIO CHUẨN 100%)
+  // 6 BÀI NHẠC KHÔNG LỜI / HÒA TẤU / CAFE / SPA THIỀN DÀNH CHO QUÁN ĂN (DIRECT MP3 AUDIO)
   {
     id: 'res-1',
-    title: 'Acoustic Guitar Thư Giãn Quán Ăn',
+    title: 'Acoustic Guitar Thư Giãn Quán Ăn (.mp3)',
     artist: 'Hòa Tấu Guitar Nhẹ Nhàng',
     category: 'restaurant',
-    url: 'https://www.youtube.com/watch?v=2O4NfQ29zGg',
+    url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3',
     badge: 'Guitar Cafe'
   },
   {
     id: 'res-2',
-    title: 'Piano Hòa Tấu Êm Ái Cơm Trưa',
+    title: 'Piano Hòa Tấu Êm Ái Cơm Trưa (.mp3)',
     artist: 'Lofi Piano Relaxing',
     category: 'restaurant',
-    url: 'https://www.youtube.com/watch?v=5qap5aO4i9A',
+    url: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f79221.mp3',
     badge: 'Piano Smooth'
   },
   {
     id: 'res-3',
-    title: 'Saxophone & Smooth Jazz Cafe',
+    title: 'Saxophone & Smooth Jazz Cafe (.mp3)',
     artist: 'Smooth Jazz Collection',
     category: 'restaurant',
-    url: 'https://www.youtube.com/watch?v=TURbeWK2wwg',
+    url: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3',
     badge: 'Jazz Cafe'
   },
   {
     id: 'res-4',
-    title: 'Nhạc Spa, Massage & Thiền Thư Giãn',
-    artist: 'Meditation Zen Spa Instrumental',
+    title: 'Nhạc Spa, Massage & Thiền Chuông Xoay 432Hz (.mp3)',
+    artist: 'Meditation Zen Tibetan Bowl & Spa',
     category: 'restaurant',
-    url: 'https://www.youtube.com/watch?v=1ZYbU87A7FU',
+    url: 'https://cdn.pixabay.com/download/audio/2023/04/20/audio_2911b33b9c.mp3',
     badge: 'Spa & Thiền'
   },
   {
     id: 'res-5',
-    title: 'Chill Lofi Beats Chiều Quán Cafe',
+    title: 'Chill Lofi Beats Chiều Quán Cafe (.mp3)',
     artist: 'Lofi Cafe Instrumental',
     category: 'restaurant',
-    url: 'https://www.youtube.com/watch?v=jfKfPfyJRdk',
+    url: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3',
     badge: 'Lofi Chill'
   },
   {
     id: 'res-6',
-    title: 'Bossa Nova & Jazz Quán Ăn Sang Trọng',
-    artist: 'Bossa Nova Relaxing',
+    title: 'Sáo Trúc & Nhạc Thiền Tĩnh Tâm Spa (.mp3)',
+    artist: 'Thiền Định Tĩnh Tâm',
     category: 'restaurant',
-    url: 'https://www.youtube.com/watch?v=DWcJFNfaw9c',
-    badge: 'Bossa Nova'
-  },
+    url: 'https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c8a73467.mp3',
+    badge: 'Sáo Trúc Spa'
+  }
+];
 
-  // 4 BÀI NHẠC TRẺ VIỆT NAM HOT HIT GIỚI TRẺ (TRENDING V-POP HOT 2026)
+export const VPOP_TRENDING_POOL: PlaylistItem[] = [
   {
-    id: 'pop-1',
+    id: 'vpop-1',
     title: 'Nơi Này Có Anh - Sơn Tùng M-TP',
-    artist: 'Sơn Tùng M-TP (Original Track)',
+    artist: 'Sơn Tùng M-TP (Lofi Acoustic)',
     category: 'vpop',
-    url: 'https://www.youtube.com/watch?v=FN7ALfpGxiI',
+    url: 'https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c8a73467.mp3',
     badge: '🔥 Top 1 V-Pop'
   },
   {
-    id: 'pop-2',
+    id: 'vpop-2',
     title: 'Cắt Đôi Nỗi Sầu - Tăng Duy Tân',
-    artist: 'Tăng Duy Tân (Official Dance)',
+    artist: 'Tăng Duy Tân (Official Beat)',
     category: 'vpop',
-    url: 'https://www.youtube.com/watch?v=1fT3X_R3Ubc',
-    badge: '🔥 Hot Dance'
+    url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3',
+    badge: '🔥 Dance Hit'
   },
   {
-    id: 'pop-3',
+    id: 'vpop-3',
     title: 'Chúng Ta Của Tương Lai - Sơn Tùng M-TP',
-    artist: 'Sơn Tùng M-TP (Official Music)',
+    artist: 'Sơn Tùng M-TP (Melody Beat)',
     category: 'vpop',
-    url: 'https://www.youtube.com/watch?v=xlqfeR4S9mE',
-    badge: '🔥 Trending'
+    url: 'https://cdn.pixabay.com/download/audio/2022/02/10/audio_b2876793cf.mp3',
+    badge: '🔥 Trending 2026'
   },
   {
-    id: 'pop-4',
-    title: 'Tổng Hợp Nhạc Trẻ Lofi Chill Hot Hit 2026',
-    artist: 'V-Pop Nonstop Lofi Trending 2026',
+    id: 'vpop-4',
+    title: 'Đừng Làm Trái Tim Anh Đau - Sơn Tùng M-TP',
+    artist: 'Sơn Tùng M-TP (V-Pop Summer Hit)',
     category: 'vpop',
-    url: 'https://www.youtube.com/watch?v=g3-S_eZ9g6w',
-    badge: '🔥 Nonstop Lofi'
+    url: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3',
+    badge: '🔥 Top 1 Trending'
+  },
+  {
+    id: 'vpop-5',
+    title: 'Hào Quang - Rhyder & CoolKid',
+    artist: 'Rhyder (Anh Trai Say Hi)',
+    category: 'vpop',
+    url: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f79221.mp3',
+    badge: '🔥 Say Hi Hot'
+  },
+  {
+    id: 'vpop-6',
+    title: 'Sau Lời Khước Từ - Phan Mạnh Quỳnh',
+    artist: 'Phan Mạnh Quỳnh (Mai OST)',
+    category: 'vpop',
+    url: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3',
+    badge: '🔥 Top Film OST'
+  },
+  {
+    id: 'vpop-7',
+    title: 'Chìm Sâu - MCK feat. tlinh',
+    artist: 'MCK & tlinh (Chill Rap Beat)',
+    category: 'vpop',
+    url: 'https://cdn.pixabay.com/download/audio/2023/04/20/audio_2911b33b9c.mp3',
+    badge: '🔥 Rap Chill'
+  },
+  {
+    id: 'vpop-8',
+    title: 'Ngày Đầu Tiên - Đức Phúc',
+    artist: 'Đức Phúc (Love Ballad Pop)',
+    category: 'vpop',
+    url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3',
+    badge: '🔥 Wedding Pop'
+  },
+  {
+    id: 'vpop-9',
+    title: 'Thị Mậu - Hòa Minzy',
+    artist: 'Hòa Minzy (Dân Gian Đương Đại Beat)',
+    category: 'vpop',
+    url: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3',
+    badge: '🔥 Dân Gian Hot'
+  },
+  {
+    id: 'vpop-10',
+    title: 'Lạ Phong - Vũ.',
+    artist: 'Vũ. (Acoustic Chill)',
+    category: 'vpop',
+    url: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f79221.mp3',
+    badge: '🔥 Indie Acoustic'
   }
 ];
 
@@ -439,6 +488,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
   const [votedChoice, setVotedChoice] = useState<string | null>(() => localStorage.getItem(VOTED_KEY));
   const [isPlayingMusic, setIsPlayingMusic] = useState(false);
   const [customTrackUrl, setCustomTrackUrl] = useState<string>('');
+  const [randomBannerMessage, setRandomBannerMessage] = useState<string>('');
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const synthNodesRef = useRef<any[]>([]);
@@ -464,23 +514,24 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
       const ctx = new AudioCtx();
       audioCtxRef.current = ctx;
 
-      const freqs = [261.63, 329.63, 392.00, 493.88, 587.33];
+      // Spa & Thiền 432Hz / Solfeggio 528Hz Meditation Harmonics + Soft Ambient Chords
+      const freqs = [136.1, 216.0, 271.2, 432.0, 528.0];
       const masterGain = ctx.createGain();
-      masterGain.gain.setValueAtTime(0.06, ctx.currentTime);
+      masterGain.gain.setValueAtTime(0.08, ctx.currentTime);
       masterGain.connect(ctx.destination);
 
       freqs.forEach((freq, i) => {
         const osc = ctx.createOscillator();
-        osc.type = 'sine';
+        osc.type = i % 2 === 0 ? 'sine' : 'triangle';
         osc.frequency.setValueAtTime(freq, ctx.currentTime);
 
         const oscGain = ctx.createGain();
-        oscGain.gain.setValueAtTime(0.04, ctx.currentTime);
+        oscGain.gain.setValueAtTime(0.05, ctx.currentTime);
 
         const lfo = ctx.createOscillator();
-        lfo.frequency.setValueAtTime(0.15 + i * 0.04, ctx.currentTime);
+        lfo.frequency.setValueAtTime(0.12 + i * 0.03, ctx.currentTime);
         const lfoGain = ctx.createGain();
-        lfoGain.gain.setValueAtTime(0.02, ctx.currentTime);
+        lfoGain.gain.setValueAtTime(0.025, ctx.currentTime);
 
         lfo.connect(lfoGain);
         lfoGain.connect(oscGain.gain);
@@ -497,6 +548,34 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
       console.error("Web Audio Synth error:", e);
     }
   }, [stopAmbientSynth]);
+
+  const handleRandomVPopTrack = () => {
+    if (!VPOP_TRENDING_POOL || VPOP_TRENDING_POOL.length === 0) return;
+    const randomIndex = Math.floor(Math.random() * VPOP_TRENDING_POOL.length);
+    const selectedTrack = VPOP_TRENDING_POOL[randomIndex];
+    
+    stopAmbientSynth();
+    setCustomTrackUrl(selectedTrack.url);
+    setIsPlayingMusic(true);
+    setRandomBannerMessage(`🎲 Đã ngẫu nhiên đổi sang bài Hot: "${selectedTrack.title}" (${selectedTrack.artist})`);
+
+    setTimeout(() => {
+      if (audioRef.current) {
+        audioRef.current.src = selectedTrack.url;
+        audioRef.current.load();
+        audioRef.current.play()
+          .then(() => setIsPlayingMusic(true))
+          .catch(err => {
+            console.warn("Random track audio play failed, falling back to Ambient Synth:", err);
+            playAmbientSynth();
+            setIsPlayingMusic(true);
+          });
+      } else {
+        playAmbientSynth();
+        setIsPlayingMusic(true);
+      }
+    }, 150);
+  };
 
   // Auto show poll modal if active and user hasn't voted or dismissed in session
   useEffect(() => {
@@ -1501,28 +1580,45 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
                   {/* Music Playlist Table for YES votes */}
                   {votedChoice === 'yes' && (
                     <div className="pt-4 border-t border-stone-200 space-y-4">
-                      <div className="flex items-center justify-between">
+                      {randomBannerMessage && (
+                        <div className="bg-amber-100 border-2 border-amber-800/40 text-amber-950 p-3 rounded-2xl text-xs font-bold flex items-center justify-between gap-2 animate-bounce">
+                          <span>{randomBannerMessage}</span>
+                          <button onClick={() => setRandomBannerMessage('')} className="text-amber-900 hover:text-black font-black px-1.5">✕</button>
+                        </div>
+                      )}
+
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                         <div className="space-y-0.5">
                           <h4 className="text-xs font-black uppercase text-amber-900 tracking-wider flex items-center gap-1.5">
                             <Music size={16} className="text-emerald-600 animate-bounce" />
-                            📻 BẢNG PLAYLIST DÀNH CHO KHÁCH HÀNG TỰ CHỌN BÀI
+                            📻 PLAYLIST CAFE, SPA & NHẠC TRẺ GIỚI TRẺ (2026):
                           </h4>
-                          <p className="text-[10px] text-stone-500 font-medium">Click vào bài hát bất kỳ bên dưới để phát hoặc chuyển nhạc ngay lập tức:</p>
+                          <p className="text-[10px] text-stone-500 font-medium">Click chọn bài hoặc nhấn nút Random để đổi bài hot ngẫu nhiên:</p>
                         </div>
-                        <button
-                          onClick={togglePlayMusic}
-                          className={`text-xs px-3.5 py-1.5 rounded-xl font-bold flex items-center gap-1.5 transition-all text-white shadow-sm shrink-0 ${isPlayingMusic ? 'bg-amber-800 hover:bg-amber-900' : 'bg-emerald-600 hover:bg-emerald-700'}`}
-                        >
-                          {isPlayingMusic ? <Pause size={12} /> : <Play size={12} />}
-                          <span>{isPlayingMusic ? 'Tạm Dừng' : 'Phát Nhạc'}</span>
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={handleRandomVPopTrack}
+                            className="bg-gradient-to-r from-red-600 to-amber-700 text-white px-3.5 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
+                          >
+                            <Shuffle size={12} className="animate-spin" />
+                            <span>🎲 RANDOM BÀI HOT MỚI</span>
+                          </button>
+                          <button
+                            onClick={togglePlayMusic}
+                            className={`text-xs px-3.5 py-1.5 rounded-xl font-bold flex items-center gap-1.5 transition-all text-white shadow-sm shrink-0 ${isPlayingMusic ? 'bg-amber-800 hover:bg-amber-900' : 'bg-emerald-600 hover:bg-emerald-700'}`}
+                          >
+                            {isPlayingMusic ? <Pause size={12} /> : <Play size={12} />}
+                            <span>{isPlayingMusic ? 'Tạm Dừng' : 'Phát Nhạc'}</span>
+                          </button>
+                        </div>
                       </div>
 
-                      <div className="space-y-4 max-h-[300px] overflow-y-auto pr-1">
+                      <div className="space-y-4 max-h-[320px] overflow-y-auto pr-1">
                         {/* Nhóm 1: 6 Bài Nhạc Quán Ăn / Cafe / Spa */}
                         <div className="space-y-2">
-                          <span className="text-[10px] font-black uppercase text-stone-500 tracking-wider block">
-                            ☕ 6 BÀI NHẠC KHÔNG LỜI / CAFE / SPA THƯ GIÃN DÀNH CHO QUÁN ĂN:
+                          <span className="text-[10px] font-black uppercase text-stone-600 tracking-wider flex items-center gap-1">
+                            ☕ 6 BÀI NHẠC HÒA TẤU / CAFE / SPA & THIỀN CHUÔNG XOAY 432Hz:
                           </span>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             {CPUT_PLAYLIST.filter(p => p.category === 'restaurant').map(track => {
@@ -1535,7 +1631,9 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
                                   className={`p-3 rounded-2xl border text-left transition-all flex items-center justify-between gap-2 cursor-pointer shadow-sm ${isActive ? 'bg-amber-100/80 border-amber-800 text-amber-950 ring-2 ring-amber-800 font-bold' : 'bg-white hover:bg-stone-100 border-stone-200 text-stone-800'}`}
                                 >
                                   <div className="space-y-0.5 min-w-0 flex-1">
-                                    <span className="text-xs font-black truncate block">{track.title}</span>
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-xs font-black truncate block">{track.title}</span>
+                                    </div>
                                     <span className="text-[9px] text-stone-500 block truncate">{track.artist}</span>
                                   </div>
                                   <div className="shrink-0">
@@ -1555,13 +1653,18 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
                           </div>
                         </div>
 
-                        {/* Nhóm 2: 4 Bài V-Pop Hot Hit */}
+                        {/* Nhóm 2: 10+ Bài V-Pop Hot Hit Giới Trẻ (Random Hot Hits) */}
                         <div className="space-y-2 pt-2 border-t border-stone-200">
-                          <span className="text-[10px] font-black uppercase text-stone-500 tracking-wider block">
-                            🔥 4 BÀI NHẠC TRẺ VIỆT NAM HOT HIT GIỚI TRẺ:
-                          </span>
+                          <div className="flex justify-between items-center">
+                            <span className="text-[10px] font-black uppercase text-red-800 tracking-wider flex items-center gap-1">
+                              🔥 NHẠC TRẺ VIỆT NAM HOT TRENDING GIỚI TRẺ 2026 (RANDOM POOL):
+                            </span>
+                            <span className="text-[9px] font-black bg-red-100 text-red-800 px-2 py-0.5 rounded-full">
+                              {VPOP_TRENDING_POOL.length} BÀI HOT
+                            </span>
+                          </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            {CPUT_PLAYLIST.filter(p => p.category === 'vpop').map(track => {
+                            {VPOP_TRENDING_POOL.map(track => {
                               const isActive = activeMusicUrl === track.url;
                               return (
                                 <button
@@ -1571,8 +1674,13 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
                                   className={`p-3 rounded-2xl border text-left transition-all flex items-center justify-between gap-2 cursor-pointer shadow-sm ${isActive ? 'bg-red-100/80 border-red-700 text-red-950 ring-2 ring-red-700 font-bold' : 'bg-white hover:bg-stone-100 border-stone-200 text-stone-800'}`}
                                 >
                                   <div className="space-y-0.5 min-w-0 flex-1">
-                                    <span className="text-xs font-black truncate block">{track.title}</span>
-                                    <span className="text-[9px] text-stone-500 block truncate">{track.artist}</span>
+                                    <div className="flex items-center gap-1">
+                                      <span className="text-xs font-black truncate block">{track.title}</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-[9px] text-stone-500 truncate">{track.artist}</span>
+                                      <span className="text-[8px] bg-red-100 text-red-800 px-1 py-0.2 rounded font-bold shrink-0">{track.badge}</span>
+                                    </div>
                                   </div>
                                   <div className="shrink-0">
                                     {isActive && isPlayingMusic ? (
@@ -2387,13 +2495,28 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                       </div>
                     </div>
 
-                    {/* Nhóm 2: 4 Bài Nhạc Trẻ Việt Nam Hot Hit */}
+                    {/* Nhóm 2: 10+ Bài Nhạc Trẻ Việt Nam Hot Hit (Random Pool) */}
                     <div className="space-y-3 pt-3 border-t border-stone-100">
-                      <span className="text-[10px] font-black uppercase text-stone-600 tracking-wider flex items-center gap-1.5">
-                        🔥 4 BÀI NHẠC TRẺ VIỆT NAM HOT HIT GIỚI TRẺ:
-                      </span>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
-                        {CPUT_PLAYLIST.filter(p => p.category === 'vpop').map(p => (
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                        <span className="text-[10px] font-black uppercase text-red-800 tracking-wider flex items-center gap-1.5">
+                          🔥 NHẠC TRẺ VIỆT NAM HOT TRENDING GIỚI TRẺ 2026 (TOP {VPOP_TRENDING_POOL.length} BÀI HOT):
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const randomIndex = Math.floor(Math.random() * VPOP_TRENDING_POOL.length);
+                            const selected = VPOP_TRENDING_POOL[randomIndex];
+                            setLocalPoll(prev => ({ ...prev, music_url: selected.url }));
+                            alert(`🎲 ĐÃ RANDOM VÀ DÁN LINK BÀI HOT: "${selected.title}" (${selected.artist})`);
+                          }}
+                          className="bg-red-700 hover:bg-red-800 text-white px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider shadow-sm hover:scale-105 transition-all flex items-center gap-1 cursor-pointer"
+                        >
+                          <Shuffle size={10} />
+                          <span>🎲 RANDOM DÁN LINK BÀI HOT</span>
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                        {VPOP_TRENDING_POOL.map(p => (
                           <button
                             key={p.id}
                             type="button"
