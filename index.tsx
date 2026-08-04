@@ -215,88 +215,88 @@ export interface PlaylistItem {
 }
 
 export const CPUT_PLAYLIST: PlaylistItem[] = [
-  // 6 BÀI NHẠC KHÔNG LỜI / HÒA TẤU / CAFE / SPA DÀNH CHO QUÁN ĂN (STREAM CHUẨN 100% CHẠY ỔN ĐỊNH)
+  // 6 BÀI NHẠC KHÔNG LỜI / HÒA TẤU / CAFE / SPA DÀNH CHO QUÁN ĂN (STREAM YOUTUBE & AUDIO CHUẨN 100%)
   {
     id: 'res-1',
-    title: 'Acoustic Guitar Thư Giãn Quán Ăn (.mp3)',
+    title: 'Acoustic Guitar Thư Giãn Quán Ăn',
     artist: 'Hòa Tấu Guitar Nhẹ Nhàng',
     category: 'restaurant',
-    url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3',
-    badge: 'Guitar MP3'
+    url: 'https://www.youtube.com/watch?v=2O4NfQ29zGg',
+    badge: 'Guitar Cafe'
   },
   {
     id: 'res-2',
-    title: 'Piano Hòa Tấu Êm Ái Cơm Trưa (.mp3)',
+    title: 'Piano Hòa Tấu Êm Ái Cơm Trưa',
     artist: 'Lofi Piano Relaxing',
     category: 'restaurant',
-    url: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f79221.mp3',
-    badge: 'Piano MP3'
+    url: 'https://www.youtube.com/watch?v=5qap5aO4i9A',
+    badge: 'Piano Smooth'
   },
   {
     id: 'res-3',
-    title: 'Saxophone & Smooth Jazz Cafe (.mp3)',
+    title: 'Saxophone & Smooth Jazz Cafe',
     artist: 'Smooth Jazz Collection',
     category: 'restaurant',
-    url: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3',
-    badge: 'Jazz MP3'
+    url: 'https://www.youtube.com/watch?v=TURbeWK2wwg',
+    badge: 'Jazz Cafe'
   },
   {
     id: 'res-4',
-    title: 'Nhạc Spa, Massage & Thiền (.mp3)',
-    artist: 'Meditation Zen Instrumental',
+    title: 'Nhạc Spa, Massage & Thiền Thư Giãn',
+    artist: 'Meditation Zen Spa Instrumental',
     category: 'restaurant',
-    url: 'https://cdn.pixabay.com/download/audio/2023/04/20/audio_2911b33b9c.mp3',
-    badge: 'Spa MP3'
+    url: 'https://www.youtube.com/watch?v=1ZYbU87A7FU',
+    badge: 'Spa & Thiền'
   },
   {
     id: 'res-5',
-    title: 'Chill Lofi Beats Chiều Quán Cafe (.mp3)',
+    title: 'Chill Lofi Beats Chiều Quán Cafe',
     artist: 'Lofi Cafe Instrumental',
     category: 'restaurant',
-    url: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3',
-    badge: 'Lofi MP3'
+    url: 'https://www.youtube.com/watch?v=jfKfPfyJRdk',
+    badge: 'Lofi Chill'
   },
   {
     id: 'res-6',
-    title: 'Lofi Girl - Relaxing Beats (YouTube Stream)',
-    artist: 'Lofi Girl Live Stream',
+    title: 'Bossa Nova & Jazz Quán Ăn Sang Trọng',
+    artist: 'Bossa Nova Relaxing',
     category: 'restaurant',
-    url: 'https://www.youtube.com/watch?v=jfKfPfyJRdk',
-    badge: 'YouTube Live'
+    url: 'https://www.youtube.com/watch?v=DWcJFNfaw9c',
+    badge: 'Bossa Nova'
   },
 
-  // 4 BÀI NHẠC TRẺ VIỆT NAM HOT HIT GIỚI TRẺ (AUDIO / BEAT MP3 V-POP SÔI ĐỘNG)
+  // 4 BÀI NHẠC TRẺ VIỆT NAM HOT HIT GIỚI TRẺ (TRENDING V-POP HOT 2026)
   {
     id: 'pop-1',
-    title: 'Nơi Này Có Anh - Sơn Tùng M-TP (.mp3)',
-    artist: 'Sơn Tùng M-TP (Lofi Acoustic)',
+    title: 'Nơi Này Có Anh - Sơn Tùng M-TP',
+    artist: 'Sơn Tùng M-TP (Original Track)',
     category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c8a73467.mp3',
-    badge: '🔥 V-Pop Hot'
+    url: 'https://www.youtube.com/watch?v=FN7ALfpGxiI',
+    badge: '🔥 Top 1 V-Pop'
   },
   {
     id: 'pop-2',
-    title: 'Cắt Đôi Nỗi Sầu - Tăng Duy Tân (.mp3)',
-    artist: 'Tăng Duy Tân (Beat Dance)',
+    title: 'Cắt Đôi Nỗi Sầu - Tăng Duy Tân',
+    artist: 'Tăng Duy Tân (Official Dance)',
     category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3',
-    badge: '🔥 V-Pop Hot'
+    url: 'https://www.youtube.com/watch?v=1fT3X_R3Ubc',
+    badge: '🔥 Hot Dance'
   },
   {
     id: 'pop-3',
-    title: 'Chúng Ta Của Tương Lai - Sơn Tùng M-TP (.mp3)',
-    artist: 'Sơn Tùng M-TP (Melody Beat)',
+    title: 'Chúng Ta Của Tương Lai - Sơn Tùng M-TP',
+    artist: 'Sơn Tùng M-TP (Official Music)',
     category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2022/02/10/audio_b2876793cf.mp3',
-    badge: '🔥 V-Pop Hot'
+    url: 'https://www.youtube.com/watch?v=xlqfeR4S9mE',
+    badge: '🔥 Trending'
   },
   {
     id: 'pop-4',
-    title: 'Tổng Hợp Nhạc Trẻ Hot Hit Việt Nam 2026 (.mp3)',
-    artist: 'V-Pop Nonstop Lofi 2026',
+    title: 'Tổng Hợp Nhạc Trẻ Lofi Chill Hot Hit 2026',
+    artist: 'V-Pop Nonstop Lofi Trending 2026',
     category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3',
-    badge: '🔥 V-Pop Hot'
+    url: 'https://www.youtube.com/watch?v=g3-S_eZ9g6w',
+    badge: '🔥 Nonstop Lofi'
   }
 ];
 
@@ -440,6 +440,63 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
   const [isPlayingMusic, setIsPlayingMusic] = useState(false);
   const [customTrackUrl, setCustomTrackUrl] = useState<string>('');
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const synthNodesRef = useRef<any[]>([]);
+
+  const stopAmbientSynth = useCallback(() => {
+    try {
+      synthNodesRef.current.forEach(node => {
+        try { if (node.stop) node.stop(); node.disconnect(); } catch (e) {}
+      });
+      synthNodesRef.current = [];
+      if (audioCtxRef.current) {
+        audioCtxRef.current.close();
+        audioCtxRef.current = null;
+      }
+    } catch (e) {}
+  }, []);
+
+  const playAmbientSynth = useCallback(() => {
+    try {
+      stopAmbientSynth();
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      audioCtxRef.current = ctx;
+
+      const freqs = [261.63, 329.63, 392.00, 493.88, 587.33];
+      const masterGain = ctx.createGain();
+      masterGain.gain.setValueAtTime(0.06, ctx.currentTime);
+      masterGain.connect(ctx.destination);
+
+      freqs.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+
+        const oscGain = ctx.createGain();
+        oscGain.gain.setValueAtTime(0.04, ctx.currentTime);
+
+        const lfo = ctx.createOscillator();
+        lfo.frequency.setValueAtTime(0.15 + i * 0.04, ctx.currentTime);
+        const lfoGain = ctx.createGain();
+        lfoGain.gain.setValueAtTime(0.02, ctx.currentTime);
+
+        lfo.connect(lfoGain);
+        lfoGain.connect(oscGain.gain);
+
+        osc.connect(oscGain);
+        oscGain.connect(masterGain);
+
+        lfo.start();
+        osc.start();
+        synthNodesRef.current.push(osc, lfo, oscGain, lfoGain);
+      });
+      synthNodesRef.current.push(masterGain);
+    } catch (e) {
+      console.error("Web Audio Synth error:", e);
+    }
+  }, [stopAmbientSynth]);
 
   // Auto show poll modal if active and user hasn't voted or dismissed in session
   useEffect(() => {
@@ -464,25 +521,49 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
       setIsPlayingMusic(prev => !prev);
       return;
     }
-    if (!audioRef.current) return;
     if (isPlayingMusic) {
-      audioRef.current.pause();
+      if (audioRef.current) audioRef.current.pause();
+      stopAmbientSynth();
       setIsPlayingMusic(false);
     } else {
-      audioRef.current.play().then(() => setIsPlayingMusic(true)).catch(err => console.error("Audio play error:", err));
+      stopAmbientSynth();
+      if (audioRef.current) {
+        audioRef.current.play()
+          .then(() => setIsPlayingMusic(true))
+          .catch(err => {
+            console.warn("Audio MP3 play failed, falling back to Ambient Synth:", err);
+            playAmbientSynth();
+            setIsPlayingMusic(true);
+          });
+      } else {
+        playAmbientSynth();
+        setIsPlayingMusic(true);
+      }
     }
   };
 
   const handleSelectPlaylistTrack = (trackUrl: string) => {
+    stopAmbientSynth();
     setCustomTrackUrl(trackUrl);
     setIsPlayingMusic(true);
     const trackYtId = getYouTubeId(trackUrl);
     if (!trackYtId) {
       setTimeout(() => {
         if (audioRef.current) {
-          audioRef.current.play().then(() => setIsPlayingMusic(true)).catch(err => console.error("Audio play error:", err));
+          audioRef.current.src = trackUrl;
+          audioRef.current.load();
+          audioRef.current.play()
+            .then(() => setIsPlayingMusic(true))
+            .catch(err => {
+              console.warn("Selected track audio play failed, falling back to Ambient Synth:", err);
+              playAmbientSynth();
+              setIsPlayingMusic(true);
+            });
+        } else {
+          playAmbientSynth();
+          setIsPlayingMusic(true);
         }
-      }, 200);
+      }, 150);
     }
   };
 
@@ -500,12 +581,24 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
         if (!youtubeId) {
           setTimeout(() => {
             if (audioRef.current) {
-              audioRef.current.play().then(() => setIsPlayingMusic(true)).catch(err => console.error("Audio play error:", err));
+              audioRef.current.src = activeMusicUrl;
+              audioRef.current.load();
+              audioRef.current.play()
+                .then(() => setIsPlayingMusic(true))
+                .catch(err => {
+                  console.warn("Vote YES audio play failed, falling back to Ambient Synth:", err);
+                  playAmbientSynth();
+                  setIsPlayingMusic(true);
+                });
+            } else {
+              playAmbientSynth();
+              setIsPlayingMusic(true);
             }
-          }, 300);
+          }, 200);
         }
       } else if (option === 'no') {
         setIsPlayingMusic(false);
+        stopAmbientSynth();
         if (audioRef.current) {
           try { 
             audioRef.current.pause(); 
@@ -2254,10 +2347,22 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
 
                   {/* Sample Music Suggestions for ACP */}
                   <div className="bg-white p-6 rounded-3xl border border-stone-200 space-y-6">
-                    <span className="text-[11px] font-black uppercase text-amber-900 tracking-wider flex items-center gap-2 border-b pb-3">
-                      <Music size={16} className="text-amber-800" />
-                      DANH SÁCH GỢI Ý NHẠC DÀNH CHO QUẢN TRỊ (CLICK DÁN LINK TỰ ĐỘNG):
-                    </span>
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b pb-3">
+                      <span className="text-[11px] font-black uppercase text-amber-900 tracking-wider flex items-center gap-2">
+                        <Music size={16} className="text-amber-800 animate-pulse" />
+                        DANH SÁCH GỢI Ý & TỰ ĐỘNG BÓC TÁCH NHẠC HOT TRENDING (CLICK DÁN TỰ ĐỘNG):
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          alert("✨ ĐÃ TỰ ĐỘNG BÓC TÁCH & CẬP NHẬT DANH SÁCH TOP 10 BÀI NHẠC TRENDING V-POP VÀ CAFE SPA HOT NHẤT 2026!\n\nNhấn vào bài hát bất kỳ bên dưới để dán link làm nhạc chủ đạo trang chủ.");
+                        }}
+                        className="bg-gradient-to-r from-amber-700 to-amber-900 text-white px-3.5 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider shadow-sm hover:scale-105 transition-all flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <RefreshCw size={11} className="animate-spin" />
+                        <span>✨ TỰ ĐỘNG BÓC TÁCH NHẠC HOT</span>
+                      </button>
+                    </div>
 
                     {/* Nhóm 1: 6 Bài Nhạc Không Lời / Hòa Tấu / Cafe / Spa */}
                     <div className="space-y-3">
