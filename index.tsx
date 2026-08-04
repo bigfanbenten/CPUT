@@ -215,13 +215,13 @@ export interface PlaylistItem {
 }
 
 export const CPUT_PLAYLIST: PlaylistItem[] = [
-  // 6 BÀI NHẠC KHÔNG LỜI / HÒA TẤU / CAFE / SPA THIỀN DÀNH CHO QUÁN ĂN (DIRECT HIGH-RES MP3 AUDIO)
+  // 6 BÀI NHẠC KHÔNG LỜI / HÒA TẤU / CAFE / SPA THIỀN DÀNH CHO QUÁN ĂN
   {
     id: 'res-1',
     title: 'Acoustic Guitar Thư Giãn Quán Cafe & Ăn Uống',
     artist: 'Hòa Tấu Guitar Nhẹ Nhàng',
     category: 'restaurant',
-    url: 'https://archive.org/download/best-relaxation-music-2019/Physical%20Therapy.mp3',
+    url: 'https://www.youtube.com/watch?v=2O4NfQ29zGg',
     badge: 'Guitar Cafe'
   },
   {
@@ -229,7 +229,7 @@ export const CPUT_PLAYLIST: PlaylistItem[] = [
     title: 'Piano Hòa Tấu Êm Ái Cơm Trưa',
     artist: 'Lofi Piano Relaxing',
     category: 'restaurant',
-    url: 'https://archive.org/download/relaxing-piano-neo-classical-collection/Northern%20Lights.mp3',
+    url: 'https://www.youtube.com/watch?v=5qap5aO4i9A',
     badge: 'Piano Smooth'
   },
   {
@@ -237,7 +237,7 @@ export const CPUT_PLAYLIST: PlaylistItem[] = [
     title: 'Saxophone & Smooth Jazz Quán Cafe',
     artist: 'Smooth Jazz Collection',
     category: 'restaurant',
-    url: 'https://archive.org/download/best-relaxation-music-2019/Therapeutic%20Massage%20Music.mp3',
+    url: 'https://www.youtube.com/watch?v=TURbeWK2wwg',
     badge: 'Jazz Cafe'
   },
   {
@@ -245,7 +245,7 @@ export const CPUT_PLAYLIST: PlaylistItem[] = [
     title: 'Nhạc Spa, Massage & Thiền Chuông Xoay 432Hz',
     artist: 'Meditation Zen Tibetan Bowl & Spa',
     category: 'restaurant',
-    url: 'https://archive.org/download/ZenMeditationMusicSoothingMusicRelaxingMusicMeditationZenBinauralBeats3236/Relaxing%20Music%20Mix%20BEAUTIFUL%20PIANO.mp3',
+    url: 'https://www.youtube.com/watch?v=1ZYbU87A7FU',
     badge: 'Spa & Thiền'
   },
   {
@@ -253,7 +253,7 @@ export const CPUT_PLAYLIST: PlaylistItem[] = [
     title: 'Chill Lofi Beats Chiều Quán Cafe',
     artist: 'Lofi Cafe Instrumental',
     category: 'restaurant',
-    url: 'https://archive.org/download/lofi-beats-collection/Lofi%20Chill.mp3',
+    url: 'https://www.youtube.com/watch?v=jfKfPfyJRdk',
     badge: 'Lofi Chill'
   },
   {
@@ -261,7 +261,7 @@ export const CPUT_PLAYLIST: PlaylistItem[] = [
     title: 'Sáo Trúc & Nhạc Thiền Tĩnh Tâm Spa',
     artist: 'Thiền Định Tĩnh Tâm',
     category: 'restaurant',
-    url: 'https://archive.org/download/SpaMeditationMusic/Spa.mp3',
+    url: 'https://www.youtube.com/watch?v=DWcJFNfaw9c',
     badge: 'Sáo Trúc Spa'
   }
 ];
@@ -270,25 +270,25 @@ export const VPOP_TRENDING_POOL: PlaylistItem[] = [
   {
     id: 'vpop-1',
     title: 'Nơi Này Có Anh - Sơn Tùng M-TP',
-    artist: 'Sơn Tùng M-TP (Lofi Acoustic)',
+    artist: 'Sơn Tùng M-TP (Official Music Video)',
     category: 'vpop',
-    url: 'https://archive.org/download/lofi-beats-collection/Lofi%20Chill.mp3',
+    url: 'https://www.youtube.com/watch?v=FN7ALfpGxiI',
     badge: '🔥 Top 1 V-Pop'
   },
   {
     id: 'vpop-2',
     title: 'Cắt Đôi Nỗi Sầu - Tăng Duy Tân',
-    artist: 'Tăng Duy Tân (Official Beat)',
+    artist: 'Tăng Duy Tân (Official Music Video)',
     category: 'vpop',
-    url: 'https://archive.org/download/best-relaxation-music-2019/Physical%20Therapy.mp3',
+    url: 'https://www.youtube.com/watch?v=1fT3X_R3Ubc',
     badge: '🔥 Dance Hit'
   },
   {
     id: 'vpop-3',
     title: 'Chúng Ta Của Tương Lai - Sơn Tùng M-TP',
-    artist: 'Sơn Tùng M-TP (Melody Beat)',
+    artist: 'Sơn Tùng M-TP (Official Music Video)',
     category: 'vpop',
-    url: 'https://archive.org/download/relaxing-piano-neo-classical-collection/Northern%20Lights.mp3',
+    url: 'https://www.youtube.com/watch?v=xlqfeR4S9mE',
     badge: '🔥 Trending 2026'
   },
   {
@@ -296,7 +296,7 @@ export const VPOP_TRENDING_POOL: PlaylistItem[] = [
     title: 'Đừng Làm Trái Tim Anh Đau - Sơn Tùng M-TP',
     artist: 'Sơn Tùng M-TP (V-Pop Summer Hit)',
     category: 'vpop',
-    url: 'https://archive.org/download/best-relaxation-music-2019/Therapeutic%20Massage%20Music.mp3',
+    url: 'https://www.youtube.com/watch?v=abPmZCZZrFA',
     badge: '🔥 Top 1 Trending'
   },
   {
@@ -304,7 +304,7 @@ export const VPOP_TRENDING_POOL: PlaylistItem[] = [
     title: 'Hào Quang - Rhyder & CoolKid',
     artist: 'Rhyder (Anh Trai Say Hi)',
     category: 'vpop',
-    url: 'https://archive.org/download/lofi-beats-collection/Lofi%20Chill.mp3',
+    url: 'https://www.youtube.com/watch?v=S2v8p0mX7x8',
     badge: '🔥 Say Hi Hot'
   },
   {
@@ -312,39 +312,39 @@ export const VPOP_TRENDING_POOL: PlaylistItem[] = [
     title: 'Sau Lời Khước Từ - Phan Mạnh Quỳnh',
     artist: 'Phan Mạnh Quỳnh (Mai OST)',
     category: 'vpop',
-    url: 'https://archive.org/download/relaxing-piano-neo-classical-collection/Northern%20Lights.mp3',
+    url: 'https://www.youtube.com/watch?v=sR855-A9Y1c',
     badge: '🔥 Top Film OST'
   },
   {
     id: 'vpop-7',
     title: 'Chìm Sâu - MCK feat. tlinh',
-    artist: 'MCK & tlinh (Chill Rap Beat)',
+    artist: 'MCK & tlinh (Official Lyric Video)',
     category: 'vpop',
-    url: 'https://archive.org/download/best-relaxation-music-2019/Physical%20Therapy.mp3',
+    url: 'https://www.youtube.com/watch?v=3K_2sA3GpxE',
     badge: '🔥 Rap Chill'
   },
   {
     id: 'vpop-8',
     title: 'Ngày Đầu Tiên - Đức Phúc',
-    artist: 'Đức Phúc (Love Ballad Pop)',
+    artist: 'Đức Phúc (Official Music Video)',
     category: 'vpop',
-    url: 'https://archive.org/download/best-relaxation-music-2019/Therapeutic%20Massage%20Music.mp3',
+    url: 'https://www.youtube.com/watch?v=02fI1uD36eY',
     badge: '🔥 Wedding Pop'
   },
   {
     id: 'vpop-9',
-    title: 'Thị Mậu - Hòa Minzy',
-    artist: 'Hòa Minzy (Dân Gian Đương Đại Beat)',
+    title: 'Thị Mầu - Hòa Minzy',
+    artist: 'Hòa Minzy (Official Music Video)',
     category: 'vpop',
-    url: 'https://archive.org/download/lofi-beats-collection/Lofi%20Chill.mp3',
+    url: 'https://www.youtube.com/watch?v=gT3fT8Y7hY4',
     badge: '🔥 Dân Gian Hot'
   },
   {
     id: 'vpop-10',
     title: 'Lạ Phong - Vũ.',
-    artist: 'Vũ. (Acoustic Chill)',
+    artist: 'Vũ. (Acoustic Official Video)',
     category: 'vpop',
-    url: 'https://archive.org/download/relaxing-piano-neo-classical-collection/Northern%20Lights.mp3',
+    url: 'https://www.youtube.com/watch?v=F5tS50_uL4M',
     badge: '🔥 Indie Acoustic'
   },
   {
@@ -352,15 +352,15 @@ export const VPOP_TRENDING_POOL: PlaylistItem[] = [
     title: 'Trống Cơm - Soobin & Tự Long',
     artist: 'Soobin Hoàng Sơn (Anh Tài Nổi Gió)',
     category: 'vpop',
-    url: 'https://archive.org/download/best-relaxation-music-2019/Physical%20Therapy.mp3',
+    url: 'https://www.youtube.com/watch?v=9g0ZJ5_8bIs',
     badge: '🔥 Anh Tài Hot'
   },
   {
     id: 'vpop-12',
     title: 'Bật Tình Yêu Lên - Hòa Minzy & Tăng Duy Tân',
-    artist: 'Hòa Minzy & Tăng Duy Tân (TikTok Remix)',
+    artist: 'Hòa Minzy & Tăng Duy Tân (Official Video)',
     category: 'vpop',
-    url: 'https://archive.org/download/lofi-beats-collection/Lofi%20Chill.mp3',
+    url: 'https://www.youtube.com/watch?v=uK1XWc65y4M',
     badge: '🔥 TikTok Trend'
   }
 ];
@@ -577,23 +577,6 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
     setCustomTrackUrl(selectedTrack.url);
     setIsPlayingMusic(true);
     setRandomBannerMessage(`🎲 Đã ngẫu nhiên đổi sang bài Hot: "${selectedTrack.title}" (${selectedTrack.artist})`);
-
-    setTimeout(() => {
-      if (audioRef.current) {
-        audioRef.current.src = selectedTrack.url;
-        audioRef.current.load();
-        audioRef.current.play()
-          .then(() => setIsPlayingMusic(true))
-          .catch(err => {
-            console.warn("Random track audio play failed, falling back to Ambient Synth:", err);
-            playAmbientSynth();
-            setIsPlayingMusic(true);
-          });
-      } else {
-        playAmbientSynth();
-        setIsPlayingMusic(true);
-      }
-    }, 150);
   };
 
   // Auto show poll modal if active and user hasn't voted or dismissed in session
@@ -615,27 +598,15 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
 
   const togglePlayMusic = () => {
     if (!activeMusicUrl) return;
-    if (youtubeId) {
-      setIsPlayingMusic(prev => !prev);
-      return;
-    }
     if (isPlayingMusic) {
       if (audioRef.current) audioRef.current.pause();
       stopAmbientSynth();
       setIsPlayingMusic(false);
     } else {
       stopAmbientSynth();
-      if (audioRef.current) {
-        audioRef.current.play()
-          .then(() => setIsPlayingMusic(true))
-          .catch(err => {
-            console.warn("Audio MP3 play failed, falling back to Ambient Synth:", err);
-            playAmbientSynth();
-            setIsPlayingMusic(true);
-          });
-      } else {
-        playAmbientSynth();
-        setIsPlayingMusic(true);
+      setIsPlayingMusic(true);
+      if (!youtubeId && audioRef.current) {
+        audioRef.current.play().catch(err => console.warn("Audio play error:", err));
       }
     }
   };
@@ -644,25 +615,6 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
     stopAmbientSynth();
     setCustomTrackUrl(trackUrl);
     setIsPlayingMusic(true);
-    const trackYtId = getYouTubeId(trackUrl);
-    if (!trackYtId) {
-      setTimeout(() => {
-        if (audioRef.current) {
-          audioRef.current.src = trackUrl;
-          audioRef.current.load();
-          audioRef.current.play()
-            .then(() => setIsPlayingMusic(true))
-            .catch(err => {
-              console.warn("Selected track audio play failed, falling back to Ambient Synth:", err);
-              playAmbientSynth();
-              setIsPlayingMusic(true);
-            });
-        } else {
-          playAmbientSynth();
-          setIsPlayingMusic(true);
-        }
-      }, 150);
-    }
   };
 
   const handleUserVote = (option: 'yes' | 'no') => {
@@ -1440,19 +1392,20 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
       </footer>
 
       {/* Audio / YouTube Player Element */}
-      {activeMusicUrl && (
+      {isPlayingMusic && activeMusicUrl && (
         youtubeId ? (
           <iframe
-            key={activeMusicUrl}
-            src={`https://www.youtube.com/embed/${youtubeId}?autoplay=${isPlayingMusic ? 1 : 0}&enablejsapi=1&loop=1&playlist=${youtubeId}`}
-            allow="autoplay"
-            className="fixed -top-[9999px] -left-[9999px] w-1 h-1 opacity-0 pointer-events-none"
+            key={`${youtubeId}-${activeMusicUrl}`}
+            src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&enablejsapi=1&loop=1&playlist=${youtubeId}`}
+            allow="autoplay; encrypted-media"
+            className="fixed -top-[9999px] -left-[9999px] w-1 h-1 opacity-0 pointer-events-none z-[-1]"
             title="YouTube Background Music"
           />
         ) : (
           <audio 
             ref={audioRef} 
             src={activeMusicUrl} 
+            autoPlay
             loop 
             onPlay={() => setIsPlayingMusic(true)}
             onPause={() => setIsPlayingMusic(false)}
