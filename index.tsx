@@ -50,7 +50,7 @@
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
-import { ChevronRight, ChevronDown, ChevronUp, Maximize2, Minimize2, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, MessageSquare, CheckCircle2, Facebook, Mail, Youtube, Users, Vote, Music, VolumeX, Play, Pause, BarChart2, Radio, Check, X, RefreshCw, Shuffle } from 'lucide-react';
+import { ChevronRight, ChevronDown, ChevronUp, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, MessageSquare, CheckCircle2, Facebook, Mail, Youtube, Users, Vote, Music, VolumeX, Play, Pause, BarChart2, Check, X, RefreshCw, Shuffle } from 'lucide-react';
 
 // --- CẤU HÌNH CỐ ĐỊNH ---
 const DEFAULT_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co';
@@ -362,6 +362,70 @@ export const VPOP_TRENDING_POOL: PlaylistItem[] = [
     category: 'vpop',
     url: 'https://www.youtube.com/watch?v=uK1XWc65y4M',
     badge: '🔥 TikTok Trend'
+  },
+  {
+    id: 'vpop-13',
+    title: 'Ngủ Một Mình - HIEUTHUHAI feat. Negav',
+    artist: 'HIEUTHUHAI (Official Music Video)',
+    category: 'vpop',
+    url: 'https://www.youtube.com/watch?v=a-3cM89H6x4',
+    badge: '🔥 HIEUTHUHAI Hot'
+  },
+  {
+    id: 'vpop-14',
+    title: 'Waiting For You - MONO',
+    artist: 'MONO & Onionn (Album 22)',
+    category: 'vpop',
+    url: 'https://www.youtube.com/watch?v=TNn6x2g_6e8',
+    badge: '🔥 MONO Mega Hit'
+  },
+  {
+    id: 'vpop-15',
+    title: 'Đưa Em Về Nhà - GREY D & Chillies',
+    artist: 'GREY D & Chillies (Acoustic Pop)',
+    category: 'vpop',
+    url: 'https://www.youtube.com/watch?v=aH5uY19jG2Q',
+    badge: '🔥 Chill Acoustic'
+  },
+  {
+    id: 'vpop-16',
+    title: 'See Tình - Hoàng Thùy Linh',
+    artist: 'Hoàng Thùy Linh (Global TikTok Trend)',
+    category: 'vpop',
+    url: 'https://www.youtube.com/watch?v=gJHSDZfJrRY',
+    badge: '🔥 Global Hit'
+  },
+  {
+    id: 'vpop-17',
+    title: 'Nâng Cốc Đắng Cay - Bích Phương',
+    artist: 'Bích Phương (Official Music Video)',
+    category: 'vpop',
+    url: 'https://www.youtube.com/watch?v=6xK3K_5uXg8',
+    badge: '🔥 Bích Phương Hot'
+  },
+  {
+    id: 'vpop-18',
+    title: 'Rồi Tới Luôn - Nal',
+    artist: 'Nal (Miền Tây Vui Vẻ)',
+    category: 'vpop',
+    url: 'https://www.youtube.com/watch?v=u4t4_4k4R9A',
+    badge: '🔥 Vui Nhộn Miền Tây'
+  },
+  {
+    id: 'vpop-19',
+    title: 'Có Không Giữ Mất Đừng Tìm - Trúc Nhân',
+    artist: 'Trúc Nhân (Official Music Video)',
+    category: 'vpop',
+    url: 'https://www.youtube.com/watch?v=o4b1S02P524',
+    badge: '🔥 Fun Pop'
+  },
+  {
+    id: 'vpop-20',
+    title: 'Gặp Nhưng Không Ở Lại - Hiền Hồ',
+    artist: 'Hiền Hồ (Ballad Sầu Răng)',
+    category: 'vpop',
+    url: 'https://www.youtube.com/watch?v=c8f1a23b9dE',
+    badge: '🔥 Hit Ballad'
   }
 ];
 
@@ -506,21 +570,32 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
   const [isPlayerMinimized, setIsPlayerMinimized] = useState(false);
   const [customTrackUrl, setCustomTrackUrl] = useState<string>('');
   const [randomBannerMessage, setRandomBannerMessage] = useState<string>('');
+  const [displayedVPopTracks, setDisplayedVPopTracks] = useState<PlaylistItem[]>(() => {
+    const shuffled = [...VPOP_TRENDING_POOL].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, 6);
+  });
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const synthNodesRef = useRef<any[]>([]);
 
+  const handleShuffleVPopTracks = useCallback(() => {
+    const shuffled = [...VPOP_TRENDING_POOL].sort(() => 0.5 - Math.random());
+    const newSet = shuffled.slice(0, 6);
+    setDisplayedVPopTracks(newSet);
+    return newSet;
+  }, []);
+
   const stopAmbientSynth = useCallback(() => {
     try {
       synthNodesRef.current.forEach(node => {
-        try { if (node.stop) node.stop(); node.disconnect(); } catch (e) {}
+        try { if (node.stop) node.stop(); node.disconnect(); } catch { /* ignore */ }
       });
       synthNodesRef.current = [];
       if (audioCtxRef.current) {
         audioCtxRef.current.close();
         audioCtxRef.current = null;
       }
-    } catch (e) {}
+    } catch { /* ignore */ }
   }, []);
 
   const playAmbientSynth = useCallback(() => {
@@ -571,13 +646,14 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
 
   const handleRandomVPopTrack = () => {
     if (!VPOP_TRENDING_POOL || VPOP_TRENDING_POOL.length === 0) return;
-    const randomIndex = Math.floor(Math.random() * VPOP_TRENDING_POOL.length);
-    const selectedTrack = VPOP_TRENDING_POOL[randomIndex];
+    // Bóc tách & đổi 6 bài hát hot mới thay thế bài cũ trong danh sách
+    const newSet = handleShuffleVPopTracks();
+    const selectedTrack = newSet[Math.floor(Math.random() * newSet.length)];
     
     stopAmbientSynth();
     setCustomTrackUrl(selectedTrack.url);
     setIsPlayingMusic(true);
-    setRandomBannerMessage(`🎲 Đã ngẫu nhiên đổi sang bài Hot: "${selectedTrack.title}" (${selectedTrack.artist})`);
+    setRandomBannerMessage(`🎲 Đã bóc tách & đổi mới danh sách bài Hot! Đang phát: "${selectedTrack.title}" (${selectedTrack.artist})`);
   };
 
   // Auto show poll modal if active and user hasn't voted or dismissed in session
@@ -1682,18 +1758,27 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
                           </div>
                         </div>
 
-                        {/* Nhóm 2: 10+ Bài V-Pop Hot Hit Giới Trẻ (Random Hot Hits) */}
+                        {/* Nhóm 2: Nhạc V-Pop Hot Hit Giới Trẻ (Tự động Bóc Tách & Đổi Mới) */}
                         <div className="space-y-2 pt-2 border-t border-stone-200">
-                          <div className="flex justify-between items-center">
+                          <div className="flex justify-between items-center gap-2">
                             <span className="text-[10px] font-black uppercase text-red-800 tracking-wider flex items-center gap-1">
-                              🔥 NHẠC TRẺ VIỆT NAM HOT TRENDING GIỚI TRẺ 2026 (RANDOM POOL):
+                              🔥 NHẠC TRẺ VIỆT NAM HOT TRENDING GIỚI TRẺ 2026 ({displayedVPopTracks.length}/{VPOP_TRENDING_POOL.length} BÀI HOT):
                             </span>
-                            <span className="text-[9px] font-black bg-red-100 text-red-800 px-2 py-0.5 rounded-full">
-                              {VPOP_TRENDING_POOL.length} BÀI HOT
-                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                handleShuffleVPopTracks();
+                                setRandomBannerMessage("✨ Đã bóc tách & đổi mới 6 bài hát V-Pop hot trong danh sách!");
+                              }}
+                              className="text-[9px] font-black bg-red-100 hover:bg-red-200 text-red-800 px-2 py-1 rounded-lg flex items-center gap-1 transition-all cursor-pointer"
+                              title="Bóc tách & lấy 6 bài hot khác từ kho nhạc"
+                            >
+                              <RefreshCw size={10} className="animate-spin" />
+                              <span>Đổi danh sách bài mới</span>
+                            </button>
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            {VPOP_TRENDING_POOL.map(track => {
+                            {displayedVPopTracks.map(track => {
                               const isActive = activeMusicUrl === track.url;
                               return (
                                 <button
@@ -1781,6 +1866,16 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
     no_votes: 4
   });
 
+  const [adminVPopTracks, setAdminVPopTracks] = useState<PlaylistItem[]>(() => {
+    const shuffled = [...VPOP_TRENDING_POOL].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, 6);
+  });
+
+  const handleAdminShuffleVPop = () => {
+    const shuffled = [...VPOP_TRENDING_POOL].sort(() => 0.5 - Math.random());
+    setAdminVPopTracks(shuffled.slice(0, 6));
+  };
+
   useEffect(() => {
     if (pollData) setLocalPoll(pollData);
   }, [pollData]);
@@ -1839,15 +1934,12 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
 
   useEffect(() => {
     if (activeTab === 'quick') {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchQuickMenu();
     }
     if (activeTab === 'guestbook') {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchGuestbook();
     }
     if (activeTab === 'stats') {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchStats();
     }
   }, [activeTab, fetchQuickMenu, fetchGuestbook, fetchStats]);
@@ -2492,7 +2584,8 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                       <button
                         type="button"
                         onClick={() => {
-                          alert("✨ ĐÃ TỰ ĐỘNG BÓC TÁCH & CẬP NHẬT DANH SÁCH TOP 10 BÀI NHẠC TRENDING V-POP VÀ CAFE SPA HOT NHẤT 2026!\n\nNhấn vào bài hát bất kỳ bên dưới để dán link làm nhạc chủ đạo trang chủ.");
+                          handleAdminShuffleVPop();
+                          alert("✨ ĐÃ BÓC TÁCH & ĐỔI MỚI DANH SÁCH 6 BÀI NHẠC V-POP TRENDING HOT NHẤT!\n\nNhấn vào bài hát bất kỳ bên dưới để dán link làm nhạc nền trang chủ.");
                         }}
                         className="bg-gradient-to-r from-amber-700 to-amber-900 text-white px-3.5 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider shadow-sm hover:scale-105 transition-all flex items-center gap-1.5 cursor-pointer"
                       >
@@ -2524,28 +2617,38 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                       </div>
                     </div>
 
-                    {/* Nhóm 2: 10+ Bài Nhạc Trẻ Việt Nam Hot Hit (Random Pool) */}
+                    {/* Nhóm 2: Bóc Tách Bài Nhạc Trẻ Việt Nam Hot Hit */}
                     <div className="space-y-3 pt-3 border-t border-stone-100">
                       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                         <span className="text-[10px] font-black uppercase text-red-800 tracking-wider flex items-center gap-1.5">
-                          🔥 NHẠC TRẺ VIỆT NAM HOT TRENDING GIỚI TRẺ 2026 (TOP {VPOP_TRENDING_POOL.length} BÀI HOT):
+                          🔥 NHẠC TRẺ VIỆT NAM HOT TRENDING ({adminVPopTracks.length}/{VPOP_TRENDING_POOL.length} BÀI HOT):
                         </span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const randomIndex = Math.floor(Math.random() * VPOP_TRENDING_POOL.length);
-                            const selected = VPOP_TRENDING_POOL[randomIndex];
-                            setLocalPoll(prev => ({ ...prev, music_url: selected.url }));
-                            alert(`🎲 ĐÃ RANDOM VÀ DÁN LINK BÀI HOT: "${selected.title}" (${selected.artist})`);
-                          }}
-                          className="bg-red-700 hover:bg-red-800 text-white px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider shadow-sm hover:scale-105 transition-all flex items-center gap-1 cursor-pointer"
-                        >
-                          <Shuffle size={10} />
-                          <span>🎲 RANDOM DÁN LINK BÀI HOT</span>
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={handleAdminShuffleVPop}
+                            className="bg-stone-800 hover:bg-black text-white px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider shadow-sm transition-all flex items-center gap-1 cursor-pointer"
+                          >
+                            <RefreshCw size={10} className="animate-spin" />
+                            <span>Đổi 6 Bài Khác</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              handleAdminShuffleVPop();
+                              const selected = adminVPopTracks[Math.floor(Math.random() * adminVPopTracks.length)];
+                              setLocalPoll(prev => ({ ...prev, music_url: selected.url }));
+                              alert(`🎲 ĐÃ BÓC TÁCH VÀ DÁN LINK BÀI HOT: "${selected.title}" (${selected.artist})`);
+                            }}
+                            className="bg-red-700 hover:bg-red-800 text-white px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider shadow-sm hover:scale-105 transition-all flex items-center gap-1 cursor-pointer"
+                          >
+                            <Shuffle size={10} />
+                            <span>🎲 RANDOM & DÁN LINK BÀI HOT</span>
+                          </button>
+                        </div>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-                        {VPOP_TRENDING_POOL.map(p => (
+                        {adminVPopTracks.map(p => (
                           <button
                             key={p.id}
                             type="button"
