@@ -215,14 +215,13 @@ export interface PlaylistItem {
 }
 
 export const CPUT_PLAYLIST: PlaylistItem[] = [
-  // 6 BÀI NHẠC KHÔNG LỜI / HÒA TẤU / CAFE / SPA THIỀN DÀNH CHO QUÁN ĂN (100% PHÁT MƯỢT)
+  // 6 BÀI NHẠC KHÔNG LỜI / HÒA TẤU / CAFE / SPA THIỀN DÀNH CHO QUÁN ĂN (100% YOUTUBE EMBED MƯỢT)
   {
     id: 'res-1',
     title: 'Acoustic Guitar Thư Giãn Quán Cafe & Ăn Uống',
     artist: 'Hòa Tấu Guitar Nhẹ Nhàng',
     category: 'restaurant',
-    url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3',
-    fallbackUrl: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3',
+    url: 'https://www.youtube.com/watch?v=2O4NfQ29zGg',
     badge: 'Guitar Cafe'
   },
   {
@@ -230,8 +229,7 @@ export const CPUT_PLAYLIST: PlaylistItem[] = [
     title: 'Piano Hòa Tấu Êm Ái Cơm Trưa',
     artist: 'Lofi Piano Relaxing',
     category: 'restaurant',
-    url: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3',
-    fallbackUrl: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3',
+    url: 'https://www.youtube.com/watch?v=5qap5aO4i9A',
     badge: 'Piano Smooth'
   },
   {
@@ -239,8 +237,7 @@ export const CPUT_PLAYLIST: PlaylistItem[] = [
     title: 'Saxophone & Smooth Jazz Quán Cafe',
     artist: 'Smooth Jazz Collection',
     category: 'restaurant',
-    url: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3',
-    fallbackUrl: 'https://cdn.pixabay.com/download/audio/2022/05/16/audio_db6591201e.mp3',
+    url: 'https://www.youtube.com/watch?v=TURbeWK2wwg',
     badge: 'Jazz Cafe'
   },
   {
@@ -248,8 +245,7 @@ export const CPUT_PLAYLIST: PlaylistItem[] = [
     title: 'Nhạc Spa, Massage & Thiền Chuông Xoay 432Hz',
     artist: 'Meditation Zen Tibetan Bowl & Spa',
     category: 'restaurant',
-    url: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f7922d.mp3',
-    fallbackUrl: 'https://cdn.pixabay.com/download/audio/2021/09/06/audio_848dfa0090.mp3',
+    url: 'https://www.youtube.com/watch?v=1ZYbU87A7FU',
     badge: 'Spa & Thiền'
   },
   {
@@ -257,8 +253,7 @@ export const CPUT_PLAYLIST: PlaylistItem[] = [
     title: 'Chill Lofi Beats Chiều Quán Cafe',
     artist: 'Lofi Cafe Instrumental',
     category: 'restaurant',
-    url: 'https://cdn.pixabay.com/download/audio/2022/05/16/audio_db6591201e.mp3',
-    fallbackUrl: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3',
+    url: 'https://www.youtube.com/watch?v=jfKfPfyJRdk',
     badge: 'Lofi Chill'
   },
   {
@@ -266,8 +261,7 @@ export const CPUT_PLAYLIST: PlaylistItem[] = [
     title: 'Sáo Trúc & Nhạc Thiền Tĩnh Tâm Spa',
     artist: 'Thiền Định Tĩnh Tâm',
     category: 'restaurant',
-    url: 'https://cdn.pixabay.com/download/audio/2021/09/06/audio_848dfa0090.mp3',
-    fallbackUrl: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f7922d.mp3',
+    url: 'https://www.youtube.com/watch?v=DWcJFNfaw9c',
     badge: 'Sáo Trúc Spa'
   }
 ];
@@ -278,17 +272,15 @@ export const VPOP_TRENDING_POOL: PlaylistItem[] = [
     title: 'Nơi Này Có Anh - Sơn Tùng M-TP',
     artist: 'Sơn Tùng M-TP (Official Music)',
     category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2022/11/06/audio_c97a8e7e13.mp3',
-    fallbackUrl: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3',
+    url: 'https://www.youtube.com/watch?v=FN7ALfpGxiI',
     badge: '🔥 Top 1 V-Pop'
   },
   {
     id: 'vpop-2',
     title: 'Cắt Đôi Nỗi Sầu - Tăng Duy Tân',
-    artist: 'Tăng Duy Tân (Dance Remix)',
+    artist: 'Tăng Duy Tân (Official Music)',
     category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2023/10/01/audio_1a21e428df.mp3',
-    fallbackUrl: 'https://cdn.pixabay.com/download/audio/2022/05/16/audio_db6591201e.mp3',
+    url: 'https://www.youtube.com/watch?v=1fT3X_R3Ubc',
     badge: '🔥 Dance Hit'
   },
   {
@@ -296,17 +288,15 @@ export const VPOP_TRENDING_POOL: PlaylistItem[] = [
     title: 'Chúng Ta Của Tương Lai - Sơn Tùng M-TP',
     artist: 'Sơn Tùng M-TP (V-Pop Hot)',
     category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8263158ff.mp3',
-    fallbackUrl: 'https://cdn.pixabay.com/download/audio/2022/11/06/audio_c97a8e7e13.mp3',
+    url: 'https://www.youtube.com/watch?v=xlqfeR4S9mE',
     badge: '🔥 Trending 2026'
   },
   {
     id: 'vpop-4',
     title: 'Đừng Làm Trái Tim Anh Đau - Sơn Tùng M-TP',
-    artist: 'Sơn Tùng M-TP (Summer Melodic)',
+    artist: 'Sơn Tùng M-TP (Summer Hit)',
     category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2022/10/25/audio_919e15f6cf.mp3',
-    fallbackUrl: 'https://cdn.pixabay.com/download/audio/2023/10/01/audio_1a21e428df.mp3',
+    url: 'https://www.youtube.com/watch?v=abPmZCZZrFA',
     badge: '🔥 Top 1 Trending'
   },
   {
@@ -314,35 +304,31 @@ export const VPOP_TRENDING_POOL: PlaylistItem[] = [
     title: 'Hào Quang - Rhyder & CoolKid',
     artist: 'Rhyder (Anh Trai Say Hi)',
     category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2023/04/18/audio_732d8471c9.mp3',
-    fallbackUrl: 'https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8263158ff.mp3',
+    url: 'https://www.youtube.com/watch?v=S2v8p0mX7x8',
     badge: '🔥 Say Hi Hot'
   },
   {
     id: 'vpop-6',
     title: 'Sau Lời Khước Từ - Phan Mạnh Quỳnh',
-    artist: 'Phan Mạnh Quỳnh (Mai OST Acoustic)',
+    artist: 'Phan Mạnh Quỳnh (Mai OST)',
     category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2022/08/02/audio_88414e2d31.mp3',
-    fallbackUrl: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3',
+    url: 'https://www.youtube.com/watch?v=sR855-A9Y1c',
     badge: '🔥 Top Film OST'
   },
   {
     id: 'vpop-7',
     title: 'Chìm Sâu - MCK feat. tlinh',
-    artist: 'MCK & tlinh (Rap Chill Beats)',
+    artist: 'MCK & tlinh (Official Video)',
     category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2022/01/26/audio_d0a13f69d2.mp3',
-    fallbackUrl: 'https://cdn.pixabay.com/download/audio/2022/05/16/audio_db6591201e.mp3',
+    url: 'https://www.youtube.com/watch?v=3K_2sA3GpxE',
     badge: '🔥 Rap Chill'
   },
   {
     id: 'vpop-8',
     title: 'Ngày Đầu Tiên - Đức Phúc',
-    artist: 'Đức Phúc (Pop Ballad)',
+    artist: 'Đức Phúc (Official Music)',
     category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2022/02/12/audio_912384a8ff.mp3',
-    fallbackUrl: 'https://cdn.pixabay.com/download/audio/2022/08/02/audio_88414e2d31.mp3',
+    url: 'https://www.youtube.com/watch?v=02fI1uD36eY',
     badge: '🔥 Wedding Pop'
   },
   {
@@ -350,17 +336,15 @@ export const VPOP_TRENDING_POOL: PlaylistItem[] = [
     title: 'Thị Mầu - Hòa Minzy',
     artist: 'Hòa Minzy (Folk Pop)',
     category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2023/03/15/audio_841289c8fa.mp3',
-    fallbackUrl: 'https://cdn.pixabay.com/download/audio/2023/10/01/audio_1a21e428df.mp3',
+    url: 'https://www.youtube.com/watch?v=gT3fT8Y7hY4',
     badge: '🔥 Dân Gian Hot'
   },
   {
     id: 'vpop-10',
     title: 'Lạ Phong - Vũ.',
-    artist: 'Vũ. (Indie Acoustic Guitar)',
+    artist: 'Vũ. (Indie Acoustic)',
     category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2022/06/08/audio_3498f78a2d.mp3',
-    fallbackUrl: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3',
+    url: 'https://www.youtube.com/watch?v=F5tS50_uL4M',
     badge: '🔥 Indie Acoustic'
   },
   {
@@ -368,8 +352,7 @@ export const VPOP_TRENDING_POOL: PlaylistItem[] = [
     title: 'Trống Cơm - Soobin & Tự Long',
     artist: 'Soobin Hoàng Sơn (Anh Tài Nổi Gió)',
     category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2023/04/18/audio_732d8471c9.mp3',
-    fallbackUrl: 'https://cdn.pixabay.com/download/audio/2023/03/15/audio_841289c8fa.mp3',
+    url: 'https://www.youtube.com/watch?v=9g0ZJ5_8bIs',
     badge: '🔥 Anh Tài Hot'
   },
   {
@@ -377,8 +360,7 @@ export const VPOP_TRENDING_POOL: PlaylistItem[] = [
     title: 'Bật Tình Yêu Lên - Hòa Minzy & Tăng Duy Tân',
     artist: 'Hòa Minzy & Tăng Duy Tân',
     category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2023/02/20/audio_f89324c9d1.mp3',
-    fallbackUrl: 'https://cdn.pixabay.com/download/audio/2023/10/01/audio_1a21e428df.mp3',
+    url: 'https://www.youtube.com/watch?v=uK1XWc65y4M',
     badge: '🔥 TikTok Trend'
   },
   {
@@ -386,17 +368,15 @@ export const VPOP_TRENDING_POOL: PlaylistItem[] = [
     title: 'Ngủ Một Mình - HIEUTHUHAI feat. Negav',
     artist: 'HIEUTHUHAI (HipHop Vibe)',
     category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2022/11/15/audio_481a82d910.mp3',
-    fallbackUrl: 'https://cdn.pixabay.com/download/audio/2022/01/26/audio_d0a13f69d2.mp3',
+    url: 'https://www.youtube.com/watch?v=a-3cM89H6x4',
     badge: '🔥 HIEUTHUHAI Hot'
   },
   {
     id: 'vpop-14',
     title: 'Waiting For You - MONO',
-    artist: 'MONO & Onionn (80s Synthpop)',
+    artist: 'MONO & Onionn (Album 22)',
     category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2022/09/28/audio_a19c43d8ef.mp3',
-    fallbackUrl: 'https://cdn.pixabay.com/download/audio/2023/10/01/audio_1a21e428df.mp3',
+    url: 'https://www.youtube.com/watch?v=TNn6x2g_6e8',
     badge: '🔥 MONO Mega Hit'
   },
   {
@@ -404,17 +384,15 @@ export const VPOP_TRENDING_POOL: PlaylistItem[] = [
     title: 'Đưa Em Về Nhà - GREY D & Chillies',
     artist: 'GREY D & Chillies (Chill Pop)',
     category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2023/01/10/audio_512a9310bc.mp3',
-    fallbackUrl: 'https://cdn.pixabay.com/download/audio/2022/06/08/audio_3498f78a2d.mp3',
+    url: 'https://www.youtube.com/watch?v=aH5uY19jG2Q',
     badge: '🔥 Chill Acoustic'
   },
   {
     id: 'vpop-16',
     title: 'See Tình - Hoàng Thùy Linh',
-    artist: 'Hoàng Thùy Linh (Global Dance)',
+    artist: 'Hoàng Thùy Linh (Global Hit)',
     category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2022/04/12/audio_9824c9a8df.mp3',
-    fallbackUrl: 'https://cdn.pixabay.com/download/audio/2023/02/20/audio_f89324c9d1.mp3',
+    url: 'https://www.youtube.com/watch?v=gJHSDZfJrRY',
     badge: '🔥 Global Hit'
   },
   {
@@ -422,8 +400,7 @@ export const VPOP_TRENDING_POOL: PlaylistItem[] = [
     title: 'Nâng Cốc Đắng Cay - Bích Phương',
     artist: 'Bích Phương (Pop R&B)',
     category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2023/03/08/audio_31920ac8df.mp3',
-    fallbackUrl: 'https://cdn.pixabay.com/download/audio/2023/01/10/audio_512a9310bc.mp3',
+    url: 'https://www.youtube.com/watch?v=6xK3K_5uXg8',
     badge: '🔥 Bích Phương Hot'
   },
   {
@@ -431,26 +408,23 @@ export const VPOP_TRENDING_POOL: PlaylistItem[] = [
     title: 'Rồi Tới Luôn - Nal',
     artist: 'Nal (Miền Tây Vui Vẻ)',
     category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2021/11/20/audio_73e18a90fd.mp3',
-    fallbackUrl: 'https://cdn.pixabay.com/download/audio/2023/03/15/audio_841289c8fa.mp3',
+    url: 'https://www.youtube.com/watch?v=u4t4_4k4R9A',
     badge: '🔥 Vui Nhộn Miền Tây'
   },
   {
     id: 'vpop-19',
     title: 'Có Không Giữ Mất Đừng Tìm - Trúc Nhân',
-    artist: 'Trúc Nhân (Upbeat Fun)',
+    artist: 'Trúc Nhân (Official Video)',
     category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2022/05/02/audio_64d8a1c9df.mp3',
-    fallbackUrl: 'https://cdn.pixabay.com/download/audio/2022/04/12/audio_9824c9a8df.mp3',
+    url: 'https://www.youtube.com/watch?v=o4b1S02P524',
     badge: '🔥 Fun Pop'
   },
   {
     id: 'vpop-20',
     title: 'Gặp Nhưng Không Ở Lại - Hiền Hồ',
-    artist: 'Hiền Hồ (Deep Ballad)',
+    artist: 'Hiền Hồ (Official Video)',
     category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2021/10/12/audio_189283a8cf.mp3',
-    fallbackUrl: 'https://cdn.pixabay.com/download/audio/2022/08/02/audio_88414e2d31.mp3',
+    url: 'https://www.youtube.com/watch?v=c8f1a23b9dE',
     badge: '🔥 Hit Ballad'
   }
 ];
@@ -1755,9 +1729,9 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
                         <div className="space-y-0.5">
                           <h4 className="text-xs font-black uppercase text-amber-900 tracking-wider flex items-center gap-1.5">
                             <Music size={16} className="text-emerald-600 animate-bounce" />
-                            📻 PLAYLIST CAFE, SPA & NHẠC TRẺ GIỚI TRẺ (2026):
+                            📻 PLAYLIST YOUTUBE, ZING MP3, NHACCUATOI (2026):
                           </h4>
-                          <p className="text-[10px] text-stone-500 font-medium">Click chọn bài hoặc nhấn nút Random để đổi bài hot ngẫu nhiên:</p>
+                          <p className="text-[10px] text-stone-500 font-medium">Click chọn bài bên dưới hoặc bấm nút Random để phát bài hát hot ngẫu nhiên trên YouTube:</p>
                         </div>
                         <div className="flex items-center gap-2">
                           <button
@@ -1778,15 +1752,78 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
                         </div>
                       </div>
 
-                      {/* Bảng danh sách bài hát mượt 100% */}
-                      <div className="bg-emerald-50/80 border border-emerald-200 rounded-2xl p-2.5 flex items-center justify-between text-[10px] text-emerald-900 font-bold mb-2">
-                        <span className="flex items-center gap-1">
-                          <CheckCircle2 size={12} className="text-emerald-600" />
-                          <span>KHO NHẠC MP3 DIRECT STREAM (100% Không bị chặn / Không bị tắt tiếng)</span>
+                      {/* KHUNG PHÁT NHẠC TRỰC TIẾP (YOUTUBE EMBED / PLAYER) */}
+                      <div className="bg-stone-900 border-2 border-amber-600/50 rounded-2xl p-3 space-y-2 text-white shadow-xl">
+                        <div className="flex items-center justify-between text-xs font-bold border-b border-stone-800 pb-2">
+                          <div className="flex items-center gap-2 truncate pr-2">
+                            <div className="w-2.5 h-2.5 bg-red-500 rounded-full animate-ping shrink-0" />
+                            <span className="text-amber-300 font-black truncate">
+                              {currentTrackObj ? `${currentTrackObj.title} (${currentTrackObj.artist})` : 'Khung phát nhạc trực tiếp'}
+                            </span>
+                          </div>
+                          <span className="bg-red-600 text-white text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-wider shrink-0">
+                            {youtubeId ? '▶ YouTube Stream' : '▶ Audio Stream'}
+                          </span>
+                        </div>
+
+                        {youtubeId ? (
+                          <div className="h-[180px] sm:h-[220px] w-full rounded-xl overflow-hidden bg-black border border-stone-800">
+                            <iframe
+                              key={`modal-${youtubeId}-${activeMusicUrl}`}
+                              src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&enablejsapi=1&rel=0`}
+                              allow="autoplay; encrypted-media; picture-in-picture"
+                              allowFullScreen
+                              className="w-full h-full border-0"
+                              title="YouTube Music Player Modal"
+                            />
+                          </div>
+                        ) : (
+                          <audio ref={audioRef} src={activeMusicUrl} autoPlay controls className="w-full mt-2" />
+                        )}
+
+                        <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-[10px]">
+                          <span className="text-emerald-400 font-bold flex items-center gap-1">
+                            <CheckCircle2 size={12} /> Phát mượt trên YouTube, Nhaccuatoi, Zing MP3
+                          </span>
+                          {!isPlayingMusic && (
+                            <button
+                              type="button"
+                              onClick={togglePlayMusic}
+                              className="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded-lg font-black flex items-center gap-1 animate-pulse cursor-pointer"
+                            >
+                              <Play size={12} /> BẤM PHÁT BÀI HÁT NÀY NGAY
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Ô DÁN LINK TÙY CHỌN YOUTUBE / ZING / NHACCUATOI */}
+                      <div className="bg-stone-100 border border-stone-200 p-2.5 rounded-2xl space-y-1.5">
+                        <span className="text-[10px] font-black uppercase text-stone-700 tracking-wider flex items-center gap-1">
+                          🔗 DÁN LINK YOUTUBE / ZING MP3 / NHACCUATOI BẤT KỲ ĐỂ PHÁT:
                         </span>
-                        <span className="bg-emerald-200/80 text-emerald-900 text-[9px] px-2 py-0.5 rounded-full font-black">
-                          ✅ ĐÃ KIỂM DUYỆT
-                        </span>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            placeholder="Ví dụ: https://www.youtube.com/watch?v=..."
+                            value={customTrackUrl}
+                            onChange={(e) => setCustomTrackUrl(e.target.value)}
+                            className="flex-1 px-3 py-1.5 border border-stone-300 rounded-xl text-xs font-medium focus:ring-2 focus:ring-amber-500 outline-none bg-white"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (customTrackUrl) {
+                                stopAmbientSynth();
+                                setIsPlayingMusic(true);
+                                setRandomBannerMessage("✨ Đã phát nhạc từ link tùy chọn của bạn!");
+                              }
+                            }}
+                            className="bg-amber-800 hover:bg-amber-900 text-white px-3 py-1.5 rounded-xl text-xs font-black shrink-0 cursor-pointer shadow-sm"
+                          >
+                            Phát Link
+                          </button>
+                        </div>
                       </div>
 
                       <div className="space-y-4 max-h-[320px] overflow-y-auto pr-1">
@@ -1811,7 +1848,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
                                     </div>
                                     <div className="flex items-center gap-1">
                                       <span className="text-[9px] text-stone-500 block truncate">{track.artist}</span>
-                                      <span className="text-[8px] bg-emerald-100 text-emerald-800 px-1 py-0.2 rounded font-bold shrink-0">✅ Direct MP3</span>
+                                      <span className="text-[8px] bg-red-100 text-red-800 px-1 py-0.2 rounded font-bold shrink-0">▶ YouTube</span>
                                     </div>
                                   </div>
                                   <div className="shrink-0">
@@ -1867,7 +1904,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
                                     <div className="flex items-center gap-1.5">
                                       <span className="text-[9px] text-stone-500 truncate">{track.artist}</span>
                                       <span className="text-[8px] bg-red-100 text-red-800 px-1 py-0.2 rounded font-bold shrink-0">{track.badge}</span>
-                                      <span className="text-[8px] bg-emerald-100 text-emerald-800 px-1 py-0.2 rounded font-bold shrink-0">✅ MP3 Stream</span>
+                                      <span className="text-[8px] bg-red-100 text-red-800 px-1 py-0.2 rounded font-bold shrink-0">▶ YouTube</span>
                                     </div>
                                   </div>
                                   <div className="shrink-0">
