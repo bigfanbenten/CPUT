@@ -50,7 +50,7 @@
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
-import { ChevronRight, ChevronDown, ChevronUp, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, MessageSquare, CheckCircle2, Facebook, Mail, Youtube, Users, Vote, Music, VolumeX, Play, Pause, BarChart2, Check, X, RefreshCw, Shuffle } from 'lucide-react';
+import { ChevronRight, ChevronDown, ChevronUp, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, MessageSquare, CheckCircle2, Facebook, Mail, Youtube, Users, Vote, Music, VolumeX, Play, Pause, BarChart2, Check, X, RefreshCw, Shuffle, Search } from 'lucide-react';
 
 // --- CẤU HÌNH CỐ ĐỊNH ---
 const DEFAULT_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co';
@@ -1481,9 +1481,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
             <Music size={14} className="text-white" />
           </div>
           <span>{isPlayingMusic ? 'ĐANG PHÁT NHẠC' : 'NHẠC NỀN & PLAYLIST'}</span>
-          {votedChoice && (
-            <span className="bg-emerald-500 text-[9px] px-2 py-0.5 rounded-full text-white font-bold ml-1">ĐÃ BẦU</span>
-          )}
+          <span className="bg-emerald-500 text-[9px] px-2 py-0.5 rounded-full text-white font-bold ml-1 uppercase shadow-sm">BẮT ĐẦU</span>
         </button>
         {activeMusicUrl && (
           <button
@@ -1607,8 +1605,8 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
                     );
                   })()}
 
-                  {/* Music Playlist Table for YES votes */}
-                  {votedChoice === 'yes' && (
+                  {/* Music Playlist Table for voted users */}
+                  {votedChoice && (
                     <div className="pt-4 border-t border-stone-200 space-y-4">
                       {randomBannerMessage && (
                         <div className="bg-amber-100 border-2 border-amber-800/40 text-amber-950 p-3 rounded-2xl text-xs font-bold flex items-center justify-between gap-2 animate-bounce">
