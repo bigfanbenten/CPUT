@@ -210,6 +210,7 @@ export interface PlaylistItem {
   title: string;
   artist: string;
   category: 'restaurant' | 'vpop';
+  genreKey: 'danca' | 'sax_guitar' | 'piano_lofi' | 'spa_thien' | 'vpop' | 'bolero';
   url: string;
   fallbackUrl?: string;
   badge: string;
@@ -217,409 +218,63 @@ export interface PlaylistItem {
   sourceLabel?: string;
 }
 
-export const CPUT_PLAYLIST: PlaylistItem[] = [
-  // 12 BÀI NHẠC KHÔNG LỜI / HÒA TẤU / CAFE / SPA THIỀN DÀNH CHO QUÁN ĂN
-  {
-    id: 'res-1',
-    title: 'Acoustic Guitar Thư Giãn Quán Cafe & Ăn Uống',
-    artist: 'Hòa Tấu Guitar Nhẹ Nhàng',
-    category: 'restaurant',
-    url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3',
-    fallbackUrl: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3',
-    badge: 'Guitar Cafe',
-    sourceType: 'nhaccuatoi',
-    sourceLabel: 'Nhaccuatoi Direct MP3'
-  },
-  {
-    id: 'res-2',
-    title: 'Piano Hòa Tấu Êm Ái Cơm Trưa',
-    artist: 'Lofi Piano Relaxing',
-    category: 'restaurant',
-    url: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3',
-    fallbackUrl: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3',
-    badge: 'Piano Smooth',
-    sourceType: 'zingmp3',
-    sourceLabel: 'Zing MP3 Stream'
-  },
-  {
-    id: 'res-3',
-    title: 'Saxophone & Smooth Jazz Quán Cafe',
-    artist: 'Smooth Jazz Collection',
-    category: 'restaurant',
-    url: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3',
-    fallbackUrl: 'https://cdn.pixabay.com/download/audio/2022/05/16/audio_db6591201e.mp3',
-    badge: 'Jazz Cafe',
-    sourceType: 'soundcloud',
-    sourceLabel: 'SoundCloud Chill'
-  },
-  {
-    id: 'res-4',
-    title: 'Nhạc Spa, Massage & Thiền Chuông Xoay 432Hz',
-    artist: 'Meditation Zen Tibetan Bowl & Spa',
-    category: 'restaurant',
-    url: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f7922d.mp3',
-    fallbackUrl: 'https://cdn.pixabay.com/download/audio/2021/09/06/audio_848dfa0090.mp3',
-    badge: 'Spa 432Hz',
-    sourceType: 'webaudio',
-    sourceLabel: 'WebAudio Zen Synth'
-  },
-  {
-    id: 'res-5',
-    title: 'Chill Lofi Beats Chiều Quán Cafe',
-    artist: 'Lofi Cafe Instrumental',
-    category: 'restaurant',
-    url: 'https://cdn.pixabay.com/download/audio/2022/05/16/audio_db6591201e.mp3',
-    fallbackUrl: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3',
-    badge: 'Lofi Chill',
-    sourceType: 'nhaccuatoi',
-    sourceLabel: 'Nhaccuatoi MP3'
-  },
-  {
-    id: 'res-6',
-    title: 'Sáo Trúc & Nhạc Thiền Tĩnh Tâm Spa',
-    artist: 'Thiền Định Tĩnh Tâm',
-    category: 'restaurant',
-    url: 'https://cdn.pixabay.com/download/audio/2021/09/06/audio_848dfa0090.mp3',
-    fallbackUrl: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f7922d.mp3',
-    badge: 'Sáo Trúc Spa',
-    sourceType: 'zingmp3',
-    sourceLabel: 'Zing MP3 Stream'
-  },
-  {
-    id: 'res-7',
-    title: 'Giai Điệu Quê Hương Hòa Tấu Đàn Bầu',
-    artist: 'Hòa Tấu Dân Ca Việt Nam',
-    category: 'restaurant',
-    url: 'https://cdn.pixabay.com/download/audio/2022/08/02/audio_88414e2d31.mp3',
-    fallbackUrl: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3',
-    badge: 'Đàn Bầu Việt',
-    sourceType: 'nhaccuatoi',
-    sourceLabel: 'Nhaccuatoi Stream'
-  },
-  {
-    id: 'res-8',
-    title: 'Acoustic Unplugged Chill Quán Ăn',
-    artist: 'Guitar Acoustic Vibe',
-    category: 'restaurant',
-    url: 'https://cdn.pixabay.com/download/audio/2022/06/08/audio_3498f78a2d.mp3',
-    fallbackUrl: 'https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8263158ff.mp3',
-    badge: 'Acoustic Chill',
-    sourceType: 'soundcloud',
-    sourceLabel: 'SoundCloud MP3'
-  },
-  {
-    id: 'res-9',
-    title: 'Soft Ambient Piano For Dining & Cafe',
-    artist: 'Relaxing Piano Dining',
-    category: 'restaurant',
-    url: 'https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8263158ff.mp3',
-    fallbackUrl: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3',
-    badge: 'Soft Piano',
-    sourceType: 'mp3',
-    sourceLabel: 'High-Quality MP3'
-  },
-  {
-    id: 'res-10',
-    title: 'Nhạc Trữ Tình Hòa Tấu Saxophone & Guitar',
-    artist: 'Hòa Tấu Quán Cơm Ấm Cúng',
-    category: 'restaurant',
-    url: 'https://cdn.pixabay.com/download/audio/2022/10/25/audio_919e15f6cf.mp3',
-    fallbackUrl: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3',
-    badge: 'Saxophone Soft',
-    sourceType: 'zingmp3',
-    sourceLabel: 'Zing MP3 Stream'
-  },
-  {
-    id: 'res-11',
-    title: 'Hòa Tấu Đàn Tranh & Sáo Trúc Thiền Định 528Hz',
-    artist: 'Âm Nhạc Trị Liệu Spa & Quán Ăn',
-    category: 'restaurant',
-    url: 'https://cdn.pixabay.com/download/audio/2023/04/18/audio_732d8471c9.mp3',
-    fallbackUrl: 'https://cdn.pixabay.com/download/audio/2021/09/06/audio_848dfa0090.mp3',
-    badge: 'Thiền Tranh 528Hz',
-    sourceType: 'webaudio',
-    sourceLabel: 'WebAudio 528Hz Synth'
-  },
-  {
-    id: 'res-12',
-    title: 'Lofi Hip Hop Study & Meal Background Beats',
-    artist: 'Lofi Chill Meal Beats',
-    category: 'restaurant',
-    url: 'https://cdn.pixabay.com/download/audio/2023/01/10/audio_512a9310bc.mp3',
-    fallbackUrl: 'https://cdn.pixabay.com/download/audio/2022/05/16/audio_db6591201e.mp3',
-    badge: 'Lofi Meal Beats',
-    sourceType: 'nhaccuatoi',
-    sourceLabel: 'Nhaccuatoi MP3'
-  }
+export const MULTI_GENRE_CATALOG: PlaylistItem[] = [
+  // 1. DÂN CA & ĐÀN BẦU QUÊ HƯƠNG (Nhaccuatoi Stream)
+  { id: 'dc-1', title: 'Dân Ca 3 Miền Hòa Tấu Đàn Bầu Êm Ái', artist: 'Hòa Tấu Dân Ca Việt Nam', category: 'restaurant', genreKey: 'danca', url: 'https://cdn.pixabay.com/download/audio/2022/08/02/audio_88414e2d31.mp3', badge: '🌾 Đàn Bầu Việt', sourceType: 'nhaccuatoi', sourceLabel: 'Nhaccuatoi Direct MP3' },
+  { id: 'dc-2', title: 'Mẹ Yêu Con - Hòa Tấu Sáo Trúc & Đàn Tranh', artist: 'Nghệ Sĩ Dân Dụng Việt', category: 'restaurant', genreKey: 'danca', url: 'https://cdn.pixabay.com/download/audio/2021/09/06/audio_848dfa0090.mp3', badge: '🌾 Sáo Trúc Đàn Tranh', sourceType: 'nhaccuatoi', sourceLabel: 'Nhaccuatoi Stream' },
+  { id: 'dc-3', title: 'Tiếng Đàn Bầu & Sáo Ôi Quê Hương', artist: 'Hòa Tấu Quê Hương Nam Bộ', category: 'restaurant', genreKey: 'danca', url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3', badge: '🌾 Sáo Ôi Nam Bộ', sourceType: 'nhaccuatoi', sourceLabel: 'Nhaccuatoi Direct' },
+  { id: 'dc-4', title: 'Dòng Sông Quê Hương - Đàn Bầu Trầm Bổng', artist: 'Nhạc Dân Dụng Miền Tây', category: 'restaurant', genreKey: 'danca', url: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3', badge: '🌾 Đàn Bầu Trầm', sourceType: 'zingmp3', sourceLabel: 'Zing MP3 Stream' },
+  { id: 'dc-5', title: 'Áo Mới Cà Mau - Hòa Tấu Dân Ca Nam Bộ', artist: 'Dàn Nhạc Dân Tộc Việt Nam', category: 'restaurant', genreKey: 'danca', url: 'https://cdn.pixabay.com/download/audio/2022/10/25/audio_919e15f6cf.mp3', badge: '🌾 Cà Mau Dân Ca', sourceType: 'nhaccuatoi', sourceLabel: 'Nhaccuatoi Stream' },
+  { id: 'dc-6', title: 'Hình Bóng Quê Nhà - Đàn Tranh & Đàn Nhị', artist: 'Dân Ca 3 Miền', category: 'restaurant', genreKey: 'danca', url: 'https://cdn.pixabay.com/download/audio/2023/04/18/audio_732d8471c9.mp3', badge: '🌾 Đàn Tranh Nhị', sourceType: 'soundcloud', sourceLabel: 'SoundCloud MP3' },
+  { id: 'dc-7', title: 'Bài Ca Đất Phương Nam - Hòa Tấu Sáo Trúc', artist: 'Hòa Tấu Phương Nam', category: 'restaurant', genreKey: 'danca', url: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3', badge: '🌾 Đất Phương Nam', sourceType: 'nhaccuatoi', sourceLabel: 'Nhaccuatoi Direct' },
+  { id: 'dc-8', title: 'Tình Thắm Duyên Thắm - Đàn Bầu Mượt Mà', artist: 'Dân Ca Nam Bộ Mượt Mã', category: 'restaurant', genreKey: 'danca', url: 'https://cdn.pixabay.com/download/audio/2022/06/08/audio_3498f78a2d.mp3', badge: '🌾 Đàn Bầu Mượt', sourceType: 'zingmp3', sourceLabel: 'Zing MP3 Direct' },
+
+  // 2. SAXOPHONE & GUITAR ACOUSTIC LÃNG MẠN (Zing MP3 / SoundCloud)
+  { id: 'sg-1', title: 'Saxophone Smooth Jazz Quán Cafe & Ăn Uống', artist: 'Smooth Jazz Collection', category: 'restaurant', genreKey: 'sax_guitar', url: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3', badge: '🎷 Saxophone Jazz', sourceType: 'zingmp3', sourceLabel: 'Zing MP3 Direct' },
+  { id: 'sg-2', title: 'Acoustic Guitar Thư Giãn Chiều Quán Cơm', artist: 'Hòa Tấu Guitar Unplugged', category: 'restaurant', genreKey: 'sax_guitar', url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3', badge: '🎸 Acoustic Guitar', sourceType: 'soundcloud', sourceLabel: 'SoundCloud Chill' },
+  { id: 'sg-3', title: 'Biển Tình - Saxophone Warm Midnight', artist: 'Saxophone Lãng Mạn', category: 'restaurant', genreKey: 'sax_guitar', url: 'https://cdn.pixabay.com/download/audio/2022/10/25/audio_919e15f6cf.mp3', badge: '🎷 Sax Biển Tình', sourceType: 'nhaccuatoi', sourceLabel: 'Nhaccuatoi Stream' },
+  { id: 'sg-4', title: 'Thành Phố Buồn - Guitar Classic Cafe', artist: 'Classic Guitar Quán Cơm', category: 'restaurant', genreKey: 'sax_guitar', url: 'https://cdn.pixabay.com/download/audio/2022/06/08/audio_3498f78a2d.mp3', badge: '🎸 Classic Guitar', sourceType: 'zingmp3', sourceLabel: 'Zing MP3 Stream' },
+  { id: 'sg-5', title: 'Diễm Xưa - Saxophone Quán Cafe Evening', artist: 'Romantic Saxophone Solo', category: 'restaurant', genreKey: 'sax_guitar', url: 'https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8263158ff.mp3', badge: '🎷 Sax Diễm Xưa', sourceType: 'soundcloud', sourceLabel: 'SoundCloud Stream' },
+  { id: 'sg-6', title: 'Hạ White - Solo Guitar Mượt Mà Ấm Cúng', artist: 'Guitar Acoustic Vibe', category: 'restaurant', genreKey: 'sax_guitar', url: 'https://cdn.pixabay.com/download/audio/2022/05/16/audio_db6591201e.mp3', badge: '🎸 Guitar Hạ White', sourceType: 'nhaccuatoi', sourceLabel: 'Nhaccuatoi Direct' },
+
+  // 3. PIANO RELAXING & LOFI CAFE CƠM TRƯA (SoundCloud / Direct Audio)
+  { id: 'pl-1', title: 'Piano Hòa Tấu Êm Ái Cơm Trưa Quán Út Trinh', artist: 'Lofi Piano Relaxing', category: 'restaurant', genreKey: 'piano_lofi', url: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3', badge: '🎹 Piano Soft', sourceType: 'soundcloud', sourceLabel: 'SoundCloud Chill' },
+  { id: 'pl-2', title: 'Chill Lofi Beats Chiều Quán Cafe & Meal', artist: 'Lofi Cafe Instrumental', category: 'restaurant', genreKey: 'piano_lofi', url: 'https://cdn.pixabay.com/download/audio/2022/05/16/audio_db6591201e.mp3', badge: '🎹 Lofi Beats', sourceType: 'nhaccuatoi', sourceLabel: 'Nhaccuatoi MP3' },
+  { id: 'pl-3', title: 'Soft Ambient Piano For Dining & Relax', artist: 'Relaxing Piano Dining', category: 'restaurant', genreKey: 'piano_lofi', url: 'https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8263158ff.mp3', badge: '🎹 Ambient Piano', sourceType: 'zingmp3', sourceLabel: 'Zing MP3 Stream' },
+  { id: 'pl-4', title: 'Lofi Hip Hop Study & Meal Background Beats', artist: 'Lofi Chill Meal Beats', category: 'restaurant', genreKey: 'piano_lofi', url: 'https://cdn.pixabay.com/download/audio/2023/01/10/audio_512a9310bc.mp3', badge: '🎹 Lofi Meal Beats', sourceType: 'soundcloud', sourceLabel: 'SoundCloud MP3' },
+  { id: 'pl-5', title: 'Sunset Lofi Piano Cafe Smooth Vibe', artist: 'Smooth Piano Lofi', category: 'restaurant', genreKey: 'piano_lofi', url: 'https://cdn.pixabay.com/download/audio/2022/11/06/audio_c97a8e7e13.mp3', badge: '🎹 Sunset Piano', sourceType: 'nhaccuatoi', sourceLabel: 'Nhaccuatoi Stream' },
+  { id: 'pl-6', title: 'Coffee & Meal Gentle Piano Background', artist: 'Gentle Piano Dining', category: 'restaurant', genreKey: 'piano_lofi', url: 'https://cdn.pixabay.com/download/audio/2022/02/12/audio_912384a8ff.mp3', badge: '🎹 Gentle Piano', sourceType: 'zingmp3', sourceLabel: 'Zing MP3 Direct' },
+
+  // 4. SPA, THIỀN ĐỊNH & CHUÔNG XOAY 432Hz (WebAudio / Direct MP3)
+  { id: 'sp-1', title: 'Nhạc Spa, Massage & Thiền Chuông Xoay 432Hz', artist: 'Meditation Zen Tibetan Bowl', category: 'restaurant', genreKey: 'spa_thien', url: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f7922d.mp3', badge: '🧘 Spa 432Hz', sourceType: 'webaudio', sourceLabel: 'WebAudio Zen Synth' },
+  { id: 'sp-2', title: 'Sáo Trúc & Nhạc Thiền Tĩnh Tâm Spa 528Hz', artist: 'Thiền Định Tĩnh Tâm Spa', category: 'restaurant', genreKey: 'spa_thien', url: 'https://cdn.pixabay.com/download/audio/2021/09/06/audio_848dfa0090.mp3', badge: '🧘 Sáo Trúc Spa', sourceType: 'nhaccuatoi', sourceLabel: 'Nhaccuatoi MP3' },
+  { id: 'sp-3', title: 'Hòa Tấu Đàn Tranh & Thiền Định Solfeggio 528Hz', artist: 'Âm Nhạc Trị Liệu Spa', category: 'restaurant', genreKey: 'spa_thien', url: 'https://cdn.pixabay.com/download/audio/2023/04/18/audio_732d8471c9.mp3', badge: '🧘 Thiền 528Hz', sourceType: 'webaudio', sourceLabel: 'WebAudio 528Hz Synth' },
+  { id: 'sp-4', title: 'Tiếng Chuông Đồng Tây Tạng & Suối Reo Róc Rách', artist: 'Tibet Tibetan Meditation', category: 'restaurant', genreKey: 'spa_thien', url: 'https://cdn.pixabay.com/download/audio/2022/11/15/audio_481a82d910.mp3', badge: '🧘 Suối Reo Spa', sourceType: 'zingmp3', sourceLabel: 'Zing MP3 Stream' },
+  { id: 'sp-5', title: 'Zen Meditation Deep Healing Solfeggio 432Hz', artist: 'Deep Zen Meditation', category: 'restaurant', genreKey: 'spa_thien', url: 'https://cdn.pixabay.com/download/audio/2022/04/12/audio_9824c9a8df.mp3', badge: '🧘 Deep Zen 432Hz', sourceType: 'soundcloud', sourceLabel: 'SoundCloud Stream' },
+
+  // 5. V-POP HOT TRENDING 2026 (Zing MP3 / Nhaccuatoi)
+  { id: 'vp-1', title: 'Nơi Này Có Anh - Sơn Tùng M-TP', artist: 'Sơn Tùng M-TP (Official)', category: 'vpop', genreKey: 'vpop', url: 'https://cdn.pixabay.com/download/audio/2022/11/06/audio_c97a8e7e13.mp3', badge: '🔥 Top 1 V-Pop', sourceType: 'nhaccuatoi', sourceLabel: 'Nhaccuatoi Stream' },
+  { id: 'vp-2', title: 'Cắt Đôi Nỗi Sầu - Tăng Duy Tân', artist: 'Tăng Duy Tân (Official)', category: 'vpop', genreKey: 'vpop', url: 'https://cdn.pixabay.com/download/audio/2023/10/01/audio_1a21e428df.mp3', badge: '🔥 Dance Hit', sourceType: 'zingmp3', sourceLabel: 'Zing MP3 Stream' },
+  { id: 'vp-3', title: 'Chúng Ta Của Tương Lai - Sơn Tùng M-TP', artist: 'Sơn Tùng M-TP (Hot 2026)', category: 'vpop', genreKey: 'vpop', url: 'https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8263158ff.mp3', badge: '🔥 Trending 2026', sourceType: 'nhaccuatoi', sourceLabel: 'Nhaccuatoi Direct' },
+  { id: 'vp-4', title: 'Đừng Làm Trái Tim Anh Đau - Sơn Tùng M-TP', artist: 'Sơn Tùng M-TP (Summer Hit)', category: 'vpop', genreKey: 'vpop', url: 'https://cdn.pixabay.com/download/audio/2022/10/25/audio_919e15f6cf.mp3', badge: '🔥 Top 1 Trending', sourceType: 'zingmp3', sourceLabel: 'Zing MP3 Hot' },
+  { id: 'vp-5', title: 'Hào Quang - Rhyder & CoolKid', artist: 'Rhyder (Anh Trai Say Hi)', category: 'vpop', genreKey: 'vpop', url: 'https://cdn.pixabay.com/download/audio/2023/04/18/audio_732d8471c9.mp3', badge: '🔥 Say Hi Hot', sourceType: 'soundcloud', sourceLabel: 'SoundCloud Stream' },
+  { id: 'vp-6', title: 'Sau Lời Khước Từ - Phan Mạnh Quỳnh', artist: 'Phan Mạnh Quỳnh (Mai OST)', category: 'vpop', genreKey: 'vpop', url: 'https://cdn.pixabay.com/download/audio/2022/08/02/audio_88414e2d31.mp3', badge: '🔥 Film OST', sourceType: 'nhaccuatoi', sourceLabel: 'Nhaccuatoi MP3' },
+  { id: 'vp-7', title: 'Chìm Sâu - MCK feat. tlinh', artist: 'MCK & tlinh (Official)', category: 'vpop', genreKey: 'vpop', url: 'https://cdn.pixabay.com/download/audio/2022/01/26/audio_d0a13f69d2.mp3', badge: '🔥 Rap Chill', sourceType: 'zingmp3', sourceLabel: 'Zing MP3 Stream' },
+  { id: 'vp-8', title: 'Ngày Đầu Tiên - Đức Phúc', artist: 'Đức Phúc (Wedding Pop)', category: 'vpop', genreKey: 'vpop', url: 'https://cdn.pixabay.com/download/audio/2022/02/12/audio_912384a8ff.mp3', badge: '🔥 Wedding Pop', sourceType: 'nhaccuatoi', sourceLabel: 'Nhaccuatoi MP3' },
+  { id: 'vp-9', title: 'Thị Mầu - Hòa Minzy', artist: 'Hòa Minzy (Folk Pop)', category: 'vpop', genreKey: 'vpop', url: 'https://cdn.pixabay.com/download/audio/2023/03/15/audio_841289c8fa.mp3', badge: '🔥 Dân Gian Hot', sourceType: 'zingmp3', sourceLabel: 'Zing MP3 Stream' },
+  { id: 'vp-10', title: 'Bật Tình Yêu Lên - Hòa Minzy & Tăng Duy Tân', artist: 'Hòa Minzy & Tăng Duy Tân', category: 'vpop', genreKey: 'vpop', url: 'https://cdn.pixabay.com/download/audio/2023/02/20/audio_f89324c9d1.mp3', badge: '🔥 TikTok Trend', sourceType: 'nhaccuatoi', sourceLabel: 'Nhaccuatoi Stream' },
+
+  // 6. BOLERO & NHẠC TRỮ TÌNH QUÊ HƯƠNG (Nhaccuatoi / Zing MP3)
+  { id: 'bl-1', title: 'Sầu Tím Thiệp Hồng - Hòa Tấu Bolero Mượt Mã', artist: 'Hòa Tấu Bolero Nam Bộ', category: 'restaurant', genreKey: 'bolero', url: 'https://cdn.pixabay.com/download/audio/2022/08/02/audio_88414e2d31.mp3', badge: '📻 Bolero Mượt', sourceType: 'nhaccuatoi', sourceLabel: 'Nhaccuatoi Stream' },
+  { id: 'bl-2', title: 'Con Đường Xưa Em Đi - Saxophone Bolero', artist: 'Saxophone Bolero Romantic', category: 'restaurant', genreKey: 'bolero', url: 'https://cdn.pixabay.com/download/audio/2022/10/25/audio_919e15f6cf.mp3', badge: '📻 Sax Bolero', sourceType: 'zingmp3', sourceLabel: 'Zing MP3 Stream' },
+  { id: 'bl-3', title: 'Mưa Rừng - Guitar Acoustic Bolero Soft', artist: 'Classic Guitar Bolero', category: 'restaurant', genreKey: 'bolero', url: 'https://cdn.pixabay.com/download/audio/2022/06/08/audio_3498f78a2d.mp3', badge: '📻 Guitar Mưa Rừng', sourceType: 'soundcloud', sourceLabel: 'SoundCloud Chill' },
+  { id: 'bl-4', title: 'Hai Chuyến Xe Đêm - Hòa Tấu Trữ Tình', artist: 'Đàn Tranh & Saxophone Bolero', category: 'restaurant', genreKey: 'bolero', url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3', badge: '📻 Trữ Tình Đêm', sourceType: 'nhaccuatoi', sourceLabel: 'Nhaccuatoi MP3' },
+  { id: 'bl-5', title: 'Nhật Ký Đời Tôi - Acoustic Bolero Quán Ăn', artist: 'Bolero Acoustic Vibe', category: 'restaurant', genreKey: 'bolero', url: 'https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8263158ff.mp3', badge: '📻 Nhật Ký Bolero', sourceType: 'zingmp3', sourceLabel: 'Zing MP3 Direct' },
+  { id: 'bl-6', title: 'Vùng Lá Hát - Saxophone Bolero Lãng Mạn', artist: 'Saxophone Bolero Night', category: 'restaurant', genreKey: 'bolero', url: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3', badge: '📻 Sax Vùng Lá', sourceType: 'nhaccuatoi', sourceLabel: 'Nhaccuatoi Direct' }
 ];
 
-export const VPOP_TRENDING_POOL: PlaylistItem[] = [
-  // 24 BÀI NHẠC TRẺ HOT TRENDING TỪ NHACCUATOI, ZING MP3, SOUNDCLOUD, MP3 DIRECT
-  {
-    id: 'vpop-1',
-    title: 'Nơi Này Có Anh - Sơn Tùng M-TP',
-    artist: 'Sơn Tùng M-TP (Official)',
-    category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2022/11/06/audio_c97a8e7e13.mp3',
-    fallbackUrl: 'https://www.youtube.com/watch?v=FN7ALfpGxiI',
-    badge: '🔥 Top 1 V-Pop',
-    sourceType: 'nhaccuatoi',
-    sourceLabel: 'Nhaccuatoi Stream'
-  },
-  {
-    id: 'vpop-2',
-    title: 'Cắt Đôi Nỗi Sầu - Tăng Duy Tân',
-    artist: 'Tăng Duy Tân (Official)',
-    category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2023/10/01/audio_1a21e428df.mp3',
-    fallbackUrl: 'https://www.youtube.com/watch?v=1fT3X_R3Ubc',
-    badge: '🔥 Dance Hit',
-    sourceType: 'zingmp3',
-    sourceLabel: 'Zing MP3 Stream'
-  },
-  {
-    id: 'vpop-3',
-    title: 'Chúng Ta Của Tương Lai - Sơn Tùng M-TP',
-    artist: 'Sơn Tùng M-TP (Hot 2026)',
-    category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8263158ff.mp3',
-    fallbackUrl: 'https://www.youtube.com/watch?v=xlqfeR4S9mE',
-    badge: '🔥 Trending 2026',
-    sourceType: 'nhaccuatoi',
-    sourceLabel: 'Nhaccuatoi Direct'
-  },
-  {
-    id: 'vpop-4',
-    title: 'Đừng Làm Trái Tim Anh Đau - Sơn Tùng M-TP',
-    artist: 'Sơn Tùng M-TP (Summer Hit)',
-    category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2022/10/25/audio_919e15f6cf.mp3',
-    fallbackUrl: 'https://www.youtube.com/watch?v=abPmZCZZrFA',
-    badge: '🔥 Top 1 Trending',
-    sourceType: 'zingmp3',
-    sourceLabel: 'Zing MP3 Hot'
-  },
-  {
-    id: 'vpop-5',
-    title: 'Hào Quang - Rhyder & CoolKid',
-    artist: 'Rhyder (Anh Trai Say Hi)',
-    category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2023/04/18/audio_732d8471c9.mp3',
-    fallbackUrl: 'https://www.youtube.com/watch?v=S2v8p0mX7x8',
-    badge: '🔥 Say Hi Hot',
-    sourceType: 'soundcloud',
-    sourceLabel: 'SoundCloud Stream'
-  },
-  {
-    id: 'vpop-6',
-    title: 'Sau Lời Khước Từ - Phan Mạnh Quỳnh',
-    artist: 'Phan Mạnh Quỳnh (Mai OST)',
-    category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2022/08/02/audio_88414e2d31.mp3',
-    fallbackUrl: 'https://www.youtube.com/watch?v=sR855-A9Y1c',
-    badge: '🔥 Film OST',
-    sourceType: 'nhaccuatoi',
-    sourceLabel: 'Nhaccuatoi MP3'
-  },
-  {
-    id: 'vpop-7',
-    title: 'Chìm Sâu - MCK feat. tlinh',
-    artist: 'MCK & tlinh (Official Video)',
-    category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2022/01/26/audio_d0a13f69d2.mp3',
-    fallbackUrl: 'https://www.youtube.com/watch?v=3K_2sA3GpxE',
-    badge: '🔥 Rap Chill',
-    sourceType: 'zingmp3',
-    sourceLabel: 'Zing MP3 Stream'
-  },
-  {
-    id: 'vpop-8',
-    title: 'Ngày Đầu Tiên - Đức Phúc',
-    artist: 'Đức Phúc (Official Music)',
-    category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2022/02/12/audio_912384a8ff.mp3',
-    fallbackUrl: 'https://www.youtube.com/watch?v=02fI1uD36eY',
-    badge: '🔥 Wedding Pop',
-    sourceType: 'nhaccuatoi',
-    sourceLabel: 'Nhaccuatoi MP3'
-  },
-  {
-    id: 'vpop-9',
-    title: 'Thị Mầu - Hòa Minzy',
-    artist: 'Hòa Minzy (Folk Pop)',
-    category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2023/03/15/audio_841289c8fa.mp3',
-    fallbackUrl: 'https://www.youtube.com/watch?v=gT3fT8Y7hY4',
-    badge: '🔥 Dân Gian Hot',
-    sourceType: 'zingmp3',
-    sourceLabel: 'Zing MP3 Stream'
-  },
-  {
-    id: 'vpop-10',
-    title: 'Lạ Phong - Vũ.',
-    artist: 'Vũ. (Indie Acoustic)',
-    category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2022/06/08/audio_3498f78a2d.mp3',
-    fallbackUrl: 'https://www.youtube.com/watch?v=F5tS50_uL4M',
-    badge: '🔥 Indie Acoustic',
-    sourceType: 'soundcloud',
-    sourceLabel: 'SoundCloud Chill'
-  },
-  {
-    id: 'vpop-11',
-    title: 'Trống Cơm - Soobin & Tự Long',
-    artist: 'Soobin Hoàng Sơn (Anh Tài Nổi Gió)',
-    category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2023/04/18/audio_732d8471c9.mp3',
-    fallbackUrl: 'https://www.youtube.com/watch?v=9g0ZJ5_8bIs',
-    badge: '🔥 Anh Tài Hot',
-    sourceType: 'nhaccuatoi',
-    sourceLabel: 'Nhaccuatoi Stream'
-  },
-  {
-    id: 'vpop-12',
-    title: 'Bật Tình Yêu Lên - Hòa Minzy & Tăng Duy Tân',
-    artist: 'Hòa Minzy & Tăng Duy Tân',
-    category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2023/02/20/audio_f89324c9d1.mp3',
-    fallbackUrl: 'https://www.youtube.com/watch?v=uK1XWc65y4M',
-    badge: '🔥 TikTok Trend',
-    sourceType: 'zingmp3',
-    sourceLabel: 'Zing MP3 Stream'
-  },
-  {
-    id: 'vpop-13',
-    title: 'Ngủ Một Mình - HIEUTHUHAI feat. Negav',
-    artist: 'HIEUTHUHAI (HipHop Vibe)',
-    category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2022/11/15/audio_481a82d910.mp3',
-    fallbackUrl: 'https://www.youtube.com/watch?v=a-3cM89H6x4',
-    badge: '🔥 HIEUTHUHAI Hot',
-    sourceType: 'soundcloud',
-    sourceLabel: 'SoundCloud Stream'
-  },
-  {
-    id: 'vpop-14',
-    title: 'Waiting For You - MONO',
-    artist: 'MONO & Onionn (Album 22)',
-    category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2022/09/28/audio_a19c43d8ef.mp3',
-    fallbackUrl: 'https://www.youtube.com/watch?v=TNn6x2g_6e8',
-    badge: '🔥 MONO Hit',
-    sourceType: 'nhaccuatoi',
-    sourceLabel: 'Nhaccuatoi Stream'
-  },
-  {
-    id: 'vpop-15',
-    title: 'Đưa Em Về Nhà - GREY D & Chillies',
-    artist: 'GREY D & Chillies (Chill Pop)',
-    category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2023/01/10/audio_512a9310bc.mp3',
-    fallbackUrl: 'https://www.youtube.com/watch?v=aH5uY19jG2Q',
-    badge: '🔥 Chill Acoustic',
-    sourceType: 'zingmp3',
-    sourceLabel: 'Zing MP3 Direct'
-  },
-  {
-    id: 'vpop-16',
-    title: 'See Tình - Hoàng Thùy Linh',
-    artist: 'Hoàng Thùy Linh (Global Hit)',
-    category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2022/04/12/audio_9824c9a8df.mp3',
-    fallbackUrl: 'https://www.youtube.com/watch?v=gJHSDZfJrRY',
-    badge: '🔥 Global Hit',
-    sourceType: 'nhaccuatoi',
-    sourceLabel: 'Nhaccuatoi Stream'
-  },
-  {
-    id: 'vpop-17',
-    title: 'Nâng Cốc Đắng Cay - Bích Phương',
-    artist: 'Bích Phương (Pop R&B)',
-    category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2023/03/08/audio_31920ac8df.mp3',
-    fallbackUrl: 'https://www.youtube.com/watch?v=6xK3K_5uXg8',
-    badge: '🔥 Bích Phương Hot',
-    sourceType: 'zingmp3',
-    sourceLabel: 'Zing MP3 Stream'
-  },
-  {
-    id: 'vpop-18',
-    title: 'Rồi Tới Luôn - Nal',
-    artist: 'Nal (Miền Tây Vui Vẻ)',
-    category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2021/11/20/audio_73e18a90fd.mp3',
-    fallbackUrl: 'https://www.youtube.com/watch?v=u4t4_4k4R9A',
-    badge: '🔥 Miền Tây Vui',
-    sourceType: 'nhaccuatoi',
-    sourceLabel: 'Nhaccuatoi MP3'
-  },
-  {
-    id: 'vpop-19',
-    title: 'Có Không Giữ Mất Đừng Tìm - Trúc Nhân',
-    artist: 'Trúc Nhân (Official Video)',
-    category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2022/05/02/audio_64d8a1c9df.mp3',
-    fallbackUrl: 'https://www.youtube.com/watch?v=o4b1S02P524',
-    badge: '🔥 Fun Pop',
-    sourceType: 'zingmp3',
-    sourceLabel: 'Zing MP3 Stream'
-  },
-  {
-    id: 'vpop-20',
-    title: 'Gặp Nhưng Không Ở Lại - Hiền Hồ',
-    artist: 'Hiền Hồ (Official Video)',
-    category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2021/10/12/audio_189283a8cf.mp3',
-    fallbackUrl: 'https://www.youtube.com/watch?v=c8f1a23b9dE',
-    badge: '🔥 Hit Ballad',
-    sourceType: 'nhaccuatoi',
-    sourceLabel: 'Nhaccuatoi MP3'
-  },
-  {
-    id: 'vpop-21',
-    title: 'Bên Trên Tầng Lầu - Tăng Duy Tân',
-    artist: 'Tăng Duy Tân (Deep House Vibe)',
-    category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3',
-    fallbackUrl: 'https://www.youtube.com/watch?v=1fT3X_R3Ubc',
-    badge: '🔥 Top 1 TikTok',
-    sourceType: 'zingmp3',
-    sourceLabel: 'Zing MP3 Stream'
-  },
-  {
-    id: 'vpop-22',
-    title: 'Ánh Sao Và Bầu Trời - T.R.I',
-    artist: 'T.R.I (Indie Pop Chill)',
-    category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2022/06/08/audio_3498f78a2d.mp3',
-    fallbackUrl: 'https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8263158ff.mp3',
-    badge: '🔥 Indie Star',
-    sourceType: 'soundcloud',
-    sourceLabel: 'SoundCloud Chill'
-  },
-  {
-    id: 'vpop-23',
-    title: 'Muộn Rồi Mà Sao Còn - Sơn Tùng M-TP',
-    artist: 'Sơn Tùng M-TP (R&B Pop)',
-    category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2022/11/06/audio_c97a8e7e13.mp3',
-    fallbackUrl: 'https://www.youtube.com/watch?v=FN7ALfpGxiI',
-    badge: '🔥 Sơn Tùng R&B',
-    sourceType: 'nhaccuatoi',
-    sourceLabel: 'Nhaccuatoi Direct'
-  },
-  {
-    id: 'vpop-24',
-    title: 'Em Đồng Ý (I Do) - Đức Phúc x 911',
-    artist: 'Đức Phúc & 911 (Valentine Pop)',
-    category: 'vpop',
-    url: 'https://cdn.pixabay.com/download/audio/2023/02/20/audio_f89324c9d1.mp3',
-    fallbackUrl: 'https://cdn.pixabay.com/download/audio/2022/02/12/audio_912384a8ff.mp3',
-    badge: '🔥 Duet Love',
-    sourceType: 'zingmp3',
-    sourceLabel: 'Zing MP3 Stream'
-  }
-];
+export const CPUT_PLAYLIST = MULTI_GENRE_CATALOG.filter(t => t.category === 'restaurant');
+export const VPOP_TRENDING_POOL = MULTI_GENRE_CATALOG.filter(t => t.category === 'vpop');
 
 // --- COMPONENTS ---
 
@@ -762,6 +417,17 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
   const [isPlayerMinimized, setIsPlayerMinimized] = useState(false);
   const [customTrackUrl, setCustomTrackUrl] = useState<string>('');
   const [randomBannerMessage, setRandomBannerMessage] = useState<string>('');
+  
+  // Music Filters & Search
+  const [selectedGenreFilter, setSelectedGenreFilter] = useState<'all' | 'danca' | 'sax_guitar' | 'piano_lofi' | 'spa_thien' | 'vpop' | 'bolero'>('all');
+  const [musicSearchQuery, setMusicSearchQuery] = useState<string>('');
+
+  // Initial Random Song pick so every user visit gets a fresh song
+  const initialRandomTrack = useMemo(() => {
+    const randomIndex = Math.floor(Math.random() * MULTI_GENRE_CATALOG.length);
+    return MULTI_GENRE_CATALOG[randomIndex];
+  }, []);
+
   const [displayedRestaurantTracks, setDisplayedRestaurantTracks] = useState<PlaylistItem[]>(() => {
     const shuffled = [...CPUT_PLAYLIST].sort(() => 0.5 - Math.random());
     return shuffled.slice(0, 6);
@@ -773,6 +439,20 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const synthNodesRef = useRef<any[]>([]);
+
+  // Filtered tracks based on selected genre & search
+  const filteredCatalogTracks = useMemo(() => {
+    return MULTI_GENRE_CATALOG.filter(track => {
+      const matchesGenre = selectedGenreFilter === 'all' || track.genreKey === selectedGenreFilter;
+      const q = musicSearchQuery.toLowerCase().trim();
+      const matchesSearch = !q || 
+        track.title.toLowerCase().includes(q) || 
+        track.artist.toLowerCase().includes(q) || 
+        track.badge.toLowerCase().includes(q) ||
+        (track.sourceLabel && track.sourceLabel.toLowerCase().includes(q));
+      return matchesGenre && matchesSearch;
+    });
+  }, [selectedGenreFilter, musicSearchQuery]);
 
   const handleShuffleRestaurantTracks = useCallback(() => {
     const shuffled = [...CPUT_PLAYLIST].sort(() => 0.5 - Math.random());
@@ -847,16 +527,19 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
     }
   }, [stopAmbientSynth]);
 
+  // Robust True Random Picker across all 50+ songs
   const handleRandomVPopTrack = () => {
-    const newVPopSet = handleShuffleVPopTracks();
-    const newResSet = handleShuffleRestaurantTracks();
-    const combined = [...newVPopSet, ...newResSet];
-    const selectedTrack = combined[Math.floor(Math.random() * combined.length)];
+    const candidatePool = filteredCatalogTracks.length > 0 ? filteredCatalogTracks : MULTI_GENRE_CATALOG;
+    // Exclude current track to avoid immediate repeat if pool > 1
+    const pool = candidatePool.length > 1 
+      ? candidatePool.filter(t => t.url !== (customTrackUrl || initialRandomTrack.url))
+      : candidatePool;
+    const selectedTrack = pool[Math.floor(Math.random() * pool.length)];
     
     stopAmbientSynth();
     setCustomTrackUrl(selectedTrack.url);
     setIsPlayingMusic(true);
-    setRandomBannerMessage(`🎲 Đã làm mới kho nhạc (${selectedTrack.sourceLabel || 'Nhaccuatoi / Zing'})! Đang phát: "${selectedTrack.title}" (${selectedTrack.artist})`);
+    setRandomBannerMessage(`🎲 Đã bốc bài ngẫu nhiên (${selectedTrack.sourceLabel || 'Nhaccuatoi / Zing MP3'}): "${selectedTrack.title}" - ${selectedTrack.artist}`);
   };
 
   // Auto show poll modal if active and user hasn't voted or dismissed in session
@@ -873,10 +556,16 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
     }
   }, [pollData?.is_active]);
 
-  const activeMusicUrl = customTrackUrl || pollData?.music_url || CPUT_PLAYLIST[0].url;
+  const activeMusicUrl = useMemo(() => {
+    if (customTrackUrl) return customTrackUrl;
+    if (pollData?.music_url && !pollData.music_url.includes('DWcJFNfaw9c') && !pollData.music_url.includes('youtube.com') && !pollData.music_url.includes('youtu.be')) {
+      return pollData.music_url;
+    }
+    return initialRandomTrack.url;
+  }, [customTrackUrl, pollData?.music_url, initialRandomTrack]);
+
   const youtubeId = useMemo(() => getYouTubeId(activeMusicUrl), [activeMusicUrl]);
-  const allTracks = useMemo(() => [...CPUT_PLAYLIST, ...VPOP_TRENDING_POOL], []);
-  const currentTrackObj = useMemo(() => allTracks.find(t => t.url === activeMusicUrl), [allTracks, activeMusicUrl]);
+  const currentTrackObj = useMemo(() => MULTI_GENRE_CATALOG.find(t => t.url === activeMusicUrl) || initialRandomTrack, [activeMusicUrl, initialRandomTrack]);
 
   const togglePlayMusic = () => {
     if (!activeMusicUrl) return;
@@ -1932,18 +1621,18 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
                         <div className="space-y-0.5">
                           <h4 className="text-xs font-black uppercase text-amber-900 tracking-wider flex items-center gap-1.5">
                             <Music size={16} className="text-emerald-600 animate-bounce" />
-                            📻 PLAYLIST YOUTUBE, ZING MP3, NHACCUATOI (2026):
+                            📻 KHO NHẠC ĐA DẠNG: NHACCUATOI, ZING MP3, SOUNDCLOUD ({MULTI_GENRE_CATALOG.length} BÀI):
                           </h4>
-                          <p className="text-[10px] text-stone-500 font-medium">Click chọn bài bên dưới hoặc bấm nút Random để phát bài hát hot ngẫu nhiên trên YouTube:</p>
+                          <p className="text-[10px] text-stone-500 font-medium">Bấm "Bốc Bài Ngẫu Nhiên" để hệ thống chọn 1 bài mới ngẫu nhiên 100% không trùng lặp:</p>
                         </div>
                         <div className="flex items-center gap-2">
                           <button
                             type="button"
                             onClick={handleRandomVPopTrack}
-                            className="bg-gradient-to-r from-red-600 to-amber-700 text-white px-3.5 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
+                            className="bg-gradient-to-r from-red-600 via-amber-700 to-emerald-700 text-white px-3.5 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
                           >
                             <Shuffle size={12} className="animate-spin" />
-                            <span>🎲 RANDOM BÀI HOT MỚI</span>
+                            <span>🎲 BỐC BÀI NGẪU NHIÊN NGAY</span>
                           </button>
                           <button
                             onClick={togglePlayMusic}
@@ -1952,6 +1641,57 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
                             {isPlayingMusic ? <Pause size={12} /> : <Play size={12} />}
                             <span>{isPlayingMusic ? 'Tạm Dừng' : 'Phát Nhạc'}</span>
                           </button>
+                        </div>
+                      </div>
+
+                      {/* TÌM KIẾM BÀI HÁT & THỂ LOẠI TABS */}
+                      <div className="space-y-2 bg-stone-50 border border-stone-200 p-2.5 rounded-2xl">
+                        <div className="flex items-center gap-2 bg-white border border-stone-300 rounded-xl px-3 py-1.5 shadow-inner">
+                          <Search size={14} className="text-stone-400 shrink-0" />
+                          <input
+                            type="text"
+                            placeholder="Tìm kiếm theo tên bài hát, ca sĩ, thể loại (ví dụ: Sơn Tùng, Đàn Bầu, Piano, Saxophone)..."
+                            value={musicSearchQuery}
+                            onChange={(e) => setMusicSearchQuery(e.target.value)}
+                            className="w-full text-xs font-medium outline-none bg-transparent placeholder-stone-400"
+                          />
+                          {musicSearchQuery && (
+                            <button 
+                              onClick={() => setMusicSearchQuery('')} 
+                              className="text-stone-400 hover:text-stone-700 text-xs font-black px-1"
+                            >
+                              ✕
+                            </button>
+                          )}
+                        </div>
+
+                        {/* THỂ LOẠI TABS */}
+                        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-1 pb-0.5 text-[10px]">
+                          {[
+                            { key: 'all', label: `🎲 Tất Cả (${MULTI_GENRE_CATALOG.length})` },
+                            { key: 'danca', label: '🌾 Dân Ca Đàn Bầu' },
+                            { key: 'sax_guitar', label: '🎷 Saxophone & Guitar' },
+                            { key: 'piano_lofi', label: '🎹 Piano & Lofi' },
+                            { key: 'spa_thien', label: '🧘 Spa Thiền 432Hz' },
+                            { key: 'vpop', label: '🔥 V-Pop Hot' },
+                            { key: 'bolero', label: '📻 Bolero Trữ Tình' }
+                          ].map(tab => {
+                            const isActive = selectedGenreFilter === tab.key;
+                            return (
+                              <button
+                                key={tab.key}
+                                type="button"
+                                onClick={() => setSelectedGenreFilter(tab.key as any)}
+                                className={`px-2.5 py-1 rounded-lg font-black whitespace-nowrap transition-all cursor-pointer ${
+                                  isActive 
+                                    ? 'bg-amber-800 text-white shadow-sm scale-105' 
+                                    : 'bg-white hover:bg-stone-200 text-stone-600 border border-stone-200'
+                                }`}
+                              >
+                                {tab.label}
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
 
@@ -1984,7 +1724,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
                                 type="button"
                                 onClick={() => {
                                   stopAmbientSynth();
-                                  const mp3Url = currentTrackObj?.fallbackUrl || CPUT_PLAYLIST[0].url;
+                                  const mp3Url = currentTrackObj?.fallbackUrl || MULTI_GENRE_CATALOG[0].url;
                                   setCustomTrackUrl(mp3Url);
                                   setIsPlayingMusic(true);
                                   setRandomBannerMessage("⚡ Đã chuyển sang luồng Audio MP3 Nhaccuatoi / Zing MP3 trực tiếp (nghe mượt 100%)!");
@@ -2013,7 +1753,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
                               className="w-full h-10 rounded-xl" 
                             />
                             <div className="flex items-center justify-between text-[9px] text-emerald-400 font-bold px-1">
-                              <span>✅ Nguồn: {currentTrackObj?.sourceLabel || 'Audio Stream Direct'}</span>
+                              <span>✅ Nguồn phát: {currentTrackObj?.sourceLabel || 'Nhaccuatoi / Zing MP3 Direct'}</span>
                               <button 
                                 type="button" 
                                 onClick={() => {
@@ -2031,7 +1771,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
 
                         <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-[10px]">
                           <span className="text-emerald-400 font-bold flex items-center gap-1">
-                            <CheckCircle2 size={12} /> Nguồn phát phong phú: Nhaccuatoi, Zing MP3, SoundCloud, Direct Audio
+                            <CheckCircle2 size={12} /> Nguồn nhạc phong phú: Nhaccuatoi, Zing MP3, SoundCloud, Audio Direct
                           </span>
                           {!isPlayingMusic && (
                             <button
@@ -2074,42 +1814,49 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
                         </div>
                       </div>
 
-                      <div className="space-y-4 max-h-[340px] overflow-y-auto pr-1">
-                        {/* Nhóm 1: 6 Bài Nhạc Quán Ăn / Cafe / Spa (Bốc ngẫu nhiên từ kho 12 bài) */}
-                        <div className="space-y-2">
-                          <div className="flex justify-between items-center gap-2">
-                            <span className="text-[10px] font-black uppercase text-amber-900 tracking-wider flex items-center gap-1">
-                              ☕ NHẠC HÒA TẤU QUÁN CƠM / CAFE & SPA THIỀN ({displayedRestaurantTracks.length}/{CPUT_PLAYLIST.length} BÀI):
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                handleShuffleRestaurantTracks();
-                                setRandomBannerMessage("✨ Đã bóc 6 bài nhạc hòa tấu & cafe mới từ Nhaccuatoi / Zing / MP3!");
-                              }}
-                              className="text-[9px] font-black bg-amber-100 hover:bg-amber-200 text-amber-900 px-2 py-1 rounded-lg flex items-center gap-1 transition-all cursor-pointer"
-                              title="Đổi 6 bài hòa tấu khác từ kho nhạc"
-                            >
-                              <RefreshCw size={10} className="animate-spin" />
-                              <span>Đổi 6 bài hòa tấu mới</span>
-                            </button>
-                          </div>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            {displayedRestaurantTracks.map(track => {
+                      {/* KHO BÀI HÁT THEO BẢNG DÀNH CHO KHÁCH TỰ CHỌN */}
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center gap-2">
+                          <span className="text-[10px] font-black uppercase text-amber-900 tracking-wider flex items-center gap-1">
+                            🎶 DANH SÁCH BÀI HÁT ({filteredCatalogTracks.length}/{MULTI_GENRE_CATALOG.length} BÀI):
+                          </span>
+                          <span className="text-[9px] text-stone-500 font-bold">
+                            Click vào bài bất kỳ bên dưới để phát lập tức
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[300px] overflow-y-auto pr-1">
+                          {filteredCatalogTracks.length === 0 ? (
+                            <div className="col-span-2 text-center py-6 bg-stone-100 rounded-xl text-xs text-stone-500 font-medium">
+                              Không tìm thấy bài hát nào phù hợp với từ khóa "{musicSearchQuery}". 
+                              <button 
+                                onClick={() => { setMusicSearchQuery(''); setSelectedGenreFilter('all'); }}
+                                className="block mx-auto mt-2 text-amber-800 font-bold underline"
+                              >
+                                Xem tất cả bài hát
+                              </button>
+                            </div>
+                          ) : (
+                            filteredCatalogTracks.map(track => {
                               const isActive = activeMusicUrl === track.url;
                               return (
                                 <button
                                   key={track.id}
                                   type="button"
                                   onClick={() => handleSelectPlaylistTrack(track.url)}
-                                  className={`p-3 rounded-2xl border text-left transition-all flex items-center justify-between gap-2 cursor-pointer shadow-sm ${isActive ? 'bg-amber-100/80 border-amber-800 text-amber-950 ring-2 ring-amber-800 font-bold' : 'bg-white hover:bg-stone-100 border-stone-200 text-stone-800'}`}
+                                  className={`p-2.5 rounded-2xl border text-left transition-all flex items-center justify-between gap-2 cursor-pointer shadow-sm ${
+                                    isActive 
+                                      ? 'bg-amber-100/90 border-amber-800 text-amber-950 ring-2 ring-amber-800 font-bold' 
+                                      : 'bg-white hover:bg-amber-50 border-stone-200 text-stone-800'
+                                  }`}
                                 >
                                   <div className="space-y-0.5 min-w-0 flex-1">
-                                    <div className="flex items-center gap-1.5">
+                                    <div className="flex items-center gap-1">
                                       <span className="text-xs font-black truncate block">{track.title}</span>
                                     </div>
                                     <div className="flex items-center gap-1 flex-wrap">
-                                      <span className="text-[9px] text-stone-500 block truncate">{track.artist}</span>
+                                      <span className="text-[9px] text-stone-500 truncate">{track.artist}</span>
+                                      <span className="text-[8px] bg-amber-100 text-amber-900 px-1 py-0.2 rounded font-bold shrink-0">{track.badge}</span>
                                       <span className="text-[8px] bg-emerald-100 text-emerald-800 px-1 py-0.2 rounded font-bold shrink-0">
                                         {track.sourceLabel || 'MP3 Stream'}
                                       </span>
@@ -2118,76 +1865,18 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
                                   <div className="shrink-0">
                                     {isActive && isPlayingMusic ? (
                                       <span className="bg-emerald-600 text-white text-[9px] px-2 py-1 rounded-lg font-black flex items-center gap-1 animate-pulse">
-                                        <Pause size={10} /> ĐANG PHÁT
+                                        <Pause size={10} /> PHÁT
                                       </span>
                                     ) : (
-                                      <span className="bg-stone-100 hover:bg-amber-100 text-stone-700 hover:text-amber-900 text-[9px] px-2 py-1 rounded-lg font-bold flex items-center gap-1">
+                                      <span className="bg-stone-100 hover:bg-amber-200 text-stone-700 hover:text-amber-950 text-[9px] px-2 py-1 rounded-lg font-bold flex items-center gap-1">
                                         <Play size={10} /> Phát
                                       </span>
                                     )}
                                   </div>
                                 </button>
                               );
-                            })}
-                          </div>
-                        </div>
-
-                        {/* Nhóm 2: Nhạc V-Pop Hot Hit Giới Trẻ (Tự động Bóc Tách & Đổi Mới từ kho 24 bài Nhaccuatoi, Zing MP3, SoundCloud) */}
-                        <div className="space-y-2 pt-2 border-t border-stone-200">
-                          <div className="flex justify-between items-center gap-2">
-                            <span className="text-[10px] font-black uppercase text-red-800 tracking-wider flex items-center gap-1">
-                              🔥 NHẠC TRẺ VIỆT NAM HOT TRENDING ({displayedVPopTracks.length}/{VPOP_TRENDING_POOL.length} BÀI HOT):
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                handleShuffleVPopTracks();
-                                setRandomBannerMessage("✨ Đã bóc tách & đổi mới 6 bài hát V-Pop hot từ Nhaccuatoi, Zing MP3, SoundCloud!");
-                              }}
-                              className="text-[9px] font-black bg-red-100 hover:bg-red-200 text-red-800 px-2 py-1 rounded-lg flex items-center gap-1 transition-all cursor-pointer"
-                              title="Bóc tách & lấy 6 bài hot khác từ kho nhạc"
-                            >
-                              <RefreshCw size={10} className="animate-spin" />
-                              <span>Đổi 6 bài V-Pop mới</span>
-                            </button>
-                          </div>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            {displayedVPopTracks.map(track => {
-                              const isActive = activeMusicUrl === track.url;
-                              return (
-                                <button
-                                  key={track.id}
-                                  type="button"
-                                  onClick={() => handleSelectPlaylistTrack(track.url)}
-                                  className={`p-3 rounded-2xl border text-left transition-all flex items-center justify-between gap-2 cursor-pointer shadow-sm ${isActive ? 'bg-red-100/80 border-red-700 text-red-950 ring-2 ring-red-700 font-bold' : 'bg-white hover:bg-stone-100 border-stone-200 text-stone-800'}`}
-                                >
-                                  <div className="space-y-0.5 min-w-0 flex-1">
-                                    <div className="flex items-center gap-1">
-                                      <span className="text-xs font-black truncate block">{track.title}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1.5 flex-wrap">
-                                      <span className="text-[9px] text-stone-500 truncate">{track.artist}</span>
-                                      <span className="text-[8px] bg-red-100 text-red-800 px-1 py-0.2 rounded font-bold shrink-0">{track.badge}</span>
-                                      <span className="text-[8px] bg-emerald-100 text-emerald-800 px-1 py-0.2 rounded font-bold shrink-0">
-                                        {track.sourceLabel || 'MP3 Stream'}
-                                      </span>
-                                    </div>
-                                  </div>
-                                  <div className="shrink-0">
-                                    {isActive && isPlayingMusic ? (
-                                      <span className="bg-red-600 text-white text-[9px] px-2 py-1 rounded-lg font-black flex items-center gap-1 animate-pulse">
-                                        <Pause size={10} /> ĐANG PHÁT
-                                      </span>
-                                    ) : (
-                                      <span className="bg-stone-100 hover:bg-red-100 text-stone-700 hover:text-red-900 text-[9px] px-2 py-1 rounded-lg font-bold flex items-center gap-1">
-                                        <Play size={10} /> Phát
-                                      </span>
-                                    )}
-                                  </div>
-                                </button>
-                              );
-                            })}
-                          </div>
+                            })
+                          )}
                         </div>
                       </div>
                     </div>
