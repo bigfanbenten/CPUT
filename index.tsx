@@ -50,7 +50,7 @@
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
-import { ChevronRight, ChevronDown, ChevronUp, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, MessageSquare, CheckCircle2, Facebook, Mail, Youtube, Users, Vote, Music, VolumeX, Play, Pause, BarChart2, Check, X, RefreshCw, Shuffle } from 'lucide-react';
+import { ChevronRight, ChevronDown, ChevronUp, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, MessageSquare, CheckCircle2, Facebook, Mail, Youtube, Users, Vote, Music, VolumeX, Play, Pause, BarChart2, Check, X, RefreshCw, Shuffle, ExternalLink } from 'lucide-react';
 
 // --- CẤU HÌNH CỐ ĐỊNH ---
 const DEFAULT_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co';
@@ -603,7 +603,29 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
     return initialRandomTrack.url;
   }, [customTrackUrl, pollData?.music_url, initialRandomTrack]);
 
+  const currentTrackObj = useMemo(() => {
+    return MULTI_GENRE_CATALOG.find(t => t.url === activeMusicUrl) || initialRandomTrack;
+  }, [activeMusicUrl, initialRandomTrack]);
+
   const youtubeId = useMemo(() => getYouTubeId(activeMusicUrl), [activeMusicUrl]);
+
+  // Audio Playback Sync Effect
+  useEffect(() => {
+    if (isPlayingMusic && activeMusicUrl) {
+      if (audioRef.current) {
+        audioRef.current.src = activeMusicUrl;
+        audioRef.current.play().catch(err => {
+          console.warn("Audio element playback prevented or failed, activating WebAudio synth:", err);
+          playAmbientSynth();
+        });
+      }
+    } else if (!isPlayingMusic) {
+      if (audioRef.current) {
+        try { audioRef.current.pause(); } catch {}
+      }
+      stopAmbientSynth();
+    }
+  }, [isPlayingMusic, activeMusicUrl, playAmbientSynth, stopAmbientSynth]);
 
   const togglePlayMusic = () => {
     if (!activeMusicUrl) return;
@@ -1824,6 +1846,21 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
           </div>
         </div>
       )}
+
+      {/* Hidden HTML5 Audio Element for direct stream playback */}
+      <audio
+        ref={audioRef}
+        src={activeMusicUrl}
+        loop
+        onEnded={() => {
+          const randomIndex = Math.floor(Math.random() * MULTI_GENRE_CATALOG.length);
+          handleSelectPlaylistTrack(MULTI_GENRE_CATALOG[randomIndex].url);
+        }}
+        onError={(e) => {
+          console.warn("HTML5 audio stream error, falling back to WebAudio Synth:", e);
+          if (isPlayingMusic) playAmbientSynth();
+        }}
+      />
     </div>
   );
 };
