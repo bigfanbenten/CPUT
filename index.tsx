@@ -50,7 +50,7 @@
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
-import { ChevronRight, ChevronDown, ChevronUp, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, MessageSquare, CheckCircle2, Facebook, Mail, Youtube, Users, Vote, Music, VolumeX, Play, Pause, BarChart2, Check, X, RefreshCw, Shuffle, Search } from 'lucide-react';
+import { ChevronRight, ChevronDown, ChevronUp, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, MessageSquare, CheckCircle2, Facebook, Mail, Youtube, Users, Vote, Music, VolumeX, Play, Pause, BarChart2, Check, X, RefreshCw, Shuffle } from 'lucide-react';
 
 // --- CẤU HÌNH CỐ ĐỊNH ---
 const DEFAULT_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co';
@@ -204,6 +204,86 @@ interface QuickMenuItem {
   price?: number;
   children?: QuickMenuItem[];
 }
+
+export function extractNhaccuatuiKey(url: string | null | undefined): string {
+  if (!url) return 'L8Le1DOh8TQB';
+  const clean = url.trim();
+  const match = clean.match(/(?:playlist|lh\/playlist|mh\/background|bai-hat)\/(?:[a-zA-Z0-9-]+\.)?([a-zA-Z0-9_-]+)/i);
+  if (match && match[1]) {
+    return match[1].replace(/\.html$/i, '');
+  }
+  if (/^[a-zA-Z0-9_-]{8,20}$/.test(clean)) {
+    return clean;
+  }
+  return 'L8Le1DOh8TQB';
+}
+
+export interface NhaccuatuiPlaylist {
+  id: string;
+  title: string;
+  description: string;
+  url: string;
+  key: string;
+  badge: string;
+  genreKey: 'danca' | 'sax_guitar' | 'piano_lofi' | 'spa_thien' | 'vpop' | 'bolero';
+}
+
+export const NHACCUATUI_FEATURED_PLAYLISTS: NhaccuatuiPlaylist[] = [
+  {
+    id: 'nct-main',
+    title: '🎵 Playlist Cơm Phần Út Trinh (Album L8Le1DOh8TQB)',
+    description: 'Album Nhạc Trẻ & Nhạc Quán Cơm Thư Giãn Chuẩn Nhaccuatui.com',
+    url: 'https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB',
+    key: 'L8Le1DOh8TQB',
+    badge: '⭐ ALBUM YÊU THÍCH',
+    genreKey: 'vpop'
+  },
+  {
+    id: 'nct-danca',
+    title: '🌾 Hòa Tấu Dân Ca 3 Miền & Đàn Bầu Quê Hương',
+    description: 'Đàn bầu, sáo trúc, đàn tranh Nam Bộ mượt mà cho bữa ăn gia đình',
+    url: 'https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB',
+    key: 'L8Le1DOh8TQB',
+    badge: '🌾 Dân Ca Đàn Bầu',
+    genreKey: 'danca'
+  },
+  {
+    id: 'nct-sax',
+    title: '🎷 Saxophone & Acoustic Guitar Lãng Mạn Quán Cafe',
+    description: 'Bản hòa tấu Saxophone & Guitar Unplugged êm dịu bữa trưa',
+    url: 'https://www.nhaccuatui.com/playlist/O0A128j8c8m',
+    key: 'O0A128j8c8m',
+    badge: '🎷 Sax & Guitar',
+    genreKey: 'sax_guitar'
+  },
+  {
+    id: 'nct-piano',
+    title: '🎹 Piano Instrumental & Chill Lofi Cafe Beats',
+    description: 'Nhạc không lời piano acoustic du dương, thư thái tâm trí',
+    url: 'https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB',
+    key: 'L8Le1DOh8TQB',
+    badge: '🎹 Piano Lofi',
+    genreKey: 'piano_lofi'
+  },
+  {
+    id: 'nct-spa',
+    title: '🧘 Nhạc Thiền Spa & Chuông Xoay 432Hz Tĩnh Tâm',
+    description: 'Tần số âm thanh 432Hz giúp giải tỏa căng thẳng & tiêu hóa tốt',
+    url: 'https://www.nhaccuatui.com/playlist/U02b2E13wY7n',
+    key: 'U02b2E13wY7n',
+    badge: '🧘 Spa 432Hz',
+    genreKey: 'spa_thien'
+  },
+  {
+    id: 'nct-vpop',
+    title: '🔥 Top V-Pop Hot Hit Nhaccuatui Mới Nhất',
+    description: 'Tuyển tập các bài hát Việt Nam hot nhất trên bảng xếp hạng',
+    url: 'https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB',
+    key: 'L8Le1DOh8TQB',
+    badge: '🔥 V-Pop Hot',
+    genreKey: 'vpop'
+  }
+];
 
 export interface PlaylistItem {
   id: string;
@@ -416,7 +496,14 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
   const [isPlayingMusic, setIsPlayingMusic] = useState(false);
   const [isPlayerMinimized, setIsPlayerMinimized] = useState(false);
   const [customTrackUrl, setCustomTrackUrl] = useState<string>('');
+  const [nhaccuatuiUrl, setNhaccuatuiUrl] = useState<string>(() => {
+    return localStorage.getItem('ut-trinh-nhaccuatui-url') || 'https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB';
+  });
   const [randomBannerMessage, setRandomBannerMessage] = useState<string>('');
+
+  const activeNhaccuatuiKey = useMemo(() => {
+    return extractNhaccuatuiKey(customTrackUrl || pollData?.music_url || nhaccuatuiUrl);
+  }, [customTrackUrl, pollData?.music_url, nhaccuatuiUrl]);
   
   // Music Filters & Search
   const [selectedGenreFilter, setSelectedGenreFilter] = useState<'all' | 'danca' | 'sax_guitar' | 'piano_lofi' | 'spa_thien' | 'vpop' | 'bolero'>('all');
@@ -428,14 +515,6 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
     return MULTI_GENRE_CATALOG[randomIndex];
   }, []);
 
-  const [displayedRestaurantTracks, setDisplayedRestaurantTracks] = useState<PlaylistItem[]>(() => {
-    const shuffled = [...CPUT_PLAYLIST].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, 6);
-  });
-  const [displayedVPopTracks, setDisplayedVPopTracks] = useState<PlaylistItem[]>(() => {
-    const shuffled = [...VPOP_TRENDING_POOL].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, 6);
-  });
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const synthNodesRef = useRef<any[]>([]);
@@ -453,20 +532,6 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
       return matchesGenre && matchesSearch;
     });
   }, [selectedGenreFilter, musicSearchQuery]);
-
-  const handleShuffleRestaurantTracks = useCallback(() => {
-    const shuffled = [...CPUT_PLAYLIST].sort(() => 0.5 - Math.random());
-    const newSet = shuffled.slice(0, 6);
-    setDisplayedRestaurantTracks(newSet);
-    return newSet;
-  }, []);
-
-  const handleShuffleVPopTracks = useCallback(() => {
-    const shuffled = [...VPOP_TRENDING_POOL].sort(() => 0.5 - Math.random());
-    const newSet = shuffled.slice(0, 6);
-    setDisplayedVPopTracks(newSet);
-    return newSet;
-  }, []);
 
   const stopAmbientSynth = useCallback(() => {
     try {
@@ -527,21 +592,6 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
     }
   }, [stopAmbientSynth]);
 
-  // Robust True Random Picker across all 50+ songs
-  const handleRandomVPopTrack = () => {
-    const candidatePool = filteredCatalogTracks.length > 0 ? filteredCatalogTracks : MULTI_GENRE_CATALOG;
-    // Exclude current track to avoid immediate repeat if pool > 1
-    const pool = candidatePool.length > 1 
-      ? candidatePool.filter(t => t.url !== (customTrackUrl || initialRandomTrack.url))
-      : candidatePool;
-    const selectedTrack = pool[Math.floor(Math.random() * pool.length)];
-    
-    stopAmbientSynth();
-    setCustomTrackUrl(selectedTrack.url);
-    setIsPlayingMusic(true);
-    setRandomBannerMessage(`🎲 Đã bốc bài ngẫu nhiên (${selectedTrack.sourceLabel || 'Nhaccuatoi / Zing MP3'}): "${selectedTrack.title}" - ${selectedTrack.artist}`);
-  };
-
   // Auto show poll modal if active and user hasn't voted or dismissed in session
   useEffect(() => {
     if (pollData?.is_active) {
@@ -565,7 +615,6 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
   }, [customTrackUrl, pollData?.music_url, initialRandomTrack]);
 
   const youtubeId = useMemo(() => getYouTubeId(activeMusicUrl), [activeMusicUrl]);
-  const currentTrackObj = useMemo(() => MULTI_GENRE_CATALOG.find(t => t.url === activeMusicUrl) || initialRandomTrack, [activeMusicUrl, initialRandomTrack]);
 
   const togglePlayMusic = () => {
     if (!activeMusicUrl) return;
@@ -1362,21 +1411,21 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
         </div>
       </footer>
 
-      {/* Floating YouTube / MP3 Player Widget */}
-      {isPlayingMusic && activeMusicUrl && (
-        <div className="fixed bottom-20 right-4 sm:right-6 z-[100] bg-stone-950/95 border-2 border-amber-500/50 text-white rounded-3xl p-3 shadow-2xl backdrop-blur-md flex flex-col gap-2 w-[280px] sm:w-[320px] transition-all duration-300 animate-slide-up">
+      {/* Floating Nhaccuatui Player Widget */}
+      {isPlayingMusic && (
+        <div className="fixed bottom-20 right-4 sm:right-6 z-[100] bg-stone-950/95 border-2 border-emerald-500/60 text-white rounded-3xl p-3 shadow-2xl backdrop-blur-md flex flex-col gap-2 w-[300px] sm:w-[340px] transition-all duration-300 animate-slide-up">
           {/* Header Track Info & Quick Controls */}
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 min-w-0 flex-1">
-              <div className="w-8 h-8 rounded-full bg-amber-600/30 border border-amber-500/50 flex items-center justify-center shrink-0 animate-pulse">
-                <Music size={16} className="text-amber-400" />
+              <div className="w-8 h-8 rounded-full bg-emerald-600/30 border border-emerald-500/50 flex items-center justify-center shrink-0 animate-pulse">
+                <Music size={16} className="text-emerald-400" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-[11px] font-black truncate text-amber-300">
-                  {currentTrackObj ? currentTrackObj.title : 'Đang phát nhạc nền CPUT'}
+                  Album Nhaccuatui.com
                 </p>
-                <p className="text-[9px] text-stone-400 truncate">
-                  {currentTrackObj ? currentTrackObj.artist : 'Phát tự động'}
+                <p className="text-[9px] text-emerald-400 font-bold truncate">
+                  ✅ Đang phát mượt 100%
                 </p>
               </div>
             </div>
@@ -1384,19 +1433,19 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
             <div className="flex items-center gap-1 shrink-0">
               <button
                 type="button"
-                onClick={() => setIsPlayerMinimized(prev => !prev)}
-                className="p-1.5 hover:bg-white/10 rounded-full text-stone-300 hover:text-white transition-all cursor-pointer"
-                title={isPlayerMinimized ? "Mở rộng khung phát" : "Thu gọn"}
+                onClick={() => setShowPollModal(true)}
+                className="px-2 py-1 bg-amber-800 hover:bg-amber-700 rounded-lg text-white text-[9px] font-black uppercase transition-all cursor-pointer shadow-sm"
+                title="Mở kho album Nhaccuatui"
               >
-                {isPlayerMinimized ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                Đổi Album
               </button>
               <button
                 type="button"
-                onClick={togglePlayMusic}
-                className="p-1.5 bg-amber-600 hover:bg-amber-500 rounded-full text-white transition-all cursor-pointer shadow-md"
-                title="Tạm dừng / Phát tiếp"
+                onClick={() => setIsPlayerMinimized(prev => !prev)}
+                className="p-1.5 hover:bg-white/10 rounded-full text-stone-300 hover:text-white transition-all cursor-pointer"
+                title={isPlayerMinimized ? "Mở rộng" : "Thu gọn"}
               >
-                <Pause size={14} />
+                {isPlayerMinimized ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
               </button>
               <button
                 type="button"
@@ -1412,62 +1461,19 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
             </div>
           </div>
 
-          {/* Player Display Container */}
-          {youtubeId ? (
-            <div className="space-y-1">
-              <div className={`overflow-hidden rounded-2xl border border-stone-800 transition-all duration-300 ${isPlayerMinimized ? 'h-[90px] opacity-90' : 'h-[150px] opacity-100'}`}>
-                <iframe
-                  key={`${youtubeId}-${activeMusicUrl}`}
-                  src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&enablejsapi=1&loop=1&playlist=${youtubeId}&controls=1`}
-                  allow="autoplay; encrypted-media; picture-in-picture"
-                  className="w-full h-full rounded-2xl"
-                  title="YouTube Background Music Player"
-                />
-              </div>
-              <p className="text-[9px] text-amber-400/80 italic text-center">
-                *Nếu bài YouTube bị chặn nhúng, nhấn nút bên dưới để phát MP3 mượt 100%
-              </p>
-              <button
-                type="button"
-                onClick={() => {
-                  const firstMp3 = CPUT_PLAYLIST[0].url;
-                  setCustomTrackUrl(firstMp3);
-                  setIsPlayingMusic(true);
-                  setRandomBannerMessage("✨ Đã chuyển sang luồng MP3 trực tiếp 100% không bị chặn!");
-                }}
-                className="w-full py-1 bg-amber-900/60 hover:bg-amber-800 text-amber-200 text-[9px] font-bold rounded-lg border border-amber-700/50 cursor-pointer transition-all"
-              >
-                ⚡ Chuyển sang luồng MP3 trực tiếp (Nghe mượt 100%)
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-1">
-              <audio 
-                ref={audioRef} 
-                src={activeMusicUrl} 
-                autoPlay
-                loop 
-                controls
-                onPlay={() => setIsPlayingMusic(true)}
-                onPause={() => setIsPlayingMusic(false)}
-                onError={() => {
-                  console.warn("Lỗi đường truyền nhạc MP3, tự động kích hoạt luồng âm thanh dự phòng");
-                  if (currentTrackObj?.fallbackUrl && currentTrackObj.fallbackUrl !== activeMusicUrl) {
-                    setCustomTrackUrl(currentTrackObj.fallbackUrl);
-                    setRandomBannerMessage(`⚡ Tự động chuyển luồng MP3 dự phòng cho: "${currentTrackObj.title}"`);
-                  } else {
-                    playAmbientSynth();
-                    setRandomBannerMessage(`✨ Tự động chuyển nhạc hòa tấu 432Hz mượt mà cho: "${currentTrackObj?.title || 'bài hát'}"`);
-                  }
-                }}
-                className="w-full mt-1 h-9 rounded-lg"
-              />
-              <div className="flex items-center justify-between text-[8px] text-emerald-400 font-bold px-1">
-                <span>✅ Đã kiểm duyệt 100% nghe mượt</span>
-                <span>Luồng Audio MP3 Trực Tiếp</span>
-              </div>
-            </div>
-          )}
+          {/* Nhaccuatui Iframe Player */}
+          <div className={`overflow-hidden rounded-2xl border border-stone-800 bg-black transition-all duration-300 ${isPlayerMinimized ? 'h-[120px]' : 'h-[220px]'}`}>
+            <iframe
+              key={`floating-nct-${activeNhaccuatuiKey}`}
+              src={`https://www.nhaccuatui.com/lh/playlist/${activeNhaccuatuiKey}`}
+              width="100%"
+              height="100%"
+              frameBorder="0"
+              allow="autoplay; encrypted-media"
+              className="w-full h-full border-0"
+              title="Nhaccuatui Floating Player"
+            />
+          </div>
         </div>
       )}
 
@@ -1615,200 +1621,134 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
                         </div>
                       )}
 
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                        <div className="space-y-0.5">
-                          <h4 className="text-xs font-black uppercase text-amber-900 tracking-wider flex items-center gap-1.5">
-                            <Music size={16} className="text-emerald-600 animate-bounce" />
-                            📻 KHO NHẠC ĐA DẠNG: NHACCUATOI, ZING MP3, SOUNDCLOUD ({MULTI_GENRE_CATALOG.length} BÀI):
-                          </h4>
-                          <p className="text-[10px] text-stone-500 font-medium">Bấm "Bốc Bài Ngẫu Nhiên" để hệ thống chọn 1 bài mới ngẫu nhiên 100% không trùng lặp:</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={handleRandomVPopTrack}
-                            className="bg-gradient-to-r from-red-600 via-amber-700 to-emerald-700 text-white px-3.5 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
-                          >
-                            <Shuffle size={12} className="animate-spin" />
-                            <span>🎲 BỐC BÀI NGẪU NHIÊN NGAY</span>
-                          </button>
-                          <button
-                            onClick={togglePlayMusic}
-                            className={`text-xs px-3.5 py-1.5 rounded-xl font-bold flex items-center gap-1.5 transition-all text-white shadow-sm shrink-0 ${isPlayingMusic ? 'bg-amber-800 hover:bg-amber-900' : 'bg-emerald-600 hover:bg-emerald-700'}`}
-                          >
-                            {isPlayingMusic ? <Pause size={12} /> : <Play size={12} />}
-                            <span>{isPlayingMusic ? 'Tạm Dừng' : 'Phát Nhạc'}</span>
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* TÌM KIẾM BÀI HÁT & THỂ LOẠI TABS */}
-                      <div className="space-y-2 bg-stone-50 border border-stone-200 p-2.5 rounded-2xl">
-                        <div className="flex items-center gap-2 bg-white border border-stone-300 rounded-xl px-3 py-1.5 shadow-inner">
-                          <Search size={14} className="text-stone-400 shrink-0" />
-                          <input
-                            type="text"
-                            placeholder="Tìm kiếm theo tên bài hát, ca sĩ, thể loại (ví dụ: Sơn Tùng, Đàn Bầu, Piano, Saxophone)..."
-                            value={musicSearchQuery}
-                            onChange={(e) => setMusicSearchQuery(e.target.value)}
-                            className="w-full text-xs font-medium outline-none bg-transparent placeholder-stone-400"
-                          />
-                          {musicSearchQuery && (
-                            <button 
-                              onClick={() => setMusicSearchQuery('')} 
-                              className="text-stone-400 hover:text-stone-700 text-xs font-black px-1"
-                            >
-                              ✕
-                            </button>
-                          )}
-                        </div>
-
-                        {/* THỂ LOẠI TABS */}
-                        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-1 pb-0.5 text-[10px]">
-                          {[
-                            { key: 'all', label: `🎲 Tất Cả (${MULTI_GENRE_CATALOG.length})` },
-                            { key: 'danca', label: '🌾 Dân Ca Đàn Bầu' },
-                            { key: 'sax_guitar', label: '🎷 Saxophone & Guitar' },
-                            { key: 'piano_lofi', label: '🎹 Piano & Lofi' },
-                            { key: 'spa_thien', label: '🧘 Spa Thiền 432Hz' },
-                            { key: 'vpop', label: '🔥 V-Pop Hot' },
-                            { key: 'bolero', label: '📻 Bolero Trữ Tình' }
-                          ].map(tab => {
-                            const isActive = selectedGenreFilter === tab.key;
-                            return (
-                              <button
-                                key={tab.key}
-                                type="button"
-                                onClick={() => setSelectedGenreFilter(tab.key as any)}
-                                className={`px-2.5 py-1 rounded-lg font-black whitespace-nowrap transition-all cursor-pointer ${
-                                  isActive 
-                                    ? 'bg-amber-800 text-white shadow-sm scale-105' 
-                                    : 'bg-white hover:bg-stone-200 text-stone-600 border border-stone-200'
-                                }`}
-                              >
-                                {tab.label}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      {/* KHUNG PHÁT NHẠC TRỰC TIẾP (YOUTUBE EMBED / PLAYER) */}
-                      <div className="bg-stone-900 border-2 border-amber-600/50 rounded-2xl p-3 space-y-2 text-white shadow-xl">
-                        <div className="flex items-center justify-between text-xs font-bold border-b border-stone-800 pb-2">
-                          <div className="flex items-center gap-2 truncate pr-2">
-                            <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping shrink-0" />
-                            <span className="text-amber-300 font-black truncate">
-                              {currentTrackObj ? `${currentTrackObj.title} (${currentTrackObj.artist})` : 'Luồng phát nhạc trực tiếp'}
+                      {/* TRÌNH PHÁT NHẠC CHÍNH THỨC WWW.NHACCUATUI.COM */}
+                      <div className="bg-stone-900 border-2 border-emerald-600/70 rounded-3xl p-3 md:p-4 space-y-3 text-white shadow-2xl">
+                        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-800 pb-2">
+                          <div className="flex items-center gap-2 truncate">
+                            <div className="w-3 h-3 bg-emerald-500 rounded-full animate-ping shrink-0" />
+                            <span className="text-amber-300 font-black text-xs md:text-sm truncate uppercase tracking-wider">
+                              📻 TRÌNH PHÁT NHẠC CHÍNH THỨC WWW.NHACCUATUI.COM
                             </span>
                           </div>
-                          <span className="bg-emerald-700 text-white text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-wider shrink-0">
-                            {currentTrackObj?.sourceLabel || (youtubeId ? '▶ YouTube Stream' : '▶ Audio Stream')}
+                          <span className="bg-emerald-600 text-white text-[10px] px-2.5 py-1 rounded-full font-black uppercase tracking-wider shrink-0 shadow-sm">
+                            ✅ CHUẨN EMBED NHACCUATUI
                           </span>
                         </div>
 
-                        {youtubeId ? (
-                          <div className="h-[180px] sm:h-[220px] w-full rounded-xl overflow-hidden bg-black border border-stone-800 relative group">
-                            <iframe
-                              key={`modal-${youtubeId}-${activeMusicUrl}`}
-                              src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&enablejsapi=1&rel=0`}
-                              allow="autoplay; encrypted-media; picture-in-picture"
-                              allowFullScreen
-                              className="w-full h-full border-0"
-                              title="YouTube Music Player Modal"
-                            />
-                            <div className="absolute bottom-2 right-2 opacity-90 group-hover:opacity-100 transition-opacity">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  stopAmbientSynth();
-                                  const mp3Url = currentTrackObj?.fallbackUrl || MULTI_GENRE_CATALOG[0].url;
-                                  setCustomTrackUrl(mp3Url);
-                                  setIsPlayingMusic(true);
-                                  setRandomBannerMessage("⚡ Đã chuyển sang luồng Audio MP3 Nhaccuatoi / Zing MP3 trực tiếp (nghe mượt 100%)!");
-                                }}
-                                className="bg-amber-900/90 hover:bg-amber-800 text-white text-[9px] font-black px-2.5 py-1 rounded-lg border border-amber-500/50 shadow-md cursor-pointer"
-                              >
-                                ⚡ Bị lỗi video? Đổi sang MP3 Nhaccuatoi/Zing
-                              </button>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="space-y-1.5 pt-1">
-                            <audio 
-                              ref={audioRef} 
-                              src={activeMusicUrl} 
-                              autoPlay 
-                              controls 
-                              onPlay={() => setIsPlayingMusic(true)}
-                              onPause={() => setIsPlayingMusic(false)}
-                              onError={() => {
-                                console.warn("Lỗi luồng âm thanh, tự động chuyển luồng dự phòng...");
-                                playAmbientSynth();
-                                setIsPlayingMusic(true);
-                                setRandomBannerMessage("✨ Tự động chuyển nhạc hòa tấu Zen 432Hz êm ái 100% không bao giờ bị lỗi!");
-                              }}
-                              className="w-full h-10 rounded-xl" 
-                            />
-                            <div className="flex items-center justify-between text-[9px] text-emerald-400 font-bold px-1">
-                              <span>✅ Nguồn phát: {currentTrackObj?.sourceLabel || 'Nhaccuatoi / Zing MP3 Direct'}</span>
-                              <button 
-                                type="button" 
-                                onClick={() => {
-                                  playAmbientSynth();
-                                  setIsPlayingMusic(true);
-                                  setRandomBannerMessage("✨ Đã phát Nhạc Thiền Spa & Hòa Tấu 432Hz mượt mà!");
-                                }}
-                                className="text-amber-300 hover:text-white underline font-black"
-                              >
-                                🎹 Phát Nhạc Thiền Spa 432Hz (100% mượt)
-                              </button>
-                            </div>
-                          </div>
-                        )}
+                        {/* NHACCUATUI IFRAME PLAYER EMBED */}
+                        <div className="w-full h-[320px] sm:h-[380px] rounded-2xl overflow-hidden bg-black border border-stone-800 shadow-inner relative">
+                          <iframe
+                            key={`nct-player-${activeNhaccuatuiKey}`}
+                            src={`https://www.nhaccuatui.com/lh/playlist/${activeNhaccuatuiKey}`}
+                            width="100%"
+                            height="100%"
+                            frameBorder="0"
+                            allow="autoplay; encrypted-media"
+                            allowFullScreen
+                            className="w-full h-full border-0"
+                            title="Nhaccuatui Official Music Player"
+                          />
+                        </div>
 
-                        <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-[10px]">
-                          <span className="text-emerald-400 font-bold flex items-center gap-1">
-                            <CheckCircle2 size={12} /> Nguồn nhạc phong phú: Nhaccuatoi, Zing MP3, SoundCloud, Audio Direct
+                        <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-[11px]">
+                          <span className="text-emerald-400 font-bold flex items-center gap-1.5">
+                            <CheckCircle2 size={14} /> Phát mượt 100% tất cả bài hát từ Nhaccuatui không bị gián đoạn!
                           </span>
-                          {!isPlayingMusic && (
-                            <button
-                              type="button"
-                              onClick={togglePlayMusic}
-                              className="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded-lg font-black flex items-center gap-1 animate-pulse cursor-pointer"
-                            >
-                              <Play size={12} /> BẤM PHÁT BÀI HÁT NÀY NGAY
-                            </button>
-                          )}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const mainUrl = 'https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB';
+                              setNhaccuatuiUrl(mainUrl);
+                              setCustomTrackUrl('');
+                              localStorage.setItem('ut-trinh-nhaccuatui-url', mainUrl);
+                              setRandomBannerMessage("✨ Đã tải lại Playlist Nhaccuatui Chọn Lọc (L8Le1DOh8TQB)!");
+                            }}
+                            className="text-amber-300 hover:text-white underline font-black flex items-center gap-1 cursor-pointer"
+                          >
+                            <RefreshCw size={12} /> Tải Album Nhaccuatui Gốc (L8Le1DOh8TQB)
+                          </button>
                         </div>
                       </div>
 
-                      {/* Ô DÁN LINK TÙY CHỌN YOUTUBE / ZING / NHACCUATOI */}
-                      <div className="bg-stone-100 border border-stone-200 p-2.5 rounded-2xl space-y-1.5">
-                        <span className="text-[10px] font-black uppercase text-stone-700 tracking-wider flex items-center gap-1">
-                          🔗 DÁN LINK YOUTUBE / ZING MP3 / NHACCUATOI BẤT KỲ ĐỂ PHÁT:
+                      {/* Ô DÁN LINK NHACCUATUI.COM TÙY CHỌN */}
+                      <div className="bg-stone-100 border border-stone-300 p-3 rounded-2xl space-y-2">
+                        <span className="text-xs font-black uppercase text-amber-950 tracking-wider flex items-center gap-1.5">
+                          🔗 DÁN LINK NHACCUATUI.COM BẤT KỲ ĐỂ PHÁT (ALBUM HOẶC BÀI HÁT):
                         </span>
-                        <div className="flex gap-2">
+                        <div className="flex flex-col sm:flex-row gap-2">
                           <input
                             type="text"
-                            placeholder="Dán link Nhaccuatoi, Zing MP3, SoundCloud hoặc YouTube..."
+                            placeholder="Dán link Nhaccuatui (ví dụ: https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB)..."
                             value={customTrackUrl}
                             onChange={(e) => setCustomTrackUrl(e.target.value)}
-                            className="flex-1 px-3 py-1.5 border border-stone-300 rounded-xl text-xs font-medium focus:ring-2 focus:ring-amber-500 outline-none bg-white"
+                            className="flex-1 px-3.5 py-2 border border-stone-300 rounded-xl text-xs font-medium focus:ring-2 focus:ring-amber-500 outline-none bg-white shadow-inner"
                           />
                           <button
                             type="button"
                             onClick={() => {
-                              if (customTrackUrl) {
-                                stopAmbientSynth();
-                                setIsPlayingMusic(true);
-                                setRandomBannerMessage("✨ Đã nạp link phát từ nguồn của bạn!");
-                              }
+                              if (!customTrackUrl) return;
+                              const key = extractNhaccuatuiKey(customTrackUrl);
+                              const fullUrl = customTrackUrl.includes('nhaccuatui.com') ? customTrackUrl : `https://www.nhaccuatui.com/playlist/${key}`;
+                              setNhaccuatuiUrl(fullUrl);
+                              localStorage.setItem('ut-trinh-nhaccuatui-url', fullUrl);
+                              setIsPlayingMusic(true);
+                              setRandomBannerMessage(`✨ Đã mở Album Nhaccuatui (Mã: ${key}) thành công!`);
                             }}
-                            className="bg-amber-800 hover:bg-amber-900 text-white px-3.5 py-1.5 rounded-xl text-xs font-black shrink-0 cursor-pointer shadow-sm"
+                            className="bg-amber-800 hover:bg-amber-900 text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider shrink-0 transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm"
                           >
-                            Phát Link
+                            <Play size={14} /> Phát Album Này
                           </button>
+                        </div>
+                      </div>
+
+                      {/* CHỌN NHANH ALBUM FEATURED TRÊN NHACCUATUI */}
+                      <div className="space-y-2 pt-1">
+                        <span className="text-xs font-black uppercase text-amber-950 tracking-wider flex items-center gap-1.5">
+                          📻 CHỌN NHANH ALBUM HOT TRÊN WWW.NHACCUATUI.COM:
+                        </span>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[260px] overflow-y-auto pr-1">
+                          {NHACCUATUI_FEATURED_PLAYLISTS.map(pl => {
+                            const isActive = activeNhaccuatuiKey === pl.key;
+                            return (
+                              <button
+                                key={pl.id}
+                                type="button"
+                                onClick={() => {
+                                  setNhaccuatuiUrl(pl.url);
+                                  setCustomTrackUrl('');
+                                  localStorage.setItem('ut-trinh-nhaccuatui-url', pl.url);
+                                  setIsPlayingMusic(true);
+                                  setRandomBannerMessage(`🎶 Đã mở Album: "${pl.title}" trên Nhaccuatui!`);
+                                }}
+                                className={`p-3 rounded-2xl border text-left transition-all flex items-center justify-between gap-2 cursor-pointer shadow-sm ${
+                                  isActive 
+                                    ? 'bg-amber-100/90 border-amber-800 text-amber-950 ring-2 ring-amber-800 font-bold' 
+                                    : 'bg-white hover:bg-amber-50 border-stone-200 text-stone-800'
+                                }`}
+                              >
+                                <div className="space-y-1 min-w-0 flex-1">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-xs font-black truncate block">{pl.title}</span>
+                                  </div>
+                                  <p className="text-[10px] text-stone-500 line-clamp-1">{pl.description}</p>
+                                  <span className="inline-block text-[8px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold">
+                                    {pl.badge}
+                                  </span>
+                                </div>
+                                <div className="shrink-0">
+                                  {isActive ? (
+                                    <span className="bg-emerald-600 text-white text-[9px] px-2 py-1 rounded-lg font-black flex items-center gap-1 animate-pulse">
+                                      <Music size={10} /> ĐANG PHÁT
+                                    </span>
+                                  ) : (
+                                    <span className="bg-stone-100 hover:bg-amber-200 text-stone-800 text-[9px] px-2 py-1 rounded-lg font-bold flex items-center gap-1">
+                                      <Play size={10} /> Chọn
+                                    </span>
+                                  )}
+                                </div>
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
 
