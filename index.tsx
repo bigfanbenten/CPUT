@@ -500,6 +500,20 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
 
   // Initial Random Song pick so every user visit gets a fresh song
   const initialRandomTrack = useMemo(() => {
+    if (!MULTI_GENRE_CATALOG || MULTI_GENRE_CATALOG.length === 0) {
+      return {
+        id: 'default',
+        title: 'Cơm Phần Út Trinh Nhạc Nền',
+        artist: 'Hòa Tấu Dân Ca',
+        category: 'restaurant',
+        genreKey: 'vpop' as const,
+        url: 'https://cdn.pixabay.com/download/audio/2022/11/06/audio_c97a8e7e13.mp3',
+        badge: '🌾 Nhạc Út Trinh',
+        sourceType: 'nhaccuatoi',
+        sourceLabel: 'Bóc tách từ Nhaccuatui.com',
+        nctLink: 'https://www.nhaccuatui.com'
+      };
+    }
     const randomIndex = Math.floor(Math.random() * MULTI_GENRE_CATALOG.length);
     return MULTI_GENRE_CATALOG[randomIndex];
   }, []);
@@ -510,13 +524,15 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
 
   // Filtered tracks based on selected genre & search
   const filteredCatalogTracks = useMemo(() => {
+    if (!MULTI_GENRE_CATALOG || !Array.isArray(MULTI_GENRE_CATALOG)) return [];
     return MULTI_GENRE_CATALOG.filter(track => {
+      if (!track) return false;
       const matchesGenre = selectedGenreFilter === 'all' || track.genreKey === selectedGenreFilter;
-      const q = musicSearchQuery.toLowerCase().trim();
+      const q = (musicSearchQuery || '').toLowerCase().trim();
       const matchesSearch = !q || 
-        track.title.toLowerCase().includes(q) || 
-        track.artist.toLowerCase().includes(q) || 
-        track.badge.toLowerCase().includes(q) ||
+        (track.title && track.title.toLowerCase().includes(q)) || 
+        (track.artist && track.artist.toLowerCase().includes(q)) || 
+        (track.badge && track.badge.toLowerCase().includes(q)) ||
         (track.sourceLabel && track.sourceLabel.toLowerCase().includes(q));
       return matchesGenre && matchesSearch;
     });
@@ -597,14 +613,28 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
 
   const activeMusicUrl = useMemo(() => {
     if (customTrackUrl) return customTrackUrl;
-    if (pollData?.music_url && !pollData.music_url.includes('DWcJFNfaw9c') && !pollData.music_url.includes('youtube.com') && !pollData.music_url.includes('youtu.be')) {
+    if (pollData?.music_url && typeof pollData.music_url === 'string' && pollData.music_url.trim().length > 0 && !pollData.music_url.includes('DWcJFNfaw9c') && !pollData.music_url.includes('youtube.com') && !pollData.music_url.includes('youtu.be')) {
       return pollData.music_url;
     }
-    return initialRandomTrack.url;
+    return initialRandomTrack?.url || MULTI_GENRE_CATALOG[0]?.url || 'https://cdn.pixabay.com/download/audio/2022/11/06/audio_c97a8e7e13.mp3';
   }, [customTrackUrl, pollData?.music_url, initialRandomTrack]);
 
   const currentTrackObj = useMemo(() => {
-    return MULTI_GENRE_CATALOG.find(t => t.url === activeMusicUrl) || initialRandomTrack;
+    const found = MULTI_GENRE_CATALOG.find(t => t.url === activeMusicUrl);
+    if (found) return found;
+    if (initialRandomTrack) return initialRandomTrack;
+    return MULTI_GENRE_CATALOG[0] || {
+      id: 'default',
+      title: 'Cơm Phần Út Trinh Nhạc Nền',
+      artist: 'Hòa Tấu Dân Ca',
+      category: 'restaurant',
+      genreKey: 'vpop',
+      url: 'https://cdn.pixabay.com/download/audio/2022/11/06/audio_c97a8e7e13.mp3',
+      badge: '🌾 Nhạc Út Trinh',
+      sourceType: 'nhaccuatoi',
+      sourceLabel: 'Bóc tách từ Nhaccuatui.com',
+      nctLink: 'https://www.nhaccuatui.com'
+    };
   }, [activeMusicUrl, initialRandomTrack]);
 
   const youtubeId = useMemo(() => getYouTubeId(activeMusicUrl), [activeMusicUrl]);
@@ -3065,15 +3095,26 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
             <p className="text-xs text-stone-300 leading-relaxed font-medium">
               Đã xảy ra sự cố hiển thị nhỏ. Dữ liệu của bạn vẫn an toàn. Vui lòng bấm bên dưới để khôi phục lại trang.
             </p>
+            {this.state.error && (
+              <p className="text-[10px] text-amber-300 bg-stone-950/80 p-2.5 rounded-xl border border-amber-900/40 font-mono text-left break-all max-h-24 overflow-y-auto">
+                {String(this.state.error?.message || this.state.error)}
+              </p>
+            )}
             <button
               onClick={() => {
+                try {
+                  localStorage.removeItem('ut-trinh-poll');
+                  localStorage.removeItem('ut-trinh-poll-voted');
+                  localStorage.removeItem('ut-trinh-nhaccuatui-url');
+                  sessionStorage.removeItem('ut-trinh-poll-dismissed');
+                } catch {}
                 this.setState({ hasError: false, error: null });
                 window.location.hash = '';
                 window.location.reload();
               }}
               className="w-full bg-amber-700 hover:bg-amber-800 text-white font-black py-3.5 px-6 rounded-2xl uppercase tracking-wider text-xs transition-all cursor-pointer shadow-lg"
             >
-              TẢI LẠI TRANG CHỦ
+              TẢI LẠI TRANG CHỦ & XÓA BỘ NHỚ ĐỆM
             </button>
           </div>
         </div>
