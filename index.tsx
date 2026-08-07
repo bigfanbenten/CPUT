@@ -1436,18 +1436,6 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
         <div className={`pt-16 border-t border-white/10 text-center space-y-4`}>
           <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30">© 2026 CƠM PHẦN ÚT TRINH. ALL RIGHTS RESERVED.</p>
           <p className="text-[9px] font-bold italic text-amber-500/60 tracking-widest">CƠM PHẦN ÚT TRINH @ EST 2019</p>
-          <div className="pt-2">
-            <a 
-              href="#ACP1122" 
-              onClick={(e) => {
-                e.preventDefault();
-                window.location.hash = '#ACP1122';
-              }}
-              className="inline-flex items-center gap-1.5 text-[11px] font-black text-amber-400 bg-stone-900 hover:bg-amber-800 hover:text-white px-4 py-2 rounded-xl transition-all border border-amber-500/30 cursor-pointer shadow-md"
-            >
-              🔐 Quản trị nội dung trang web (#ACP1122)
-            </a>
-          </div>
         </div>
       </footer>
 
