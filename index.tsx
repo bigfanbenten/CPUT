@@ -500,9 +500,31 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
   const [selectedGenreFilter, setSelectedGenreFilter] = useState<'all' | 'vpop' | 'usuk' | 'kpop' | 'khongloi' | 'thien' | 'cafesax'>('all');
   const [musicSearchQuery, setMusicSearchQuery] = useState<string>('');
 
-  // Initial Random Song pick so every user visit gets a fresh song
+  // Randomized track list per page visit/refresh so 6 tabs never stay static or locked by SQL
+  const [sessionCatalog, setSessionCatalog] = useState<PlaylistItem[]>(() => {
+    if (!MULTI_GENRE_CATALOG || !Array.isArray(MULTI_GENRE_CATALOG)) return [];
+    const copy = [...MULTI_GENRE_CATALOG];
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  });
+
+  const handleReshuffleCatalog = useCallback(() => {
+    setSessionCatalog(prev => {
+      const copy = [...prev];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    });
+  }, []);
+
+  // Initial Random Song pick so every user visit gets a fresh song dynamically
   const initialRandomTrack = useMemo(() => {
-    if (!MULTI_GENRE_CATALOG || MULTI_GENRE_CATALOG.length === 0) {
+    if (!sessionCatalog || sessionCatalog.length === 0) {
       return {
         id: 'default',
         title: 'Cơm Phần Út Trinh Nhạc Nền',
@@ -516,18 +538,18 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
         nctLink: 'https://www.nhaccuatui.com'
       };
     }
-    const randomIndex = Math.floor(Math.random() * MULTI_GENRE_CATALOG.length);
-    return MULTI_GENRE_CATALOG[randomIndex];
-  }, []);
+    const randomIndex = Math.floor(Math.random() * sessionCatalog.length);
+    return sessionCatalog[randomIndex];
+  }, [sessionCatalog]);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const synthNodesRef = useRef<any[]>([]);
 
-  // Filtered tracks based on selected genre & search
+  // Filtered tracks based on selected genre & search from randomized sessionCatalog
   const filteredCatalogTracks = useMemo(() => {
-    if (!MULTI_GENRE_CATALOG || !Array.isArray(MULTI_GENRE_CATALOG)) return [];
-    return MULTI_GENRE_CATALOG.filter(track => {
+    if (!sessionCatalog || !Array.isArray(sessionCatalog)) return [];
+    return sessionCatalog.filter(track => {
       if (!track) return false;
       const matchesGenre = selectedGenreFilter === 'all' || track.genreKey === selectedGenreFilter;
       const q = (musicSearchQuery || '').toLowerCase().trim();
@@ -538,7 +560,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
         (track.sourceLabel && track.sourceLabel.toLowerCase().includes(q));
       return matchesGenre && matchesSearch;
     });
-  }, [selectedGenreFilter, musicSearchQuery]);
+  }, [sessionCatalog, selectedGenreFilter, musicSearchQuery]);
 
   const stopAmbientSynth = useCallback(() => {
     try {
@@ -574,11 +596,8 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
 
   const activeMusicUrl = useMemo(() => {
     if (customTrackUrl) return customTrackUrl;
-    if (pollData?.music_url && typeof pollData.music_url === 'string' && pollData.music_url.trim().length > 0 && !pollData.music_url.includes('DWcJFNfaw9c')) {
-      return pollData.music_url;
-    }
     return initialRandomTrack?.url || MULTI_GENRE_CATALOG[0]?.url;
-  }, [customTrackUrl, pollData?.music_url, initialRandomTrack]);
+  }, [customTrackUrl, initialRandomTrack]);
 
   const currentTrackObj = useMemo(() => {
     const found = MULTI_GENRE_CATALOG.find(t => t.url === activeMusicUrl);
@@ -634,7 +653,8 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
 
   const handlePickRandomTrack = useCallback((targetGenreKey?: string) => {
     stopAmbientSynth();
-    const pool = MULTI_GENRE_CATALOG.filter(t => !targetGenreKey || targetGenreKey === 'all' || t.genreKey === targetGenreKey);
+    const source = sessionCatalog.length > 0 ? sessionCatalog : MULTI_GENRE_CATALOG;
+    const pool = source.filter(t => !targetGenreKey || targetGenreKey === 'all' || t.genreKey === targetGenreKey);
     if (pool.length === 0) return;
     const randomIndex = Math.floor(Math.random() * pool.length);
     const selected = pool[randomIndex];
@@ -646,7 +666,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
       audioRef.current.load();
       audioRef.current.play().catch(e => console.warn("Random track audio play notice:", e));
     }
-  }, [stopAmbientSynth]);
+  }, [stopAmbientSynth, sessionCatalog]);
 
   const handleSelectPlaylistTrack = (trackUrl: string) => {
     stopAmbientSynth();
@@ -1416,6 +1436,18 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
         <div className={`pt-16 border-t border-white/10 text-center space-y-4`}>
           <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30">© 2026 CƠM PHẦN ÚT TRINH. ALL RIGHTS RESERVED.</p>
           <p className="text-[9px] font-bold italic text-amber-500/60 tracking-widest">CƠM PHẦN ÚT TRINH @ EST 2019</p>
+          <div className="pt-2">
+            <a 
+              href="#ACP1122" 
+              onClick={(e) => {
+                e.preventDefault();
+                window.location.hash = '#ACP1122';
+              }}
+              className="inline-flex items-center gap-1.5 text-[11px] font-black text-amber-400 bg-stone-900 hover:bg-amber-800 hover:text-white px-4 py-2 rounded-xl transition-all border border-amber-500/30 cursor-pointer shadow-md"
+            >
+              🔐 Quản trị nội dung trang web (#ACP1122)
+            </a>
+          </div>
         </div>
       </footer>
 
@@ -1754,15 +1786,26 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
                           <span>
                             🎶 TẤT CẢ BÀI HÁT NGUỒN NHACCUATUI ({filteredCatalogTracks.length} BÀI):
                           </span>
-                          <button
-                            type="button"
-                            onClick={() => handlePickRandomTrack(selectedGenreFilter)}
-                            className="bg-amber-800 hover:bg-amber-700 text-white font-black text-xs px-3 py-1.5 rounded-xl shadow-md flex items-center gap-1.5 cursor-pointer transition-all hover:scale-105 active:scale-95"
-                            title="Chọn ngẫu nhiên 1 bài hát từ Nhaccuatui"
-                          >
-                            <Shuffle size={14} />
-                            <span>🎲 PHÁT NGẪU NHIÊN TAB NÀY</span>
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={handleReshuffleCatalog}
+                              className="bg-stone-800 hover:bg-stone-900 text-amber-300 font-black text-xs px-3 py-1.5 rounded-xl shadow-md flex items-center gap-1.5 cursor-pointer transition-all hover:scale-105 active:scale-95"
+                              title="Trộn ngẫu nhiên lại vị trí bài hát trong 6 tab"
+                            >
+                              <RefreshCw size={13} />
+                              <span>🔄 TRỘN BÀI LẠI 6 TAB</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handlePickRandomTrack(selectedGenreFilter)}
+                              className="bg-amber-800 hover:bg-amber-700 text-white font-black text-xs px-3 py-1.5 rounded-xl shadow-md flex items-center gap-1.5 cursor-pointer transition-all hover:scale-105 active:scale-95"
+                              title="Chọn ngẫu nhiên 1 bài hát từ Nhaccuatui"
+                            >
+                              <Shuffle size={14} />
+                              <span>🎲 PHÁT NGẪU NHIÊN TAB NÀY</span>
+                            </button>
+                          </div>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[320px] overflow-y-auto pr-1">
