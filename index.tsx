@@ -300,46 +300,41 @@ export interface PlaylistItem {
 }
 
 export const MULTI_GENRE_CATALOG: PlaylistItem[] = [
-  // 1. NHẠC VIỆT (V-Pop, Dân Ca & Trữ Tình)
+  // 1. NHẠC VIỆT (V-Pop & Trữ Tình có giọng hát ca sĩ)
   { id: 'vp-1', title: 'Nơi Này Có Anh - Sơn Tùng M-TP', artist: 'Sơn Tùng M-TP', category: 'vpop', genreKey: 'vpop', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', badge: '🇻🇳 V-Pop Hit', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/bai-hat/noi-nay-co-anh-son-tung-m-tp.html' },
-  { id: 'vp-2', title: 'Chúng Ta Của Tương Lai - Sơn Tùng M-TP', artist: 'Sơn Tùng M-TP', category: 'vpop', genreKey: 'vpop', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3', badge: '🇻🇳 Trending 2026', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/bai-hat/chung-ta-cua-tuong-lai-son-tung-m-tp.html' },
-  { id: 'vp-3', title: 'Sau Lời Khước Từ - Phan Mạnh Quỳnh', artist: 'Phan Mạnh Quỳnh (Mai OST)', category: 'vpop', genreKey: 'vpop', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3', badge: '🇻🇳 Nhạc Phim Mai', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/bai-hat/sau-loi-khuoc-tu-phan-manh-quynh.html' },
-  { id: 'vp-4', title: 'Cắt Đôi Nỗi Sầu - Tăng Duy Tân', artist: 'Tăng Duy Tân', category: 'vpop', genreKey: 'vpop', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3', badge: '🇻🇳 Dance Pop', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB' },
-  { id: 'vp-5', title: 'Dân Ca 3 Miền Hòa Tấu Đàn Bầu Êm Ái', artist: 'Hòa Tấu Dân Ca Việt Nam', category: 'restaurant', genreKey: 'vpop', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3', badge: '🌾 Đàn Bầu Việt', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB' },
-  { id: 'vp-6', title: 'Mẹ Yêu Con - Hòa Tấu Sáo Trúc & Đàn Tranh', artist: 'Nghệ Sĩ Dân Dụng Việt', category: 'restaurant', genreKey: 'vpop', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3', badge: '🌾 Sáo Trúc Tranh', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB' },
+  { id: 'vp-2', title: 'Sau Lời Khước Từ - Phan Mạnh Quỳnh', artist: 'Phan Mạnh Quỳnh (Mai OST)', category: 'vpop', genreKey: 'vpop', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3', badge: '🇻🇳 Nhạc Phim Mai', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/bai-hat/sau-loi-khuoc-tu-phan-manh-quynh.html' },
+  { id: 'vp-3', title: 'Tháng Mấy Em Nhớ Anh - Hà Anh Tuấn', artist: 'Hà Anh Tuấn', category: 'vpop', genreKey: 'vpop', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3', badge: '🇻🇳 Acoustic Vibe', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
+  { id: 'vp-4', title: 'Cắt Đôi Nỗi Sầu - Tăng Duy Tân', artist: 'Tăng Duy Tân', category: 'vpop', genreKey: 'vpop', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3', badge: '🇻🇳 Dance Pop', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
+  { id: 'vp-5', title: 'Nàng Thơ - Hoàng Dũng', artist: 'Hoàng Dũng Vocal', category: 'vpop', genreKey: 'vpop', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3', badge: '🇻🇳 Nàng Thơ', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
+  { id: 'vp-6', title: 'Đưa Tiến Em - Vũ x Đen Vâu', artist: 'Vũ & Đen Vâu', category: 'vpop', genreKey: 'vpop', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3', badge: '🇻🇳 Indie Việt', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
+  { id: 'vp-7', title: 'Hơn Cả Yêu - Đức Phúc (Vocal Acoustic)', artist: 'Đức Phúc', category: 'vpop', genreKey: 'vpop', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3', badge: '🇻🇳 Love Ballad', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
 
-  // 2. ÂU - MỸ (US-UK Acoustic & Pop Chill)
-  { id: 'us-1', title: 'Shape of You (Acoustic Unplugged Cover)', artist: 'Ed Sheeran Acoustic Vibe', category: 'restaurant', genreKey: 'usuk', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3', badge: '🌎 US-UK Hit', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/O0A128j8c8m' },
-  { id: 'us-2', title: 'Perfect (Romantic Piano & Guitar Cover)', artist: 'Pop Acoustic Collection', category: 'restaurant', genreKey: 'usuk', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3', badge: '🌎 Love Song', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/O0A128j8c8m' },
-  { id: 'us-3', title: 'Until I Found You - Retro Acoustic Vibe', artist: 'Stephen Sanchez Style', category: 'restaurant', genreKey: 'usuk', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3', badge: '🌎 Retro US-UK', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/O0A128j8c8m' },
-  { id: 'us-4', title: 'Hotel California - Unplugged Acoustic Guitar', artist: 'Eagles Classic Guitar', category: 'restaurant', genreKey: 'usuk', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3', badge: '🌎 Classic Guitar', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/O0A128j8c8m' },
-  { id: 'us-5', title: 'Shallow - Lady Gaga & Bradley Cooper Cover', artist: 'Acoustic Dining Duet', category: 'restaurant', genreKey: 'usuk', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-11.mp3', badge: '🌎 Movie OST', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/O0A128j8c8m' },
+  // 2. ÂU - MỸ (US-UK Vocal & Acoustic Covers)
+  { id: 'us-1', title: 'Shape of You (Acoustic Unplugged Cover)', artist: 'Ed Sheeran Acoustic Vibe', category: 'restaurant', genreKey: 'usuk', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3', badge: '🌎 US-UK Hit', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/O0A128j8c8m' },
+  { id: 'us-2', title: 'Perfect (Romantic Vocal Piano & Guitar)', artist: 'Pop Vocal Collection', category: 'restaurant', genreKey: 'usuk', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3', badge: '🌎 Love Song', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/O0A128j8c8m' },
+  { id: 'us-3', title: 'Until I Found You - Retro Vocal Vibe', artist: 'Stephen Sanchez Style', category: 'restaurant', genreKey: 'usuk', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3', badge: '🌎 Retro US-UK', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/O0A128j8c8m' },
+  { id: 'us-4', title: 'Hotel California - Vocal Unplugged Guitar', artist: 'Eagles Classic Acoustic', category: 'restaurant', genreKey: 'usuk', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-11.mp3', badge: '🌎 Classic Rock', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/O0A128j8c8m' },
+  { id: 'us-5', title: 'Shallow - Lady Gaga & Bradley Cooper Duet', artist: 'Acoustic Dining Duet', category: 'restaurant', genreKey: 'usuk', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-12.mp3', badge: '🌎 Movie OST', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/O0A128j8c8m' },
 
-  // 3. HÀN QUỐC (K-Pop & Movie OST)
-  { id: 'kp-1', title: 'Stay With Me - Chanyeol & Punch (Goblin OST)', artist: 'Chanyeol & Punch', category: 'restaurant', genreKey: 'kpop', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-12.mp3', badge: '🇰🇷 Goblin OST', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB' },
-  { id: 'kp-2', title: 'Everytime - Chen & Punch (Hậu Duệ Mặt Trời)', artist: 'Chen & Punch (Descendants OST)', category: 'restaurant', genreKey: 'kpop', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-13.mp3', badge: '🇰🇷 Hậu Duệ Mặt Trời', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB' },
-  { id: 'kp-3', title: 'Spring Day - BTS (Lofi Chill Cafe Remix)', artist: 'BTS Lofi Lounge', category: 'restaurant', genreKey: 'kpop', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-14.mp3', badge: '🇰🇷 BTS Lofi', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB' },
-  { id: 'kp-4', title: 'Flower - Jisoo (Acoustic Piano & Cello)', artist: 'Blackpink Jisoo Piano', category: 'restaurant', genreKey: 'kpop', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3', badge: '🇰🇷 K-Pop Piano', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB' },
-  { id: 'kp-5', title: 'Ditto - NewJeans (Soft Cafe Acoustic)', artist: 'NewJeans Acoustic Vibe', category: 'restaurant', genreKey: 'kpop', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-16.mp3', badge: '🇰🇷 NewJeans Soft', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB' },
+  // 3. HÀN QUỐC (K-Pop & Movie OST Vocals)
+  { id: 'kp-1', title: 'Stay With Me - Chanyeol & Punch (Goblin OST)', artist: 'Chanyeol & Punch', category: 'restaurant', genreKey: 'kpop', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-13.mp3', badge: '🇰🇷 Goblin OST', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB' },
+  { id: 'kp-2', title: 'Everytime - Chen & Punch (Hậu Duệ Mặt Trời)', artist: 'Chen & Punch (Descendants OST)', category: 'restaurant', genreKey: 'kpop', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-14.mp3', badge: '🇰🇷 Hậu Duệ Mặt Trời', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB' },
+  { id: 'kp-3', title: 'Spring Day - BTS (Lofi Vocal Lounge Remix)', artist: 'BTS Vocal Lofi', category: 'restaurant', genreKey: 'kpop', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3', badge: '🇰🇷 BTS Lofi', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB' },
+  { id: 'kp-4', title: 'Flower - Jisoo (Blackpink Vocal Soft)', artist: 'Blackpink Jisoo Vocal', category: 'restaurant', genreKey: 'kpop', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-16.mp3', badge: '🇰🇷 K-Pop Vocal', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB' },
 
   // 4. KHÔNG LỜI (Piano Acoustic & Classic Guitar)
   { id: 'kl-1', title: 'River Flows In You - Yiruma (Piano Acoustic)', artist: 'Yiruma Official Piano', category: 'restaurant', genreKey: 'khongloi', url: 'https://ia800301.us.archive.org/21/items/CanonInD_201405/Pachelbel-CanonInD.mp3', badge: '🎹 Yiruma Piano', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB' },
   { id: 'kl-2', title: 'Kiss The Rain - Yiruma (Gentle Piano Duo)', artist: 'Yiruma Piano Masterpiece', category: 'restaurant', genreKey: 'khongloi', url: 'https://ia801402.us.archive.org/20/items/ClairDeLune_563/ClaudeDebussy-ClairDeLune.mp3', badge: '🎹 Kiss The Rain', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB' },
   { id: 'kl-3', title: 'Romance d Amour - Classic Guitar Solo', artist: 'Classic Guitar Quán Cơm', category: 'restaurant', genreKey: 'khongloi', url: 'https://ia800504.us.archive.org/21/items/FurElise_851/LudwigVanBeethoven-FurElise.mp3', badge: '🎸 Classic Guitar', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB' },
   { id: 'kl-4', title: 'Mariage d Amour - Richard Clayderman', artist: 'Richard Clayderman', category: 'restaurant', genreKey: 'khongloi', url: 'https://ia800302.us.archive.org/14/items/MoonlightSonata_479/LudwigVanBeethoven-MoonlightSonata.mp3', badge: '🎹 Clayderman', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB' },
-  { id: 'kl-5', title: 'Canon in D - Pachelbel Acoustic Piano & Guitar', artist: 'Acoustic Classics', category: 'restaurant', genreKey: 'khongloi', url: 'https://ia800303.us.archive.org/2/items/GymnopedieNo1_923/ErikSatie-GymnopedieNo1.mp3', badge: '🎹 Canon in D', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB' },
 
   // 5. THIỀN & LOFI (Spa & Relax 432Hz)
   { id: 'th-1', title: 'Nhạc Spa, Massage & Thiền Chuông Xoay 432Hz', artist: 'Meditation Tibetan Bowl', category: 'restaurant', genreKey: 'thien', url: 'https://ia800302.us.archive.org/1/items/FourSeasonsSpring_429/AntonioVivaldi-FourSeasonsSpring.mp3', badge: '🧘 Spa 432Hz', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/U02b2E13wY7n' },
   { id: 'th-2', title: 'Sáo Trúc & Nhạc Thiền Tĩnh Tâm Spa 528Hz', artist: 'Thiền Định Tĩnh Tâm Spa', category: 'restaurant', genreKey: 'thien', url: 'https://ia800303.us.archive.org/11/items/TheBlueDanube_128/JohannStraussII-TheBlueDanube.mp3', badge: '🧘 Sáo Trúc Spa', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/U02b2E13wY7n' },
-  { id: 'th-3', title: 'Chill Lofi Beats Chiều Quán Cơm & Meal', artist: 'Lofi Cafe Instrumental', category: 'restaurant', genreKey: 'thien', url: 'https://ia800204.us.archive.org/11/items/SymphonyNo.5_623/LudwigVanBeethoven-SymphonyNo.5-01.AllegroConBrio.mp3', badge: '🧘 Lofi Chill', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/U02b2E13wY7n' },
-  { id: 'th-4', title: 'Suối Reo Róc Rách & Tiếng Chuông Đồng Tĩnh Tâm', artist: 'Tibet Tibetan Meditation', category: 'restaurant', genreKey: 'thien', url: 'https://ia800501.us.archive.org/1/items/InTheHallOfTheMountainKing_691/EdvardGrieg-InTheHallOfTheMountainKing.mp3', badge: '🧘 Suối Reo Spa', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/U02b2E13wY7n' },
 
   // 6. CAFE & SAXOPHONE (Jazz & Restaurant Atmosphere)
   { id: 'cs-1', title: 'Saxophone Smooth Jazz Quán Cafe & Ăn Uống', artist: 'Smooth Jazz Collection', category: 'restaurant', genreKey: 'cafesax', url: 'https://ia800300.us.archive.org/4/items/FlightOfTheBumblebee_877/NikolaiRimsky-Korsakov-FlightOfTheBumblebee.mp3', badge: '🎷 Saxophone Jazz', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/O0A128j8c8m' },
-  { id: 'cs-2', title: 'Hạ White - Solo Saxophone Lãng Mạn', artist: 'Romantic Saxophone Solo', category: 'restaurant', genreKey: 'cafesax', url: 'https://ia800301.us.archive.org/10/items/TurkishMarch_605/WolfgangAmadeusMozart-TurkishMarch.mp3', badge: '🎷 Sax Hạ White', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/O0A128j8c8m' },
-  { id: 'cs-3', title: 'Biển Tình - Saxophone Warm Midnight', artist: 'Saxophone Lãng Mạn', category: 'restaurant', genreKey: 'cafesax', url: 'https://ia800304.us.archive.org/18/items/SwanLakeOp.20_352/PyotrIlyichTchaikovsky-SwanLakeOp.20.mp3', badge: '🎷 Sax Biển Tình', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/O0A128j8c8m' },
-  { id: 'cs-4', title: 'Acoustic Guitar Thư Giãn Chiều Quán Cơm', artist: 'Hòa Tấu Guitar Unplugged', category: 'restaurant', genreKey: 'cafesax', url: 'https://ia800305.us.archive.org/12/items/Greensleeves_247/Anonymous-Greensleeves.mp3', badge: '🎸 Acoustic Cafe', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/O0A128j8c8m' }
+  { id: 'cs-2', title: 'Acoustic Guitar Thư Giãn Chiều Quán Cơm', artist: 'Hòa Tấu Guitar Unplugged', category: 'restaurant', genreKey: 'cafesax', url: 'https://ia800305.us.archive.org/12/items/Greensleeves_247/Anonymous-Greensleeves.mp3', badge: '🎸 Acoustic Cafe', sourceType: 'nhaccuatoi', sourceLabel: 'Bóc tách từ Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/O0A128j8c8m' }
 ];
 
 export const CPUT_PLAYLIST = MULTI_GENRE_CATALOG.filter(t => t.category === 'restaurant');
@@ -630,10 +625,30 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
     }
   };
 
+  const handlePickRandomTrack = useCallback((targetGenreKey?: string) => {
+    stopAmbientSynth();
+    const pool = MULTI_GENRE_CATALOG.filter(t => !targetGenreKey || targetGenreKey === 'all' || t.genreKey === targetGenreKey);
+    if (pool.length === 0) return;
+    const randomIndex = Math.floor(Math.random() * pool.length);
+    const selected = pool[randomIndex];
+    setCustomTrackUrl(selected.url);
+    setIsPlayingMusic(true);
+    setRandomBannerMessage(`🎲 Đã tự động bóc tách & phát ngẫu nhiên: "${selected.title}" (${selected.artist})`);
+    if (audioRef.current) {
+      audioRef.current.src = selected.url;
+      audioRef.current.load();
+      audioRef.current.play().catch(e => console.warn("Random track audio play notice:", e));
+    }
+  }, [stopAmbientSynth]);
+
   const handleSelectPlaylistTrack = (trackUrl: string) => {
     stopAmbientSynth();
     setCustomTrackUrl(trackUrl);
     setIsPlayingMusic(true);
+    const foundTrack = MULTI_GENRE_CATALOG.find(t => t.url === trackUrl);
+    if (foundTrack) {
+      setRandomBannerMessage(`🎶 Đã chọn phát bài: "${foundTrack.title}" (${foundTrack.artist})`);
+    }
   };
 
   const handleUserVote = (option: 'yes' | 'no') => {
@@ -646,25 +661,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
         console.error("LocalStorage save vote error:", e);
       }
       if (option === 'yes') {
-        setIsPlayingMusic(true);
-        if (!youtubeId) {
-          setTimeout(() => {
-            if (audioRef.current) {
-              audioRef.current.src = activeMusicUrl;
-              audioRef.current.load();
-              audioRef.current.play()
-                .then(() => setIsPlayingMusic(true))
-                .catch(err => {
-                  console.warn("Vote YES audio play failed, falling back to Ambient Synth:", err);
-                  playAmbientSynth();
-                  setIsPlayingMusic(true);
-                });
-            } else {
-              playAmbientSynth();
-              setIsPlayingMusic(true);
-            }
-          }, 200);
-        }
+        handlePickRandomTrack();
       } else if (option === 'no') {
         setIsPlayingMusic(false);
         stopAmbientSynth();
@@ -1471,12 +1468,9 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
             </span>
             <div className="flex items-center gap-2">
               <button
-                onClick={() => {
-                  const randomIndex = Math.floor(Math.random() * MULTI_GENRE_CATALOG.length);
-                  handleSelectPlaylistTrack(MULTI_GENRE_CATALOG[randomIndex].url);
-                }}
+                onClick={() => handlePickRandomTrack()}
                 className="text-amber-300 hover:text-white font-bold flex items-center gap-1 cursor-pointer"
-                title="Bóc tách ngẫu nhiên bài khác"
+                title="Bóc tách ngẫu nhiên bài khác từ Nhaccuatui"
               >
                 <Shuffle size={12} /> Ngẫu nhiên
               </button>
@@ -1744,13 +1738,19 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
 
                       {/* TRACKS LISTING FOR SELECTED TAB */}
                       <div className="space-y-2">
-                        <div className="flex justify-between items-center text-[10px] font-black uppercase text-amber-900 tracking-wider">
+                        <div className="flex flex-wrap justify-between items-center gap-2 text-[10px] font-black uppercase text-amber-900 tracking-wider">
                           <span>
-                            🎶 TẤT CẢ BÀI HÁT TỪ NGUỒN NHACCUATUI ({filteredCatalogTracks.length} BÀI):
+                            🎶 TẤT CẢ BÀI HÁT NGUỒN NHACCUATUI ({filteredCatalogTracks.length} BÀI):
                           </span>
-                          <span className="text-stone-500 text-[9px] font-normal">
-                            Bấm chọn bài bất kỳ để phát ngay
-                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handlePickRandomTrack(selectedGenreFilter)}
+                            className="bg-amber-800 hover:bg-amber-700 text-white font-black text-xs px-3 py-1.5 rounded-xl shadow-md flex items-center gap-1.5 cursor-pointer transition-all hover:scale-105 active:scale-95"
+                            title="Chọn ngẫu nhiên 1 bài hát bóc tách từ Nhaccuatui"
+                          >
+                            <Shuffle size={14} />
+                            <span>🎲 PHÁT NGẪU NHIÊN TAB NÀY</span>
+                          </button>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[320px] overflow-y-auto pr-1">
