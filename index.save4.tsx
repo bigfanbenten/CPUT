@@ -311,11 +311,6 @@ export const MULTI_GENRE_CATALOG: PlaylistItem[] = [
   { id: 'vp-8', title: 'Hơn Cả Yêu - Đức Phúc (Vocal Lãng Mạn)', artist: 'Đức Phúc', category: 'vpop', genreKey: 'vpop', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3', badge: '🇻🇳 Love Ballad', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
   { id: 'vp-9', title: 'Ngày Đầu Tiên - Đức Phúc (Vocal Studio)', artist: 'Đức Phúc', category: 'vpop', genreKey: 'vpop', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3', badge: '🇻🇳 V-Pop Ballad', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
   { id: 'vp-10', title: 'Diễm Xưa - Khánh Ly (Nhạc Trịnh Công Sơn)', artist: 'Khánh Ly', category: 'vpop', genreKey: 'vpop', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3', badge: '🇻🇳 Nhạc Trịnh', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'vp-11', title: 'Bước Qua Nhau - Vũ (Indie Acoustic)', artist: 'Vũ', category: 'vpop', genreKey: 'vpop', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-11.mp3', badge: '🇻🇳 Indie V-Pop', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'vp-12', title: 'Vì Anh Đâu Biết - Madihu ft. Vũ', artist: 'Madihu ft. Vũ', category: 'vpop', genreKey: 'vpop', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-12.mp3', badge: '🇻🇳 Chill V-Pop', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'vp-13', title: 'Lạc Trôi - Sơn Tùng M-TP (Instrumental & Vocal)', artist: 'Sơn Tùng M-TP', category: 'vpop', genreKey: 'vpop', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-13.mp3', badge: '🇻🇳 V-Pop Hit', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'vp-14', title: 'Cắt Đôi Nỗi Sầu - Tăng Duy Tân', artist: 'Tăng Duy Tân', category: 'vpop', genreKey: 'vpop', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-14.mp3', badge: '🇻🇳 Trending V-Pop', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'vp-15', title: 'Thắc Mắc - Thịnh Suy (Acoustic Unplugged)', artist: 'Thịnh Suy', category: 'vpop', genreKey: 'vpop', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3', badge: '🇻🇳 Acoustic Vibe', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
 
   // 2. ÂU - MỸ (US-UK Vocal & Acoustic Hits - Nguồn Nhaccuatui.com)
   { id: 'us-1', title: 'Shape of You - Ed Sheeran (Vocal Acoustic)', artist: 'Ed Sheeran', category: 'restaurant', genreKey: 'usuk', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-11.mp3', badge: '🌎 US-UK Hit', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/O0A128j8c8m' },
@@ -324,15 +319,6 @@ export const MULTI_GENRE_CATALOG: PlaylistItem[] = [
   { id: 'us-4', title: 'Hotel California - Eagles (Unplugged Vocal & Guitar)', artist: 'Eagles', category: 'restaurant', genreKey: 'usuk', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-14.mp3', badge: '🌎 Classic Rock', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/O0A128j8c8m' },
   { id: 'us-5', title: 'Shallow - Lady Gaga & Bradley Cooper (Live Duet Vocal)', artist: 'Lady Gaga & Bradley Cooper', category: 'restaurant', genreKey: 'usuk', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3', badge: '🌎 Movie OST', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/O0A128j8c8m' },
   { id: 'us-6', title: 'Someone Like You - Adele (Deep Vocal Soul)', artist: 'Adele', category: 'restaurant', genreKey: 'usuk', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-16.mp3', badge: '🌎 Soul Vocal', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/O0A128j8c8m' },
-  { id: 'us-7', title: 'Easy On Me - Adele (Piano & Vocal)', artist: 'Adele', category: 'restaurant', genreKey: 'usuk', url: 'https://ia800301.us.archive.org/21/items/CanonInD_201405/Pachelbel-CanonInD.mp3', badge: '🌎 Adele Piano', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'us-8', title: 'All of Me - John Legend (Romantic Piano)', artist: 'John Legend', category: 'restaurant', genreKey: 'usuk', url: 'https://ia801402.us.archive.org/20/items/ClairDeLune_563/ClaudeDebussy-ClairDeLune.mp3', badge: '🌎 Piano Love', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'us-9', title: 'Counting Stars - OneRepublic (Acoustic Folk Pop)', artist: 'OneRepublic', category: 'restaurant', genreKey: 'usuk', url: 'https://ia800504.us.archive.org/21/items/FurElise_851/LudwigVanBeethoven-FurElise.mp3', badge: '🌎 Folk Pop', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'us-10', title: 'Memories - Maroon 5 (Canon Cello Arrangement)', artist: 'Maroon 5', category: 'restaurant', genreKey: 'usuk', url: 'https://ia800302.us.archive.org/14/items/MoonlightSonata_479/LudwigVanBeethoven-MoonlightSonata.mp3', badge: '🌎 Pop Ballad', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'us-11', title: 'Thinking Out Loud - Ed Sheeran (Soft Acoustic)', artist: 'Ed Sheeran', category: 'restaurant', genreKey: 'usuk', url: 'https://ia800302.us.archive.org/1/items/FourSeasonsSpring_429/AntonioVivaldi-FourSeasonsSpring.mp3', badge: '🌎 Ed Sheeran', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'us-12', title: 'Stay With Me - Sam Smith (Gospel Soul)', artist: 'Sam Smith', category: 'restaurant', genreKey: 'usuk', url: 'https://ia800303.us.archive.org/11/items/TheBlueDanube_128/JohannStraussII-TheBlueDanube.mp3', badge: '🌎 Soul Gospel', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'us-13', title: 'Attention - Charlie Puth (Acoustic Bass Lounge)', artist: 'Charlie Puth', category: 'restaurant', genreKey: 'usuk', url: 'https://ia800300.us.archive.org/4/items/FlightOfTheBumblebee_877/NikolaiRimsky-Korsakov-FlightOfTheBumblebee.mp3', badge: '🌎 Pop Lounge', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'us-14', title: 'See You Again - Wiz Khalifa ft. Charlie Puth', artist: 'Wiz Khalifa & Charlie Puth', category: 'restaurant', genreKey: 'usuk', url: 'https://ia800305.us.archive.org/12/items/Greensleeves_247/Anonymous-Greensleeves.mp3', badge: '🌎 Furious OST', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'us-15', title: 'As It Was - Harry Styles (Indie Pop Vibe)', artist: 'Harry Styles', category: 'restaurant', genreKey: 'usuk', url: 'https://cdn.pixabay.com/download/audio/2022/11/06/audio_c97a8e7e13.mp3', badge: '🌎 Retro Pop', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
 
   // 3. HÀN QUỐC (K-Pop & Movie OST Vocals - Nguồn Nhaccuatui.com)
   { id: 'kp-1', title: 'Stay With Me - Chanyeol & Punch (Goblin OST Vocal)', artist: 'Chanyeol & Punch', category: 'restaurant', genreKey: 'kpop', url: 'https://ia800301.us.archive.org/21/items/CanonInD_201405/Pachelbel-CanonInD.mp3', badge: '🇰🇷 Goblin OST', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB' },
@@ -340,135 +326,23 @@ export const MULTI_GENRE_CATALOG: PlaylistItem[] = [
   { id: 'kp-3', title: 'Spring Day - BTS (Official Vocal)', artist: 'BTS', category: 'restaurant', genreKey: 'kpop', url: 'https://ia800504.us.archive.org/21/items/FurElise_851/LudwigVanBeethoven-FurElise.mp3', badge: '🇰🇷 BTS Vocal', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB' },
   { id: 'kp-4', title: 'Flower - Jisoo (Blackpink Official Vocal)', artist: 'Blackpink Jisoo', category: 'restaurant', genreKey: 'kpop', url: 'https://ia800302.us.archive.org/14/items/MoonlightSonata_479/LudwigVanBeethoven-MoonlightSonata.mp3', badge: '🇰🇷 K-Pop Vocal', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB' },
   { id: 'kp-5', title: 'You Are My Everything - Gummy (Descendants OST)', artist: 'Gummy', category: 'restaurant', genreKey: 'kpop', url: 'https://ia800302.us.archive.org/1/items/FourSeasonsSpring_429/AntonioVivaldi-FourSeasonsSpring.mp3', badge: '🇰🇷 K-Drama OST', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB' },
-  { id: 'kp-6', title: 'Say Yes - Loco & Punch (Moon Lovers OST)', artist: 'Loco & Punch', category: 'restaurant', genreKey: 'kpop', url: 'https://ia800303.us.archive.org/11/items/TheBlueDanube_128/JohannStraussII-TheBlueDanube.mp3', badge: '🇰🇷 Moon Lovers', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kp-7', title: 'All About You - Taeyeon (Hotel Del Luna OST)', artist: 'Taeyeon', category: 'restaurant', genreKey: 'kpop', url: 'https://ia800300.us.archive.org/4/items/FlightOfTheBumblebee_877/NikolaiRimsky-Korsakov-FlightOfTheBumblebee.mp3', badge: '🇰🇷 Hotel Del Luna', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kp-8', title: 'Sunset - Davichi (Crash Landing On You OST)', artist: 'Davichi', category: 'restaurant', genreKey: 'kpop', url: 'https://ia800305.us.archive.org/12/items/Greensleeves_247/Anonymous-Greensleeves.mp3', badge: '🇰🇷 Hạ Cánh Nơi Anh', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kp-9', title: 'Start Over - Gaho (Itaewon Class OST)', artist: 'Gaho', category: 'restaurant', genreKey: 'kpop', url: 'https://cdn.pixabay.com/download/audio/2022/11/06/audio_c97a8e7e13.mp3', badge: '🇰🇷 Itaewon Class', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kp-10', title: 'Beautiful - Crush (Goblin OST Acoustic)', artist: 'Crush', category: 'restaurant', genreKey: 'kpop', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', badge: '🇰🇷 Goblin OST', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kp-11', title: 'Best Luck - Chen (EXO - It s Okay OST)', artist: 'Chen (EXO)', category: 'restaurant', genreKey: 'kpop', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3', badge: '🇰🇷 EXO Vocal', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kp-12', title: 'Aloha - Jo Jung Suk (Hospital Playlist OST)', artist: 'Jo Jung Suk', category: 'restaurant', genreKey: 'kpop', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3', badge: '🇰🇷 Hospital Playlist', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kp-13', title: 'Through The Night - IU (Soft Acoustic Night)', artist: 'IU', category: 'restaurant', genreKey: 'kpop', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3', badge: '🇰🇷 IU Night', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kp-14', title: 'Hype Boy - NewJeans (Official Single)', artist: 'NewJeans', category: 'restaurant', genreKey: 'kpop', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3', badge: '🇰🇷 NewJeans Pop', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kp-15', title: 'Eleven - IVE (Pop Vocal Vibe)', artist: 'IVE', category: 'restaurant', genreKey: 'kpop', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3', badge: '🇰🇷 IVE Single', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
 
   // 4. KHÔNG LỜI (Piano Acoustic & Classic Guitar - Nguồn Nhaccuatui.com)
   { id: 'kl-1', title: 'River Flows In You - Yiruma (Piano Studio)', artist: 'Yiruma Piano Master', category: 'restaurant', genreKey: 'khongloi', url: 'https://ia800303.us.archive.org/11/items/TheBlueDanube_128/JohannStraussII-TheBlueDanube.mp3', badge: '🎹 Yiruma Piano', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB' },
   { id: 'kl-2', title: 'Kiss The Rain - Yiruma (Gentle Piano Duo)', artist: 'Yiruma', category: 'restaurant', genreKey: 'khongloi', url: 'https://ia800300.us.archive.org/4/items/FlightOfTheBumblebee_877/NikolaiRimsky-Korsakov-FlightOfTheBumblebee.mp3', badge: '🎹 Kiss The Rain', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB' },
   { id: 'kl-3', title: 'Romance d Amour - Classic Guitar Solo', artist: 'Classic Guitar Quán Cơm', category: 'restaurant', genreKey: 'khongloi', url: 'https://ia800305.us.archive.org/12/items/Greensleeves_247/Anonymous-Greensleeves.mp3', badge: '🎸 Classic Guitar', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB' },
   { id: 'kl-4', title: 'Mariage d Amour - Richard Clayderman', artist: 'Richard Clayderman', category: 'restaurant', genreKey: 'khongloi', url: 'https://cdn.pixabay.com/download/audio/2022/11/06/audio_c97a8e7e13.mp3', badge: '🎹 Clayderman', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB' },
-  { id: 'kl-5', title: 'Canon in D - Pachelbel (Piano & String Quartet)', artist: 'Pachelbel Chamber', category: 'restaurant', genreKey: 'khongloi', url: 'https://ia800301.us.archive.org/21/items/CanonInD_201405/Pachelbel-CanonInD.mp3', badge: '🎹 Canon in D', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kl-6', title: 'Ballade Pour Adeline - Richard Clayderman', artist: 'Richard Clayderman', category: 'restaurant', genreKey: 'khongloi', url: 'https://ia801402.us.archive.org/20/items/ClairDeLune_563/ClaudeDebussy-ClairDeLune.mp3', badge: '🎹 Clayderman Ballade', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kl-7', title: 'Fur Elise - Beethoven (Grand Piano Master)', artist: 'Ludwig Van Beethoven', category: 'restaurant', genreKey: 'khongloi', url: 'https://ia800504.us.archive.org/21/items/FurElise_851/LudwigVanBeethoven-FurElise.mp3', badge: '🎹 Beethoven Piano', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kl-8', title: 'Moonlight Sonata - Beethoven (Soft Night Piano)', artist: 'Beethoven Night', category: 'restaurant', genreKey: 'khongloi', url: 'https://ia800302.us.archive.org/14/items/MoonlightSonata_479/LudwigVanBeethoven-MoonlightSonata.mp3', badge: '🎹 Moonlight Sonata', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kl-9', title: 'Clair De Lune - Claude Debussy (Classical Piano)', artist: 'Claude Debussy', category: 'restaurant', genreKey: 'khongloi', url: 'https://ia801402.us.archive.org/20/items/ClairDeLune_563/ClaudeDebussy-ClairDeLune.mp3', badge: '🎹 Clair De Lune', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kl-10', title: 'Gymnopédie No. 1 - Erik Satie (Relaxing Piano)', artist: 'Erik Satie', category: 'restaurant', genreKey: 'khongloi', url: 'https://ia800302.us.archive.org/1/items/FourSeasonsSpring_429/AntonioVivaldi-FourSeasonsSpring.mp3', badge: '🎹 Satie Piano', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kl-11', title: 'Secret - Jay Chou (Acoustic Piano Solo)', artist: 'Jay Chou Piano', category: 'restaurant', genreKey: 'khongloi', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3', badge: '🎹 Jay Chou Piano', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kl-12', title: 'Autumn Leaves - Soft Piano Jazz Unplugged', artist: 'Piano Jazz Unplugged', category: 'restaurant', genreKey: 'khongloi', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3', badge: '🎹 Autumn Piano', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kl-13', title: 'Memory - Andrew Lloyd Webber (Classic Cello & Piano)', artist: 'Andrew Lloyd Webber', category: 'restaurant', genreKey: 'khongloi', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3', badge: '🎹 Cello & Piano', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kl-14', title: 'Song From A Secret Garden - Violin & Piano Duo', artist: 'Secret Garden Duo', category: 'restaurant', genreKey: 'khongloi', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3', badge: '🎻 Violin & Piano', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kl-15', title: 'Time To Say Goodbye - Instrumental Brass & Piano', artist: 'Symphonic Master', category: 'restaurant', genreKey: 'khongloi', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-11.mp3', badge: '🎹 Symphonic Duo', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
 
   // 5. THIỀN & LOFI (Spa & Relax 432Hz Tĩnh Tâm - Nguồn Nhaccuatui.com)
   { id: 'th-1', title: 'Nhạc Spa, Massage & Thiền Chuông Xoay 432Hz', artist: 'Meditation Tibetan Bowl', category: 'restaurant', genreKey: 'thien', url: 'https://cdn.pixabay.com/download/audio/2022/11/06/audio_c97a8e7e13.mp3', badge: '🧘 Spa 432Hz', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/U02b2E13wY7n' },
   { id: 'th-2', title: 'Suối Reo Róc Rách & Tiếng Chuông Đồng 432Hz', artist: 'Thiền Định Spa', category: 'restaurant', genreKey: 'thien', url: 'https://ia800301.us.archive.org/21/items/CanonInD_201405/Pachelbel-CanonInD.mp3', badge: '🧘 Suối Reo Spa', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/U02b2E13wY7n' },
   { id: 'th-3', title: 'Chill Lofi Beats Chiều Quán Cơm Út Trinh', artist: 'Lofi Cafe Relax', category: 'restaurant', genreKey: 'thien', url: 'https://ia801402.us.archive.org/20/items/ClairDeLune_563/ClaudeDebussy-ClairDeLune.mp3', badge: '🧘 Lofi Chill', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/U02b2E13wY7n' },
-  { id: 'th-4', title: 'Deep Meditation Rain & Bamboo Flute 432Hz', artist: 'Bamboo Flute Spa', category: 'restaurant', genreKey: 'thien', url: 'https://ia800504.us.archive.org/21/items/FurElise_851/LudwigVanBeethoven-FurElise.mp3', badge: '🧘 Sáo Trúc 432Hz', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'th-5', title: 'Tibetan Singing Bowls Peaceful Healing', artist: 'Tibetan Bowls Spa', category: 'restaurant', genreKey: 'thien', url: 'https://ia800302.us.archive.org/14/items/MoonlightSonata_479/LudwigVanBeethoven-MoonlightSonata.mp3', badge: '🧘 Chuông Xoay Tĩnh', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'th-6', title: 'Delta Waves Sleep & Relaxation 432Hz', artist: 'Delta Waves Relax', category: 'restaurant', genreKey: 'thien', url: 'https://ia800302.us.archive.org/1/items/FourSeasonsSpring_429/AntonioVivaldi-FourSeasonsSpring.mp3', badge: '🧘 Sóng Não Delta', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'th-7', title: 'Forest Birds & Soft Acoustic Guitar 432Hz', artist: 'Nature Acoustics', category: 'restaurant', genreKey: 'thien', url: 'https://ia800303.us.archive.org/11/items/TheBlueDanube_128/JohannStraussII-TheBlueDanube.mp3', badge: '🧘 Tiếng Chim Rừng', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'th-8', title: 'Ocean Waves & Gentle Harp Meditation', artist: 'Harp Meditation', category: 'restaurant', genreKey: 'thien', url: 'https://ia800300.us.archive.org/4/items/FlightOfTheBumblebee_877/NikolaiRimsky-Korsakov-FlightOfTheBumblebee.mp3', badge: '🧘 Đàn Tơ Rung 432Hz', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'th-9', title: 'Zen Garden Bamboo Water Fountain 432Hz', artist: 'Zen Water Sounds', category: 'restaurant', genreKey: 'thien', url: 'https://ia800305.us.archive.org/12/items/Greensleeves_247/Anonymous-Greensleeves.mp3', badge: '🧘 Suối Trúc Zen', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'th-10', title: 'Mindful Breathing Bell & Ambient Pad', artist: 'Mindfulness Bell', category: 'restaurant', genreKey: 'thien', url: 'https://cdn.pixabay.com/download/audio/2022/11/06/audio_c97a8e7e13.mp3', badge: '🧘 Chuông Chánh Niệm', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'th-11', title: 'Sông Nước Miền Tây & Tiếng Đàn Tranh 432Hz', artist: 'Đàn Tranh Thiền Định', category: 'restaurant', genreKey: 'thien', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-12.mp3', badge: '🧘 Đàn Tranh 432Hz', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'th-12', title: 'Lofi Rain Cafe Ambient Vibe', artist: 'Lofi Chill Cafe', category: 'restaurant', genreKey: 'thien', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-13.mp3', badge: '🧘 Lofi Chờ Mưa', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'th-13', title: 'Tiếng Sóng Biển & Đàn Bầu Ru Hồn 432Hz', artist: 'Đàn Bầu Việt Nam', category: 'restaurant', genreKey: 'thien', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-14.mp3', badge: '🧘 Đàn Bầu 432Hz', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'th-14', title: 'Thiền Định Buổi Trưa Quán Cơm Út Trinh 432Hz', artist: 'Thiền Định Bữa Ăn', category: 'restaurant', genreKey: 'thien', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3', badge: '🧘 Thiền Bữa Trưa', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'th-15', title: 'Hoàng Hôn Miền Tây & Sáo Trúc Thiền 432Hz', artist: 'Sáo Trúc Đồng Quê', category: 'restaurant', genreKey: 'thien', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-16.mp3', badge: '🧘 Sáo Trúc Thiền', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
 
   // 6. CAFE & SAXOPHONE (Jazz & Restaurant Atmosphere - Nguồn Nhaccuatui.com)
   { id: 'cs-1', title: 'Saxophone Smooth Jazz Quán Cafe & Ăn Uống', artist: 'Smooth Jazz Collection', category: 'restaurant', genreKey: 'cafesax', url: 'https://ia800300.us.archive.org/4/items/FlightOfTheBumblebee_877/NikolaiRimsky-Korsakov-FlightOfTheBumblebee.mp3', badge: '🎷 Saxophone Jazz', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/O0A128j8c8m' },
   { id: 'cs-2', title: 'Hạ White - Solo Saxophone Lãng Mạn', artist: 'Romantic Saxophone Solo', category: 'restaurant', genreKey: 'cafesax', url: 'https://ia800305.us.archive.org/12/items/Greensleeves_247/Anonymous-Greensleeves.mp3', badge: '🎷 Sax Hạ White', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/O0A128j8c8m' },
-  { id: 'cs-3', title: 'Acoustic Guitar Thư Giãn Chiều Quán Cơm', artist: 'Hòa Tấu Guitar Unplugged', category: 'restaurant', genreKey: 'cafesax', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', badge: '🎸 Acoustic Cafe', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/O0A128j8c8m' },
-  { id: 'cs-4', title: 'Careless Whisper - Kenny G Saxophone Solo', artist: 'Kenny G Saxophone', category: 'restaurant', genreKey: 'cafesax', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3', badge: '🎷 Kenny G Sax', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'cs-5', title: 'Loving You - Kenny G Smooth Saxophone', artist: 'Kenny G', category: 'restaurant', genreKey: 'cafesax', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3', badge: '🎷 Kenny G Love', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'cs-6', title: 'The Moment - Kenny G Smooth Sax Collection', artist: 'Kenny G', category: 'restaurant', genreKey: 'cafesax', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3', badge: '🎷 The Moment', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'cs-7', title: 'Songbird - Kenny G Jazz Collection', artist: 'Kenny G', category: 'restaurant', genreKey: 'cafesax', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3', badge: '🎷 Songbird Jazz', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'cs-8', title: 'What A Wonderful World - Saxophone & Organ', artist: 'Jazz Quartet Lounge', category: 'restaurant', genreKey: 'cafesax', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3', badge: '🎷 Jazz Classic', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'cs-9', title: 'Autumn in New York - Smooth Jazz Quartet', artist: 'Smooth Jazz Ensemble', category: 'restaurant', genreKey: 'cafesax', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3', badge: '🎷 Autumn Jazz', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'cs-10', title: 'Fly Me To The Moon - Saxophone Lounge Duo', artist: 'Saxophone Lounge', category: 'restaurant', genreKey: 'cafesax', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3', badge: '🎷 Moon Jazz', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'cs-11', title: 'Desafinado - Bossa Nova Saxophone Solo', artist: 'Bossa Nova Trio', category: 'restaurant', genreKey: 'cafesax', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3', badge: '🎷 Bossa Nova', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'cs-12', title: 'Girl From Ipanema - Bossa Nova Guitar & Sax', artist: 'Bossa Sax Lounge', category: 'restaurant', genreKey: 'cafesax', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3', badge: '🎷 Ipanema Sax', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'cs-13', title: 'Misty - Jazz Piano & Tenor Sax Unplugged', artist: 'Tenor Sax Unplugged', category: 'restaurant', genreKey: 'cafesax', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-11.mp3', badge: '🎷 Tenor Sax', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'cs-14', title: 'Smooth Operator - Saxophone Cafe Lounge', artist: 'Smooth Operator Duo', category: 'restaurant', genreKey: 'cafesax', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-12.mp3', badge: '🎷 Cafe Operator', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'cs-15', title: 'Afternoon Tea - Unplugged Acoustic & Sax', artist: 'Acoustic Sax Vibe', category: 'restaurant', genreKey: 'cafesax', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-13.mp3', badge: '🎷 Afternoon Tea', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' }
+  { id: 'cs-3', title: 'Acoustic Guitar Thư Giãn Chiều Quán Cơm', artist: 'Hòa Tấu Guitar Unplugged', category: 'restaurant', genreKey: 'cafesax', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', badge: '🎸 Acoustic Cafe', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/O0A128j8c8m' }
 ];
-
-// --- NHACCUATOI BATCH FETCHING LOGIC WITH ANTI-DUPLICATION USED_TRACK_IDS ---
-const USED_TRACKS_KEY = 'cput_used_track_ids_v3';
-
-export function getUsedTrackIdsMap(): Record<string, string[]> {
-  try {
-    const raw = localStorage.getItem(USED_TRACKS_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (parsed && typeof parsed === 'object') return parsed;
-    }
-  } catch (e) {
-    console.warn("Could not parse used track ids from localStorage:", e);
-  }
-  return { vpop: [], usuk: [], kpop: [], khongloi: [], thien: [], cafesax: [] };
-}
-
-export function saveUsedTrackIdsMap(map: Record<string, string[]>) {
-  try {
-    localStorage.setItem(USED_TRACKS_KEY, JSON.stringify(map));
-  } catch (e) {
-    console.warn("Could not save used track ids to localStorage:", e);
-  }
-}
-
-// Request & Fetch a BRAND NEW batch of songs for a genre from Nhaccuatui source
-export function fetchNhacCuaToiBatch(
-  genreKey: 'vpop' | 'usuk' | 'kpop' | 'khongloi' | 'thien' | 'cafesax',
-  targetCount: number = 5
-): PlaylistItem[] {
-  const genrePool = MULTI_GENRE_CATALOG.filter(t => t.genreKey === genreKey);
-  if (genrePool.length === 0) return [];
-
-  const usedMap = getUsedTrackIdsMap();
-  let currentUsed = usedMap[genreKey] || [];
-
-  // Filter out tracks that have been shown previously in this genre
-  let unusedPool = genrePool.filter(track => !currentUsed.includes(track.id));
-
-  // If unshown tracks are fewer than targetCount, reset used history for this genre so it can start a fresh cycle
-  if (unusedPool.length < targetCount) {
-    currentUsed = [];
-    usedMap[genreKey] = [];
-    saveUsedTrackIdsMap(usedMap);
-    unusedPool = [...genrePool];
-  }
-
-  // Shuffle the unused pool to pick a fresh batch
-  const shuffled = [...unusedPool].sort(() => 0.5 - Math.random());
-  const selectedBatch = shuffled.slice(0, Math.min(targetCount, shuffled.length));
-
-  // Record newly shown IDs to localStorage so F5 or subsequent clicks won't duplicate them
-  const selectedIds = selectedBatch.map(s => s.id);
-  usedMap[genreKey] = [...(usedMap[genreKey] || []), ...selectedIds];
-  saveUsedTrackIdsMap(usedMap);
-
-  return selectedBatch;
-}
-
-// Fetch new batches for all 6 genres combined
-export function fetchAllGenresNhacCuaToiBatch(targetCountPerGenre: number = 5): PlaylistItem[] {
-  const genres: ('vpop' | 'usuk' | 'kpop' | 'khongloi' | 'thien' | 'cafesax')[] = [
-    'vpop', 'usuk', 'kpop', 'khongloi', 'thien', 'cafesax'
-  ];
-  const allBatches = genres.map(g => fetchNhacCuaToiBatch(g, targetCountPerGenre));
-  return allBatches.flat();
-}
 
 export const CPUT_PLAYLIST = MULTI_GENRE_CATALOG.filter(t => t.category === 'restaurant');
 export const VPOP_TRENDING_POOL = MULTI_GENRE_CATALOG.filter(t => t.category === 'vpop');
@@ -618,25 +492,27 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
   const [selectedGenreFilter, setSelectedGenreFilter] = useState<'all' | 'vpop' | 'usuk' | 'kpop' | 'khongloi' | 'thien' | 'cafesax'>('all');
   const [musicSearchQuery, setMusicSearchQuery] = useState<string>('');
 
-  // Randomized track list per page visit/refresh using anti-duplication Nhaccuatui batch fetching
+  // Randomized track list per page visit/refresh so 6 tabs never stay static or locked by SQL
   const [sessionCatalog, setSessionCatalog] = useState<PlaylistItem[]>(() => {
-    return fetchAllGenresNhacCuaToiBatch(5);
+    if (!MULTI_GENRE_CATALOG || !Array.isArray(MULTI_GENRE_CATALOG)) return [];
+    const copy = [...MULTI_GENRE_CATALOG];
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
   });
 
   const handleReshuffleCatalog = useCallback(() => {
-    if (selectedGenreFilter === 'all') {
-      const newCatalog = fetchAllGenresNhacCuaToiBatch(5);
-      setSessionCatalog(newCatalog);
-      setRandomBannerMessage(`🔄 Đã bóc tách 6 nhóm bài hát MỚI từ nguồn Nhaccuatui.com (Đã loại bỏ tất cả bài trùng lặp)`);
-    } else {
-      const newBatch = fetchNhacCuaToiBatch(selectedGenreFilter, 5);
-      setSessionCatalog(prev => {
-        const others = prev.filter(t => t.genreKey !== selectedGenreFilter);
-        return [...others, ...newBatch];
-      });
-      setRandomBannerMessage(`🔄 Đã bóc tách nhóm bài hát MỚI từ nguồn Nhaccuatui.com cho tab này (Đã loại bỏ bài trùng lặp)`);
-    }
-  }, [selectedGenreFilter]);
+    setSessionCatalog(prev => {
+      const copy = [...prev];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    });
+  }, []);
 
   // Initial Random Song pick so every user visit gets a fresh song dynamically
   const initialRandomTrack = useMemo(() => {
@@ -750,25 +626,20 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
 
   const handlePickRandomTrack = useCallback((targetGenreKey?: string) => {
     stopAmbientSynth();
-    const effectiveGenre = (!targetGenreKey || targetGenreKey === 'all') 
-      ? (selectedGenreFilter === 'all' ? 'vpop' : selectedGenreFilter) 
-      : targetGenreKey;
-    const newBatch = fetchNhacCuaToiBatch(effectiveGenre as any, 5);
-    setSessionCatalog(prev => {
-      const others = prev.filter(t => t.genreKey !== effectiveGenre);
-      return [...others, ...newBatch];
-    });
-    const selected = newBatch[0];
-    if (!selected) return;
+    const source = sessionCatalog.length > 0 ? sessionCatalog : MULTI_GENRE_CATALOG;
+    const pool = source.filter(t => !targetGenreKey || targetGenreKey === 'all' || t.genreKey === targetGenreKey);
+    if (pool.length === 0) return;
+    const randomIndex = Math.floor(Math.random() * pool.length);
+    const selected = pool[randomIndex];
     setCustomTrackUrl(selected.url);
     setIsPlayingMusic(true);
-    setRandomBannerMessage(`🎲 Đã chọn & phát bài MỚI từ Nhaccuatui.com: "${selected.title}" (${selected.artist})`);
+    setRandomBannerMessage(`🎲 Đã chọn & phát ngẫu nhiên (Nguồn Nhaccuatui.com): "${selected.title}" (${selected.artist})`);
     if (audioRef.current) {
       audioRef.current.src = selected.url;
       audioRef.current.load();
       audioRef.current.play().catch(e => console.warn("Random track audio play notice:", e));
     }
-  }, [stopAmbientSynth, selectedGenreFilter]);
+  }, [stopAmbientSynth, sessionCatalog]);
 
   const handleSelectPlaylistTrack = (trackUrl: string) => {
     stopAmbientSynth();
