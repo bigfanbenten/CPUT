@@ -410,8 +410,8 @@ export const MULTI_GENRE_CATALOG: PlaylistItem[] = [
   { id: 'cs-5', title: 'Cafe Lounge Chillout Restaurant Atmosphere', artist: 'Jazz Lounge Ensemble', category: 'restaurant', genreKey: 'cafesax', url: 'https://cdn.pixabay.com/download/audio/2022/10/18/audio_2738a1a364.mp3', badge: '☕ Cafe Lounge', sourceType: 'mp3', sourceLabel: 'Nguồn Pixabay Audio', nctLink: 'https://pixabay.com' }
 ];
 
-// --- NHACCUATOI BATCH FETCHING LOGIC WITH ANTI-DUPLICATION USED_TRACK_IDS ---
-const USED_TRACKS_KEY = 'cput_used_track_ids_v3';
+// --- BATCH FETCHING LOGIC WITH ANTI-DUPLICATION USED_TRACK_IDS ---
+const USED_TRACKS_KEY = 'cput_used_track_ids_v4';
 
 export function getUsedTrackIdsMap(): Record<string, string[]> {
   try {
@@ -434,7 +434,7 @@ export function saveUsedTrackIdsMap(map: Record<string, string[]>) {
   }
 }
 
-// Request & Fetch a BRAND NEW batch of songs for a genre from Nhaccuatui source
+// Request & Fetch a BRAND NEW batch of songs for a genre from catalog
 export function fetchNhacCuaToiBatch(
   genreKey: 'vpop' | 'usuk' | 'kpop' | 'khongloi' | 'thien' | 'cafesax',
   targetCount: number = 5
@@ -448,7 +448,7 @@ export function fetchNhacCuaToiBatch(
   const validPool = genrePool.filter(track => scoreTrackForGenre(track, genreKey) > 0);
   const filteredOutCount = genrePool.length - validPool.length;
   if (filteredOutCount > 0) {
-    console.log(`[Music] Removed unwanted versions (Piano/Cover/Remix/Lofi/DeepVocal): ${filteredOutCount}`);
+    console.log(`[Music] Removed unwanted versions: ${filteredOutCount}`);
   }
 
   if (validPool.length === 0) {
@@ -657,14 +657,14 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
     if (selectedGenreFilter === 'all') {
       const newCatalog = fetchAllGenresNhacCuaToiBatch(5);
       setSessionCatalog(newCatalog);
-      setRandomBannerMessage(`🔄 Đã bóc tách 6 nhóm bài hát MỚI từ nguồn Nhaccuatui.com (Đã loại bỏ tất cả bài trùng lặp)`);
+      setRandomBannerMessage(`🔄 Đã bóc tách 6 nhóm bài hát MỚI (Đã loại bỏ tất cả bài trùng lặp)`);
     } else {
       const newBatch = fetchNhacCuaToiBatch(selectedGenreFilter, 5);
       setSessionCatalog(prev => {
         const others = prev.filter(t => t.genreKey !== selectedGenreFilter);
         return [...others, ...newBatch];
       });
-      setRandomBannerMessage(`🔄 Đã bóc tách nhóm bài hát MỚI từ nguồn Nhaccuatui.com cho tab này (Đã loại bỏ bài trùng lặp)`);
+      setRandomBannerMessage(`🔄 Đã bóc tách nhóm bài hát MỚI cho tab này (Đã loại bỏ bài trùng lặp)`);
     }
   }, [selectedGenreFilter]);
 
@@ -679,9 +679,9 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
         genreKey: 'vpop' as const,
         url: 'https://cdn.pixabay.com/download/audio/2022/11/06/audio_c97a8e7e13.mp3',
         badge: '🌾 Nhạc Út Trinh',
-        sourceType: 'nhaccuatoi',
-        sourceLabel: 'Nguồn Nhaccuatui.com',
-        nctLink: 'https://www.nhaccuatui.com'
+        sourceType: 'mp3' as const,
+        sourceLabel: 'Nguồn Pixabay Relax',
+        nctLink: 'https://pixabay.com'
       };
     }
     const randomIndex = Math.floor(Math.random() * sessionCatalog.length);
@@ -740,9 +740,9 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
       genreKey: 'vpop',
       url: 'https://cdn.pixabay.com/download/audio/2022/11/06/audio_c97a8e7e13.mp3',
       badge: '🌾 Nhạc Út Trinh',
-      sourceType: 'nhaccuatoi',
-      sourceLabel: 'Nguồn Nhaccuatui.com',
-      nctLink: 'https://www.nhaccuatui.com'
+      sourceType: 'mp3',
+      sourceLabel: 'Nguồn Pixabay Relax',
+      nctLink: 'https://pixabay.com'
     };
   }, [activeMusicUrl, initialRandomTrack]);
 
@@ -783,9 +783,9 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
     }
   }, [stopAmbientSynth, selectedGenreFilter, sessionCatalog, failedTrackIds]);
 
-  // Audio Playback Sync Effect with strict validation logging
+  // Audio Playback Sync Effect - Separated Direct Audio MP3 vs YouTube Iframe
   useEffect(() => {
-    if (isPlayingMusic && activeMusicUrl) {
+    if (isPlayingMusic && activeMusicUrl && !youtubeId) {
       if (audioRef.current) {
         audioRef.current.src = activeMusicUrl;
         audioRef.current.play().then(() => {
@@ -794,26 +794,30 @@ TAB: ${(currentTrackObj?.genreKey || 'vpop').toUpperCase()}
 TITLE: ${currentTrackObj?.title || 'Unknown'}
 ARTIST: ${currentTrackObj?.artist || 'Unknown'}
 TRACK ID: ${currentTrackObj?.id || 'Unknown'}
-SOURCE: ${currentTrackObj?.sourceType || 'nhaccuatoi'}
+SOURCE: ${currentTrackObj?.sourceType || 'mp3'}
 MUSIC URL: ${activeMusicUrl}
-PLAYBACK TYPE: MUSIC
+PLAYBACK TYPE: DIRECT MP3 AUDIO
 PLAYBACK STATUS: PLAYING`);
         }).catch(err => {
-          console.warn(`[Music Debug]
-TAB: ${(currentTrackObj?.genreKey || 'vpop').toUpperCase()}
-TITLE: ${currentTrackObj?.title || 'Unknown'}
-ARTIST: ${currentTrackObj?.artist || 'Unknown'}
-TRACK ID: ${currentTrackObj?.id || 'Unknown'}
-MUSIC URL: ${activeMusicUrl}
-PLAYBACK TYPE: MUSIC
-PLAYBACK STATUS: NO_VALID_SOURCE
-ERROR: ${err?.message || 'Playback error'}`);
-          
+          console.warn(`[Music Debug] Direct audio playback error:`, err);
           if (currentTrackObj?.id) {
             handleSkipToNextValidTrack(currentTrackObj.id);
           }
         });
       }
+    } else if (isPlayingMusic && youtubeId) {
+      if (audioRef.current) {
+        try { audioRef.current.pause(); } catch { /* ignore */ }
+      }
+      console.log(`[Music Debug]
+TAB: ${(currentTrackObj?.genreKey || 'vpop').toUpperCase()}
+TITLE: ${currentTrackObj?.title || 'Unknown'}
+ARTIST: ${currentTrackObj?.artist || 'Unknown'}
+TRACK ID: ${currentTrackObj?.id || 'Unknown'}
+SOURCE: YouTube Stream (${youtubeId})
+MUSIC URL: ${activeMusicUrl}
+PLAYBACK TYPE: YOUTUBE IFRAME
+PLAYBACK STATUS: PLAYING`);
     } else if (!isPlayingMusic) {
       if (audioRef.current) {
         try { audioRef.current.pause(); } catch (e) { console.warn("Audio pause error:", e); }
@@ -1871,7 +1875,7 @@ ERROR: ${err?.message || 'Playback error'}`);
 
                         <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
                           <div className="text-[11px] text-stone-300">
-                            Nguồn nhạc từ <strong className="text-amber-400">www.nhaccuatui.com</strong> • Nghệ sĩ: <span className="text-white font-bold">{currentTrackObj.artist}</span>
+                            Nguồn: <strong className="text-amber-400">{currentTrackObj.sourceLabel || 'Nguồn Âm Thanh'}</strong> • Nghệ sĩ: <span className="text-white font-bold">{currentTrackObj.artist}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <button
@@ -1881,26 +1885,28 @@ ERROR: ${err?.message || 'Playback error'}`);
                             >
                               {isPlayingMusic ? <><Pause size={14} /> Tạm dừng</> : <><Play size={14} /> Phát nhạc</>}
                             </button>
-                            <a
-                              href={currentTrackObj.nctLink || 'https://www.nhaccuatui.com'}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="bg-stone-800 hover:bg-stone-700 text-amber-300 px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1 transition-all"
-                              title="Nghe trực tiếp trên Nhaccuatui.com"
-                            >
-                              <ExternalLink size={12} /> NCT.com ↗
-                            </a>
+                            {currentTrackObj.nctLink && (
+                              <a
+                                href={currentTrackObj.nctLink}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="bg-stone-800 hover:bg-stone-700 text-amber-300 px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1 transition-all"
+                                title="Xem nguồn bài hát"
+                              >
+                                <ExternalLink size={12} /> Nguồn ↗
+                              </a>
+                            )}
                           </div>
                         </div>
                       </div>
 
-                      {/* 6 NHẠC TAB BUTTONS FROM NHACCUATUI */}
+                      {/* 6 NHẠC TAB BUTTONS */}
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-black uppercase text-amber-950 tracking-wider flex items-center gap-1.5">
-                            📑 CHỌN NGUỒN NHẠC (NHACCUATUI.COM):
+                            📑 CHỌN THỂ LOẠI NHẠC PHÁT NỀN QUÁN:
                           </span>
-                          <span className="text-[10px] text-stone-500 font-bold">6 Thể loại chọn lọc</span>
+                          <span className="text-[10px] text-stone-500 font-bold">6 Thể loại tuyển chọn</span>
                         </div>
 
                         {/* 6 Category Tabs Row */}
@@ -1941,7 +1947,7 @@ ERROR: ${err?.message || 'Playback error'}`);
                         <div className="relative flex-1 w-full">
                           <input
                             type="text"
-                            placeholder="Tìm tên bài hát, ca sĩ từ Nhaccuatui..."
+                            placeholder="Tìm tên bài hát, ca sĩ..."
                             value={musicSearchQuery}
                             onChange={(e) => setMusicSearchQuery(e.target.value)}
                             className="w-full pl-8 pr-3 py-1.5 border border-stone-300 rounded-xl text-xs outline-none bg-white focus:ring-2 focus:ring-amber-500"
@@ -1963,7 +1969,7 @@ ERROR: ${err?.message || 'Playback error'}`);
                       <div className="space-y-2">
                         <div className="flex flex-wrap justify-between items-center gap-2 text-[10px] font-black uppercase text-amber-900 tracking-wider">
                           <span>
-                            🎶 TẤT CẢ BÀI HÁT NGUỒN NHACCUATUI ({filteredCatalogTracks.length} BÀI):
+                            🎶 DANH SÁCH BÀI HÁT TỔNG CỘNG ({filteredCatalogTracks.length} BÀI):
                           </span>
                           <div className="flex items-center gap-2">
                             <button
@@ -1979,7 +1985,7 @@ ERROR: ${err?.message || 'Playback error'}`);
                               type="button"
                               onClick={() => handlePickRandomTrack(selectedGenreFilter)}
                               className="bg-amber-800 hover:bg-amber-700 text-white font-black text-xs px-3 py-1.5 rounded-xl shadow-md flex items-center gap-1.5 cursor-pointer transition-all hover:scale-105 active:scale-95"
-                              title="Chọn ngẫu nhiên 1 bài hát từ Nhaccuatui"
+                              title="Chọn ngẫu nhiên 1 bài hát từ danh sách này"
                             >
                               <Shuffle size={14} />
                               <span>🎲 PHÁT NGẪU NHIÊN TAB NÀY</span>
@@ -2018,7 +2024,7 @@ ERROR: ${err?.message || 'Playback error'}`);
                                         {track.badge}
                                       </span>
                                       <span className="text-[8px] bg-emerald-100 text-emerald-900 px-1.5 py-0.2 rounded font-bold shrink-0">
-                                        Nguồn Nhaccuatui
+                                        {track.sourceLabel || 'Nguồn Âm Thanh'}
                                       </span>
                                     </div>
                                   </div>
