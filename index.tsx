@@ -431,17 +431,10 @@ export function fetchNhacCuaToiBatch(
   genreKey: 'vpop' | 'usuk' | 'kpop' | 'khongloi' | 'thien' | 'cafesax',
   targetCount: number = 5
 ): PlaylistItem[] {
-  console.log(`[Music] Fetching new tracks...`);
-  console.log(`[Music] Tab: ${genreKey.toUpperCase()}`);
+  console.log(`[Music] Fetching brand new tracks for tab ${genreKey.toUpperCase()}...`);
 
   const genrePool = MULTI_GENRE_CATALOG.filter(t => t.genreKey === genreKey);
-  console.log(`[Music] Total pool size for ${genreKey}: ${genrePool.length}`);
-
   const validPool = genrePool.filter(track => scoreTrackForGenre(track, genreKey) > 0);
-  const filteredOutCount = genrePool.length - validPool.length;
-  if (filteredOutCount > 0) {
-    console.log(`[Music] Removed unwanted versions: ${filteredOutCount}`);
-  }
 
   if (validPool.length === 0) {
     console.warn(`[Music] No valid tracks found for genre ${genreKey}`);
@@ -450,34 +443,54 @@ export function fetchNhacCuaToiBatch(
 
   const usedMap = getUsedTrackIdsMap();
   let currentUsed = usedMap[genreKey] || [];
-  console.log(`[Music] Previously used track IDs count (${genreKey}): ${currentUsed.length}`);
 
-  let unusedPool = validPool.filter(track => !currentUsed.includes(track.id));
-  const duplicatesCount = validPool.length - unusedPool.length;
-  console.log(`[Music] Removed duplicates / previously displayed: ${duplicatesCount}`);
+  const unusedPool = validPool.filter(track => !currentUsed.includes(track.id));
 
-  if (unusedPool.length < targetCount) {
-    console.log(`[Music] All catalog tracks played for tab ${genreKey}! Resetting used history for clean new cycle.`);
+  let selectedBatch: PlaylistItem[] = [];
+
+  if (unusedPool.length >= targetCount) {
+    const shuffled = [...unusedPool];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    selectedBatch = shuffled.slice(0, targetCount);
+  } else {
+    // Take ALL remaining unused tracks first
+    const shuffledUnused = [...unusedPool];
+    for (let i = shuffledUnused.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffledUnused[i], shuffledUnused[j]] = [shuffledUnused[j], shuffledUnused[i]];
+    }
+    selectedBatch = [...shuffledUnused];
+
+    const needed = Math.min(targetCount - selectedBatch.length, validPool.length - selectedBatch.length);
+
+    // Reset history for ONLY this tab
     currentUsed = [];
     usedMap[genreKey] = [];
-    saveUsedTrackIdsMap(usedMap);
-    unusedPool = [...validPool];
+
+    if (needed > 0) {
+      const selectedIdsSet = new Set(selectedBatch.map(t => t.id));
+      const freshPool = validPool.filter(t => !selectedIdsSet.has(t.id));
+
+      const shuffledFresh = [...freshPool];
+      for (let i = shuffledFresh.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledFresh[i], shuffledFresh[j]] = [shuffledFresh[j], shuffledFresh[i]];
+      }
+
+      const fillBatch = shuffledFresh.slice(0, needed);
+      selectedBatch = [...selectedBatch, ...fillBatch];
+    }
   }
 
-  const shuffled = [...unusedPool];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-
-  const selectedBatch = shuffled.slice(0, Math.min(targetCount, shuffled.length));
-
+  // Save updated used history for ONLY this tab
   const selectedIds = selectedBatch.map(s => s.id);
   usedMap[genreKey] = [...(usedMap[genreKey] || []), ...selectedIds];
   saveUsedTrackIdsMap(usedMap);
 
-  console.log(`[Music] New tracks selected for ${genreKey}:`, selectedBatch.map(t => `${t.title} (${t.id})`));
-  console.log(`[Music] Queue size: ${selectedBatch.length}`);
+  console.log(`[Music] Selected ${selectedBatch.length} new tracks for ${genreKey}:`, selectedBatch.map(t => `${t.title} (${t.id})`));
 
   return selectedBatch;
 }
@@ -646,19 +659,10 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
   });
 
   const handleReshuffleCatalog = useCallback(() => {
-    if (selectedGenreFilter === 'all') {
-      const newCatalog = fetchAllGenresNhacCuaToiBatch(5);
-      setSessionCatalog(newCatalog);
-      setRandomBannerMessage(`🔄 Đã bóc tách 6 nhóm bài hát MỚI (Đã loại bỏ tất cả bài trùng lặp)`);
-    } else {
-      const newBatch = fetchNhacCuaToiBatch(selectedGenreFilter, 5);
-      setSessionCatalog(prev => {
-        const others = prev.filter(t => t.genreKey !== selectedGenreFilter);
-        return [...others, ...newBatch];
-      });
-      setRandomBannerMessage(`🔄 Đã bóc tách nhóm bài hát MỚI cho tab này (Đã loại bỏ bài trùng lặp)`);
-    }
-  }, [selectedGenreFilter]);
+    const newCatalog = fetchAllGenresNhacCuaToiBatch(5);
+    setSessionCatalog(newCatalog);
+    setRandomBannerMessage(`🔄 Đã tải nhóm bài hát MỚI cho 6 tab (Đã loại bỏ tất cả bài đã xuất hiện)`);
+  }, []);
 
   // Initial Random Song pick so every user visit gets a fresh song dynamically
   const initialRandomTrack = useMemo(() => {
@@ -1968,10 +1972,10 @@ PLAYBACK STATUS: PLAYING`);
                               type="button"
                               onClick={handleReshuffleCatalog}
                               className="bg-stone-800 hover:bg-stone-900 text-amber-300 font-black text-xs px-3 py-1.5 rounded-xl shadow-md flex items-center gap-1.5 cursor-pointer transition-all hover:scale-105 active:scale-95"
-                              title="Trộn ngẫu nhiên lại vị trí bài hát trong 6 tab"
+                              title="Tải nhóm bài hát mới hoàn toàn cho cả 6 tab"
                             >
                               <RefreshCw size={13} />
-                              <span>🔄 TRỘN BÀI LẠI 6 TAB</span>
+                              <span>🔄 TẢI LẠI BÀI MỚI</span>
                             </button>
                             <button
                               type="button"
