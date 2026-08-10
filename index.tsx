@@ -342,112 +342,72 @@ export function scoreTrackForGenre(track: PlaylistItem, targetGenreKey: string):
 }
 
 export const MULTI_GENRE_CATALOG: PlaylistItem[] = [
-  // 1. NHẠC VIỆT (V-Pop, Ballad, Trữ Tình có giọng hát ca sĩ thật - Nguồn Nhaccuatui & YouTube Official)
-  { id: 'vp-1', title: 'Nơi Này Có Anh', artist: 'Sơn Tùng M-TP', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=FN7ALfpGxiI', badge: '🇻🇳 V-Pop Hit', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/bai-hat/noi-nay-co-anh-son-tung-m-tp.html' },
-  { id: 'vp-2', title: 'Sau Lời Khước Từ', artist: 'Phan Mạnh Quỳnh', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=y12Atq-28tY', badge: '🇻🇳 Nhạc Phim Mai', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/bai-hat/sau-loi-khuoc-tu-phan-manh-quynh.html' },
-  { id: 'vp-3', title: 'Tháng Mấy Em Nhớ Anh', artist: 'Hà Anh Tuấn', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=M5M2z27y4g8', badge: '🇻🇳 Single Hit', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'vp-4', title: 'Tháng Tư Là Lời Nói Dối Của Anh', artist: 'Hà Anh Tuấn', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=UCV3N2XfL-0', badge: '🇻🇳 V-Pop Ballad', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'vp-5', title: 'Nàng Thơ', artist: 'Hoàng Dũng', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=_yD_rLpx9aM', badge: '🇻🇳 Nàng Thơ', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'vp-6', title: 'Đưa Tiến Em', artist: 'Vũ & Đen Vâu', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=gO_WqAIsm3g', badge: '🇻🇳 Indie Việt', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'vp-7', title: 'Cơn Mưa Tình Yêu', artist: 'Hà Anh Tuấn & Phương Linh', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=Xw-U_3473gQ', badge: '🇻🇳 Song Ca V-Pop', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'vp-8', title: 'Hơn Cả Yêu', artist: 'Đức Phúc', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=-Vks7J864zU', badge: '🇻🇳 Love Ballad', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'vp-9', title: 'Ngày Đầu Tiên', artist: 'Đức Phúc', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=G3P9wH6S2a4', badge: '🇻🇳 V-Pop Ballad', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'vp-10', title: 'Diễm Xưa', artist: 'Khánh Ly', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=e_9U99Y_lXk', badge: '🇻🇳 Nhạc Trịnh', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'vp-11', title: 'Bước Qua Nhau', artist: 'Vũ', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=V-5373l8O6s', badge: '🇻🇳 Indie V-Pop', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'vp-12', title: 'Vì Anh Đâu Biết', artist: 'Madihu ft. Vũ', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=eJ1vK0tC9_g', badge: '🇻🇳 Chill V-Pop', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'vp-13', title: 'Lạc Trôi', artist: 'Sơn Tùng M-TP', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=Llw9Q6akRo4', badge: '🇻🇳 V-Pop Hit', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'vp-14', title: 'Cắt Đôi Nỗi Sầu', artist: 'Tăng Duy Tân', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=cQA20422_J0', badge: '🇻🇳 Trending V-Pop', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'vp-15', title: 'Thắc Mắc', artist: 'Thịnh Suy', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=29Wqf-uA_e4', badge: '🇻🇳 Single Vibe', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'vp-16', title: 'Ước Gì', artist: 'Mỹ Tâm', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=e2XJ041269s', badge: '🇻🇳 Mỹ Tâm Hit', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'vp-17', title: 'Có Chắc Yêu Là Đây', artist: 'Sơn Tùng M-TP', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=kx1kI6M55O0', badge: '🇻🇳 V-Pop Hit', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'vp-18', title: 'Yêu Lại Từ Đầu', artist: 'Khắc Việt', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=3w13lX0023g', badge: '🇻🇳 Hit Huyền Thoại', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'vp-19', title: 'Không Thể Cùng Nhau Suốt Kiếp', artist: 'Hòa Minzy', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=-a38K0iN53E', badge: '🇻🇳 Ballad Hit', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'vp-20', title: 'Phía Sau Một Cô Gái', artist: 'Soobin Hoàng Sơn', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=00-244m297k', badge: '🇻🇳 Soobin Ballad', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'vp-21', title: 'Bùa Yêu', artist: 'Bích Phương', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=2y86M8031eE', badge: '🇻🇳 Bích Phương Hit', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'vp-22', title: 'Sóng Gió', artist: 'Jack & K-ICM', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=j8U_0m93L_E', badge: '🇻🇳 Sóng Gió', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'vp-23', title: 'Anh Nhà Ở Đâu Thế', artist: 'AMEE', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=oK05m54l8lE', badge: '🇻🇳 AMEE Pop', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'vp-24', title: 'Người Ấy', artist: 'Trịnh Thăng Bình', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=f33m131061s', badge: '🇻🇳 Ballad Quen Thuộc', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'vp-25', title: 'Em Mới Là Người Yêu Anh', artist: 'MIN', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=R5_8v45_G8k', badge: '🇻🇳 V-Pop Trending', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
+  // 1. NHẠC VIỆT (V-Pop Ballad & Chill - Đa dạng ca sĩ Việt Nam)
+  { id: 'vp-1', title: 'Cắt Đôi Nỗi Sầu', artist: 'Tăng Duy Tân', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=cQA20422_J0', badge: '🇻🇳 V-Pop Trending', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=cQA20422_J0' },
+  { id: 'vp-2', title: 'Sau Lời Khước Từ', artist: 'Phan Mạnh Quỳnh', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=y12Atq-28tY', badge: '🇻🇳 Nhạc Phim Mai', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=y12Atq-28tY' },
+  { id: 'vp-3', title: 'Nàng Thơ', artist: 'Hoàng Dũng', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=_yD_rLpx9aM', badge: '🇻🇳 Nàng Thơ', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=_yD_rLpx9aM' },
+  { id: 'vp-4', title: 'Hơn Cả Yêu', artist: 'Đức Phúc', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=-Vks7J864zU', badge: '🇻🇳 Love Ballad', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=-Vks7J864zU' },
+  { id: 'vp-5', title: 'Ngày Đầu Tiên', artist: 'Đức Phúc', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=0L3sA1W2Z2o', badge: '🇻🇳 V-Pop Ballad', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=0L3sA1W2Z2o' },
+  { id: 'vp-6', title: 'Tháng Tư Là Lời Nói Dối Của Anh', artist: 'Hà Anh Tuấn', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=M5M2z27y4g8', badge: '🇻🇳 V-Pop Acoustic', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=M5M2z27y4g8' },
+  { id: 'vp-7', title: 'Tháng Mấy Em Nhớ Anh', artist: 'Hà Anh Tuấn', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=680Xm7aGZ5M', badge: '🇻🇳 Single Hit', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=680Xm7aGZ5M' },
+  { id: 'vp-8', title: 'Cơn Mưa Tình Yêu', artist: 'Hà Anh Tuấn & Phương Linh', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=2L1xX5L4u2M', badge: '🇻🇳 Song Ca V-Pop', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=2L1xX5L4u2M' },
+  { id: 'vp-9', title: 'Bước Qua Nhau', artist: 'Vũ', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=V-5373l8O6s', badge: '🇻🇳 Indie V-Pop', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=V-5373l8O6s' },
+  { id: 'vp-10', title: 'Lạ Kìa / Đã Lỡ Yêu Em Rồi', artist: 'Vũ', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=FN7ALfpGxiI', badge: '🇻🇳 Indie Việt', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=FN7ALfpGxiI' },
+  { id: 'vp-11', title: 'Em Mới Là Người Yêu Anh', artist: 'MIN', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=28W9z4m111M', badge: '🇻🇳 V-Pop Pop', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=28W9z4m111M' },
+  { id: 'vp-12', title: 'Bùa Yêu', artist: 'Bích Phương', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=2y86M8031eE', badge: '🇻🇳 Bích Phương Hit', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=2y86M8031eE' },
+  { id: 'vp-13', title: 'Anh Nhà Ở Đâu Thế', artist: 'AMEE', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=oK05m54l8lE', badge: '🇻🇳 AMEE Pop', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=oK05m54l8lE' },
+  { id: 'vp-14', title: 'Phía Sau Một Cô Gái', artist: 'Soobin Hoàng Sơn', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=vCIcejpw0A8', badge: '🇻🇳 Soobin Ballad', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=vCIcejpw0A8' },
+  { id: 'vp-15', title: 'Không Thể Cùng Nhau Suốt Kiếp', artist: 'Hòa Minzy', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=12891x-a38K', badge: '🇻🇳 Ballad Hit', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=12891x-a38K' },
+  { id: 'vp-16', title: 'Yêu Lại Từ Đầu', artist: 'Khắc Việt', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=3w13lX0023g', badge: '🇻🇳 Hit Huyền Thoại', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=3w13lX0023g' },
+  { id: 'vp-17', title: 'Ước Gì', artist: 'Mỹ Tâm', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=e2XJ041269s', badge: '🇻🇳 Mỹ Tâm Hit', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=e2XJ041269s' },
+  { id: 'vp-18', title: 'Thắc Mắc', artist: 'Thịnh Suy', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=29Wqf-uA_e4', badge: '🇻🇳 Single Vibe', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=29Wqf-uA_e4' },
+  { id: 'vp-19', title: 'Vì Anh Đâu Biết', artist: 'Madihu ft. Vũ', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=eJ1vK0tC9_g', badge: '🇻🇳 Chill V-Pop', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=eJ1vK0tC9_g' },
+  { id: 'vp-20', title: 'Sau Tất Cả', artist: 'Erik', category: 'vpop', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=0k2378a1a36', badge: '🇻🇳 Erik Ballad', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=0k2378a1a36' },
 
-  // 2. ÂU - MỸ (US-UK Vocal Hits - Ca sĩ thật hát bản gốc)
-  { id: 'us-1', title: 'Shape of You', artist: 'Ed Sheeran', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=JGwWNGJdvx8', badge: '🌎 US-UK Hit', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/O0A128j8c8m' },
-  { id: 'us-2', title: 'Perfect', artist: 'Ed Sheeran', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=2Vv-BfVoq4g', badge: '🌎 Love Song', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/O0A128j8c8m' },
-  { id: 'us-3', title: 'Until I Found You', artist: 'Stephen Sanchez', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=GxldQ9eX2fc', badge: '🌎 Retro US-UK', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/O0A128j8c8m' },
-  { id: 'us-4', title: 'Hotel California', artist: 'Eagles', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=0983421l980', badge: '🌎 Classic Rock', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/O0A128j8c8m' },
-  { id: 'us-5', title: 'Shallow', artist: 'Lady Gaga & Bradley Cooper', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=bo_efYh1Pbc', badge: '🌎 Movie OST', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/O0A128j8c8m' },
-  { id: 'us-6', title: 'Someone Like You', artist: 'Adele', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=hLQl3WQQoQ0', badge: '🌎 Soul Vocal', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/O0A128j8c8m' },
-  { id: 'us-7', title: 'Easy On Me', artist: 'Adele', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=U3ASj1L6_sY', badge: '🌎 Adele Vocal', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'us-8', title: 'All of Me', artist: 'John Legend', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=450p7goxZ3g', badge: '🌎 Love Song', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'us-9', title: 'Counting Stars', artist: 'OneRepublic', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=hT_nvWreIhg', badge: '🌎 Folk Pop', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'us-10', title: 'Memories', artist: 'Maroon 5', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=SlPhMPn02C0', badge: '🌎 Pop Ballad', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'us-11', title: 'Thinking Out Loud', artist: 'Ed Sheeran', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=lp-EO5I60KA', badge: '🌎 Ed Sheeran', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'us-12', title: 'Stay With Me', artist: 'Sam Smith', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=pB-5XG-DbAA', badge: '🌎 Soul Gospel', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'us-13', title: 'Attention', artist: 'Charlie Puth', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=nfs8NYg7yXg', badge: '🌎 Pop Lounge', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'us-14', title: 'See You Again', artist: 'Wiz Khalifa & Charlie Puth', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=RgKAFK5djSk', badge: '🌎 Furious OST', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'us-15', title: 'As It Was', artist: 'Harry Styles', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=H5v3k2r4aA8', badge: '🌎 Retro Pop', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'us-16', title: 'Anti-Hero', artist: 'Taylor Swift', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=b1kbL3869oM', badge: '🌎 Taylor Swift', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'us-17', title: 'Blinding Lights', artist: 'The Weeknd', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=4NRXx6U8ABQ', badge: '🌎 Synth Pop', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'us-18', title: 'Flowers', artist: 'Miley Cyrus', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=G7KNmW9a75Y', badge: '🌎 Disco Pop', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'us-19', title: 'Stay', artist: 'Justin Bieber & The Kid LAROI', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=KTZ-y85Erus', badge: '🌎 Chart Topper', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'us-20', title: 'Bad Habits', artist: 'Ed Sheeran', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=orJSJGHjBLI', badge: '🌎 Ed Dance Pop', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'us-21', title: 'Let Her Go', artist: 'Passenger', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=RBumgq5yVrA', badge: '🌎 Folk Hit', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'us-22', title: 'Someone You Loved', artist: 'Lewis Capaldi', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=zABLecsR5UE', badge: '🌎 Soulful Hit', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'us-23', title: 'Drivers License', artist: 'Olivia Rodrigo', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=ZmDBbnmKpqQ', badge: '🌎 Olivia Ballad', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'us-24', title: 'Say You Won t Let Go', artist: 'James Arthur', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=0yW7w8F2TVA', badge: '🌎 James Ballad', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'us-25', title: 'Just the Way You Are', artist: 'Bruno Mars', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=LjhCEhWiKXk', badge: '🌎 Bruno Classic', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
+  // 2. ÂU - MỸ (US-UK Acoustic & Pop Chill)
+  { id: 'us-1', title: 'Shape of You', artist: 'Ed Sheeran', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=JGwWNGJdvx8', badge: '🌎 US-UK Hit', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=JGwWNGJdvx8' },
+  { id: 'us-2', title: 'Perfect', artist: 'Ed Sheeran', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=2Vv-BfVoq4g', badge: '🌎 Love Song', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=2Vv-BfVoq4g' },
+  { id: 'us-3', title: 'Until I Found You', artist: 'Stephen Sanchez', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=HzP0f9S5K5M', badge: '🌎 Retro US-UK', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=HzP0f9S5K5M' },
+  { id: 'us-4', title: 'Hotel California', artist: 'Eagles', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=BciS1R04SoE', badge: '🌎 Classic Rock', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=BciS1R04SoE' },
+  { id: 'us-5', title: 'Shallow', artist: 'Lady Gaga & Bradley Cooper', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=bo_efYh1P28', badge: '🌎 Movie OST', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=bo_efYh1P28' },
+  { id: 'us-6', title: 'Someone Like You', artist: 'Adele', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=hLQl3WQQoQ0', badge: '🌎 Soul Vocal', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=hLQl3WQQoQ0' },
+  { id: 'us-7', title: 'Easy On Me', artist: 'Adele', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=U3ASj1L6_sY', badge: '🌎 Adele Vocal', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=U3ASj1L6_sY' },
+  { id: 'us-8', title: 'All of Me', artist: 'John Legend', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=450p7goxZqg', badge: '🌎 Love Song', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=450p7goxZqg' },
+  { id: 'us-9', title: 'Counting Stars', artist: 'OneRepublic', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=hT_nvWreIhg', badge: '🌎 Folk Pop', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=hT_nvWreIhg' },
+  { id: 'us-10', title: 'Memories', artist: 'Maroon 5', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=SlPhMPnE58M', badge: '🌎 Pop Ballad', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=SlPhMPnE58M' },
 
-  // 3. HÀN QUỐC (K-Pop & Movie OST Vocals - Ca sĩ thật hát bản gốc)
-  { id: 'kp-1', title: 'Stay With Me', artist: 'Chanyeol & Punch', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=W0cs6ciCt_k', badge: '🇰🇷 Goblin OST', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB' },
-  { id: 'kp-2', title: 'Everytime', artist: 'Chen & Punch', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=fTc5tuEn6_U', badge: '🇰🇷 Hậu Duệ Mặt Trời', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB' },
-  { id: 'kp-3', title: 'Spring Day', artist: 'BTS', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=xeGU0fS8SGA', badge: '🇰🇷 BTS Vocal', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB' },
-  { id: 'kp-4', title: 'Flower', artist: 'Blackpink Jisoo', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=YudHcBIxlYw', badge: '🇰🇷 K-Pop Vocal', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB' },
-  { id: 'kp-5', title: 'You Are My Everything', artist: 'Gummy', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=Xy_L818m18I', badge: '🇰🇷 K-Drama OST', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB' },
-  { id: 'kp-6', title: 'Say Yes', artist: 'Loco & Punch', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=63Ge250zU_I', badge: '🇰🇷 Moon Lovers', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kp-7', title: 'All About You', artist: 'Taeyeon', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=48S43qW5a8E', badge: '🇰🇷 Hotel Del Luna', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kp-8', title: 'Sunset', artist: 'Davichi', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=532_312_U02', badge: '🇰🇷 Hạ Cánh Nơi Anh', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kp-9', title: 'Start Over', artist: 'Gaho', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=O0StK13_Ue8', badge: '🇰🇷 Itaewon Class', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kp-10', title: 'Beautiful', artist: 'Crush', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=W0a10203040', badge: '🇰🇷 Goblin OST', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kp-11', title: 'Best Luck', artist: 'Chen (EXO)', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=b_102030405', badge: '🇰🇷 EXO Vocal', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kp-12', title: 'Aloha', artist: 'Jo Jung Suk', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=cc204010506', badge: '🇰🇷 Hospital Playlist', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kp-13', title: 'Through The Night', artist: 'IU', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=d9IxdwEFkXA', badge: '🇰🇷 IU Night', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kp-14', title: 'Hype Boy', artist: 'NewJeans', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=110w1020304', badge: '🇰🇷 NewJeans Pop', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kp-15', title: 'Eleven', artist: 'IVE', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=--FmExEAs3Q', badge: '🇰🇷 IVE Single', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kp-16', title: 'Palette', artist: 'IU ft. G-Dragon', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=d9IxdwEFkXA', badge: '🇰🇷 IU & GD', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kp-17', title: 'Love Scenario', artist: 'iKON', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=vecSVX1QYbQ', badge: '🇰🇷 iKON Hit', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kp-18', title: 'Eight', artist: 'IU ft. SUGA of BTS', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=TgOu00MfU80', badge: '🇰🇷 IU & SUGA', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kp-19', title: 'Dynamite', artist: 'BTS', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=gdZLi9oWNZg', badge: '🇰🇷 BTS Disco', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kp-20', title: 'As If It s Your Last', artist: 'BLACKPINK', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=32si5cfrxCg', badge: '🇰🇷 BLACKPINK', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kp-21', title: 'What Is Love', artist: 'TWICE', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=i0p1bmr0EmE', badge: '🇰🇷 TWICE Pop', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kp-22', title: 'Psycho', artist: 'Red Velvet', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=uR8Mrt1IpXg', badge: '🇰🇷 Red Velvet', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kp-23', title: 'I Will Go to You Like the First Snow', artist: 'Ailee', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=6rS7OUGX8To', badge: '🇰🇷 Ailee OST', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kp-24', title: 'Good Day', artist: 'IU', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=jeqdYqsrsA0', badge: '🇰🇷 IU Classic', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kp-25', title: 'Weekend', artist: 'Taeyeon', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=RmuL-AOI824', badge: '🇰🇷 Taeyeon Pop', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
+  // 3. HÀN QUỐC (K-Pop Ballad & Movie OST)
+  { id: 'kp-1', title: 'Stay With Me', artist: 'Chanyeol & Punch', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=W0cs6ciCt_k', badge: '🇰🇷 Goblin OST', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=W0cs6ciCt_k' },
+  { id: 'kp-2', title: 'Everytime', artist: 'Chen & Punch', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=fTc5tuEn6_U', badge: '🇰🇷 Hậu Duệ Mặt Trời', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=fTc5tuEn6_U' },
+  { id: 'kp-3', title: 'Spring Day', artist: 'BTS', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=xeGU0fS8SGA', badge: '🇰🇷 BTS Vocal', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=xeGU0fS8SGA' },
+  { id: 'kp-4', title: 'Flower', artist: 'Blackpink Jisoo', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=YudHcBIxlYw', badge: '🇰🇷 K-Pop Vocal', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=YudHcBIxlYw' },
+  { id: 'kp-5', title: 'You Are My Everything', artist: 'Gummy', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=Xy_L818m18I', badge: '🇰🇷 K-Drama OST', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=Xy_L818m18I' },
+  { id: 'kp-6', title: 'Say Yes', artist: 'Loco & Punch', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=63Ge250zU_I', badge: '🇰🇷 Moon Lovers', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=63Ge250zU_I' },
+  { id: 'kp-7', title: 'All About You', artist: 'Taeyeon', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=48S43qW5a8E', badge: '🇰🇷 Hotel Del Luna', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=48S43qW5a8E' },
+  { id: 'kp-8', title: 'Sunset', artist: 'Davichi', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=532_312_U02', badge: '🇰🇷 Hạ Cánh Nơi Anh', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=532_312_U02' },
 
-  // 4. KHÔNG LỜI (Piano Acoustic & Classical Masterpieces - Tác phẩm cổ điển & Piano nghệ thuật)
-  { id: 'kl-1', title: 'River Flows In You', artist: 'Yiruma Piano Master', category: 'restaurant', genreKey: 'khongloi', url: 'https://ia800303.us.archive.org/11/items/TheBlueDanube_128/JohannStraussII-TheBlueDanube.mp3', badge: '🎹 Yiruma Piano', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB' },
-  { id: 'kl-2', title: 'Kiss The Rain', artist: 'Yiruma', category: 'restaurant', genreKey: 'khongloi', url: 'https://ia800300.us.archive.org/4/items/FlightOfTheBumblebee_877/NikolaiRimsky-Korsakov-FlightOfTheBumblebee.mp3', badge: '🎹 Kiss The Rain', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB' },
-  { id: 'kl-3', title: 'Romance d Amour', artist: 'Classic Guitar Solo', category: 'restaurant', genreKey: 'khongloi', url: 'https://ia800305.us.archive.org/12/items/Greensleeves_247/Anonymous-Greensleeves.mp3', badge: '🎸 Classic Guitar', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB' },
-  { id: 'kl-4', title: 'Mariage d Amour', artist: 'Richard Clayderman', category: 'restaurant', genreKey: 'khongloi', url: 'https://cdn.pixabay.com/download/audio/2022/11/06/audio_c97a8e7e13.mp3', badge: '🎹 Clayderman', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/L8Le1DOh8TQB' },
-  { id: 'kl-5', title: 'Canon in D', artist: 'Pachelbel Chamber', category: 'restaurant', genreKey: 'khongloi', url: 'https://ia800301.us.archive.org/21/items/CanonInD_201405/Pachelbel-CanonInD.mp3', badge: '🎹 Canon in D', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kl-6', title: 'Ballade Pour Adeline', artist: 'Richard Clayderman', category: 'restaurant', genreKey: 'khongloi', url: 'https://ia801402.us.archive.org/20/items/ClairDeLune_563/ClaudeDebussy-ClairDeLune.mp3', badge: '🎹 Clayderman Ballade', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kl-7', title: 'Fur Elise', artist: 'Ludwig Van Beethoven', category: 'restaurant', genreKey: 'khongloi', url: 'https://ia800504.us.archive.org/21/items/FurElise_851/LudwigVanBeethoven-FurElise.mp3', badge: '🎹 Beethoven Piano', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kl-8', title: 'Moonlight Sonata', artist: 'Beethoven Night', category: 'restaurant', genreKey: 'khongloi', url: 'https://ia800302.us.archive.org/14/items/MoonlightSonata_479/LudwigVanBeethoven-MoonlightSonata.mp3', badge: '🎹 Moonlight Sonata', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kl-9', title: 'Clair De Lune', artist: 'Claude Debussy', category: 'restaurant', genreKey: 'khongloi', url: 'https://ia801402.us.archive.org/20/items/ClairDeLune_563/ClaudeDebussy-ClairDeLune.mp3', badge: '🎹 Clair De Lune', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'kl-10', title: 'Gymnopédie No. 1', artist: 'Erik Satie', category: 'restaurant', genreKey: 'khongloi', url: 'https://ia800302.us.archive.org/1/items/FourSeasonsSpring_429/AntonioVivaldi-FourSeasonsSpring.mp3', badge: '🎹 Satie Piano', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
+  // 4. KHÔNG LỜI (Piano & Classic Masterpieces)
+  { id: 'kl-1', title: 'Blue Danube Waltz', artist: 'Johann Strauss II', category: 'restaurant', genreKey: 'khongloi', url: 'https://upload.wikimedia.org/wikipedia/commons/7/7d/The_Blue_Danube_Waltz.ogg', badge: '🎹 Classic Waltz', sourceType: 'mp3', sourceLabel: 'Nguồn Wikimedia Classic', nctLink: 'https://commons.wikimedia.org' },
+  { id: 'kl-2', title: 'Air on the G String', artist: 'Johann Sebastian Bach', category: 'restaurant', genreKey: 'khongloi', url: 'https://upload.wikimedia.org/wikipedia/commons/2/23/Johann_Sebastian_Bach_-_Air_on_the_G_String.ogg', badge: '🎹 Bach String', sourceType: 'mp3', sourceLabel: 'Nguồn Wikimedia Classic', nctLink: 'https://commons.wikimedia.org' },
+  { id: 'kl-3', title: 'Canon in D Major', artist: 'Johann Pachelbel', category: 'restaurant', genreKey: 'khongloi', url: 'https://upload.wikimedia.org/wikipedia/commons/d/d4/Pachelbel_Canon.ogg', badge: '🎹 Canon in D', sourceType: 'mp3', sourceLabel: 'Nguồn Wikimedia Classic', nctLink: 'https://commons.wikimedia.org' },
+  { id: 'kl-4', title: 'Für Elise', artist: 'Ludwig van Beethoven', category: 'restaurant', genreKey: 'khongloi', url: 'https://upload.wikimedia.org/wikipedia/commons/7/77/Beethoven_Für_Elise.ogg', badge: '🎹 Beethoven Piano', sourceType: 'mp3', sourceLabel: 'Nguồn Wikimedia Classic', nctLink: 'https://commons.wikimedia.org' },
+  { id: 'kl-5', title: 'Moonlight Sonata', artist: 'Ludwig van Beethoven', category: 'restaurant', genreKey: 'khongloi', url: 'https://upload.wikimedia.org/wikipedia/commons/0/02/Beethoven_Moonlight_1st_movement.ogg', badge: '🎹 Moonlight Sonata', sourceType: 'mp3', sourceLabel: 'Nguồn Wikimedia Classic', nctLink: 'https://commons.wikimedia.org' },
+  { id: 'kl-6', title: 'Clair De Lune', artist: 'Claude Debussy', category: 'restaurant', genreKey: 'khongloi', url: 'https://upload.wikimedia.org/wikipedia/commons/a/a2/Clair_de_lune_%22Claude_Debussy%22.ogg', badge: '🎹 Clair De Lune', sourceType: 'mp3', sourceLabel: 'Nguồn Wikimedia Classic', nctLink: 'https://commons.wikimedia.org' },
+  { id: 'kl-7', title: 'Four Seasons - Spring', artist: 'Antonio Vivaldi', category: 'restaurant', genreKey: 'khongloi', url: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Vivaldi_Spring_mvt_1_Allegro.ogg', badge: '🎻 Vivaldi Classic', sourceType: 'mp3', sourceLabel: 'Nguồn Wikimedia Classic', nctLink: 'https://commons.wikimedia.org' },
 
-  // 5. THIỀN & LOFI (Spa & Relax 432Hz Tĩnh Tâm - GIỮ NGUYÊN HOÀN TOÀN TỪ BẢN GỐC)
-  { id: 'th-1', title: 'Nhạc Spa, Massage & Thiền Chuông Xoay 432Hz', artist: 'Meditation Tibetan Bowl', category: 'restaurant', genreKey: 'thien', url: 'https://cdn.pixabay.com/download/audio/2022/11/06/audio_c97a8e7e13.mp3', badge: '🧘 Spa 432Hz', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/U02b2E13wY7n' },
-  { id: 'th-2', title: 'Suối Reo Róc Rách & Tiếng Chuông Đồng 432Hz', artist: 'Thiền Định Spa', category: 'restaurant', genreKey: 'thien', url: 'https://ia800301.us.archive.org/21/items/CanonInD_201405/Pachelbel-CanonInD.mp3', badge: '🧘 Suối Reo Spa', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/U02b2E13wY7n' },
-  { id: 'th-3', title: 'Chill Lofi Beats Chiều Quán Cơm Út Trinh', artist: 'Lofi Cafe Relax', category: 'restaurant', genreKey: 'thien', url: 'https://ia801402.us.archive.org/20/items/ClairDeLune_563/ClaudeDebussy-ClairDeLune.mp3', badge: '🧘 Lofi Chill', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/U02b2E13wY7n' },
-  { id: 'th-4', title: 'Deep Meditation Rain & Bamboo Flute 432Hz', artist: 'Bamboo Flute Spa', category: 'restaurant', genreKey: 'thien', url: 'https://ia800504.us.archive.org/21/items/FurElise_851/LudwigVanBeethoven-FurElise.mp3', badge: '🧘 Sáo Trúc 432Hz', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'th-5', title: 'Tibetan Singing Bowls Peaceful Healing', artist: 'Tibetan Bowls Spa', category: 'restaurant', genreKey: 'thien', url: 'https://ia800302.us.archive.org/14/items/MoonlightSonata_479/LudwigVanBeethoven-MoonlightSonata.mp3', badge: '🧘 Chuông Xoay Tĩnh', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
+  // 5. THIỀN & LOFI (Spa & Relax 432Hz Tĩnh Tâm)
+  { id: 'th-1', title: 'Nhạc Spa, Massage & Thiền Chuông Xoay 432Hz', artist: 'Meditation Tibetan Bowl', category: 'restaurant', genreKey: 'thien', url: 'https://cdn.pixabay.com/download/audio/2022/05/16/audio_c3697e887e.mp3', badge: '🧘 Spa 432Hz', sourceType: 'mp3', sourceLabel: 'Nguồn Pixabay Relax', nctLink: 'https://pixabay.com' },
+  { id: 'th-2', title: 'Suối Reo Róc Rách & Tiếng Chuông Đồng 432Hz', artist: 'Thiền Định Spa', category: 'restaurant', genreKey: 'thien', url: 'https://cdn.pixabay.com/download/audio/2022/03/24/audio_3489e248b0.mp3', badge: '🧘 Suối Reo Spa', sourceType: 'mp3', sourceLabel: 'Nguồn Pixabay Relax', nctLink: 'https://pixabay.com' },
+  { id: 'th-3', title: 'Chill Lofi Beats Chiều Quán Cơm Út Trinh', artist: 'Lofi Cafe Relax', category: 'restaurant', genreKey: 'thien', url: 'https://cdn.pixabay.com/download/audio/2022/02/22/audio_d1b092a806.mp3', badge: '🧘 Lofi Chill', sourceType: 'mp3', sourceLabel: 'Nguồn Pixabay Relax', nctLink: 'https://pixabay.com' },
+  { id: 'th-4', title: 'Deep Meditation Rain & Bamboo Flute 432Hz', artist: 'Bamboo Flute Spa', category: 'restaurant', genreKey: 'thien', url: 'https://cdn.pixabay.com/download/audio/2022/10/25/audio_24a2f89104.mp3', badge: '🧘 Sáo Trúc 432Hz', sourceType: 'mp3', sourceLabel: 'Nguồn Pixabay Relax', nctLink: 'https://pixabay.com' },
+  { id: 'th-5', title: 'Tibetan Singing Bowls Peaceful Healing', artist: 'Tibetan Bowls Spa', category: 'restaurant', genreKey: 'thien', url: 'https://cdn.pixabay.com/download/audio/2023/01/01/audio_160862089b.mp3', badge: '🧘 Chuông Xoay Tĩnh', sourceType: 'mp3', sourceLabel: 'Nguồn Pixabay Relax', nctLink: 'https://pixabay.com' },
 
-  // 6. CAFE & SAXOPHONE (Saxophone, Jazz, Bossa Nova, Acoustic - Nhẹ nhàng, KHÔNG piano chói tai)
-  { id: 'cs-1', title: 'Saxophone Smooth Jazz Quán Cafe & Ăn Uống', artist: 'Smooth Jazz Collection', category: 'restaurant', genreKey: 'cafesax', url: 'https://ia800300.us.archive.org/4/items/FlightOfTheBumblebee_877/NikolaiRimsky-Korsakov-FlightOfTheBumblebee.mp3', badge: '🎷 Saxophone Jazz', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/O0A128j8c8m' },
-  { id: 'cs-2', title: 'Hạ White - Solo Saxophone Lãng Mạn', artist: 'Romantic Saxophone Solo', category: 'restaurant', genreKey: 'cafesax', url: 'https://ia800305.us.archive.org/12/items/Greensleeves_247/Anonymous-Greensleeves.mp3', badge: '🎷 Sax Hạ White', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/O0A128j8c8m' },
-  { id: 'cs-3', title: 'Acoustic Guitar Thư Giãn Chiều Quán Cơm', artist: 'Hòa Tấu Guitar Unplugged', category: 'restaurant', genreKey: 'cafesax', url: 'https://cdn.pixabay.com/download/audio/2022/11/06/audio_c97a8e7e13.mp3', badge: '🎸 Acoustic Cafe', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com/playlist/O0A128j8c8m' },
-  { id: 'cs-4', title: 'Smooth Saxophone Ballad Afternoon Relax', artist: 'Kenny G Smooth Saxophone', category: 'restaurant', genreKey: 'cafesax', url: 'https://www.youtube.com/watch?v=2L12yK85f6E', badge: '🎷 Smooth Saxophone', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' },
-  { id: 'cs-5', title: 'Cafe Lounge Chillout Restaurant Atmosphere', artist: 'Jazz Lounge Ensemble', category: 'restaurant', genreKey: 'cafesax', url: 'https://www.youtube.com/watch?v=5qap5aO4i9A', badge: '☕ Cafe Lounge', sourceType: 'nhaccuatoi', sourceLabel: 'Nguồn Nhaccuatui.com', nctLink: 'https://www.nhaccuatui.com' }
+  // 6. CAFE & SAXOPHONE (Smooth Jazz, Saxophone & Acoustic Unplugged)
+  { id: 'cs-1', title: 'Saxophone Smooth Jazz Quán Cafe & Ăn Uống', artist: 'Smooth Jazz Collection', category: 'restaurant', genreKey: 'cafesax', url: 'https://cdn.pixabay.com/download/audio/2022/08/04/audio_2bbe63f3bf.mp3', badge: '🎷 Saxophone Jazz', sourceType: 'mp3', sourceLabel: 'Nguồn Pixabay Audio', nctLink: 'https://pixabay.com' },
+  { id: 'cs-2', title: 'Hạ White - Solo Saxophone Lãng Mạn', artist: 'Romantic Saxophone Solo', category: 'restaurant', genreKey: 'cafesax', url: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_03d987a027.mp3', badge: '🎷 Sax Hạ White', sourceType: 'mp3', sourceLabel: 'Nguồn Pixabay Audio', nctLink: 'https://pixabay.com' },
+  { id: 'cs-3', title: 'Acoustic Guitar Thư Giãn Chiều Quán Cơm', artist: 'Hòa Tấu Guitar Unplugged', category: 'restaurant', genreKey: 'cafesax', url: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_108df1f7bb.mp3', badge: '🎸 Acoustic Cafe', sourceType: 'mp3', sourceLabel: 'Nguồn Pixabay Audio', nctLink: 'https://pixabay.com' },
+  { id: 'cs-4', title: 'Smooth Saxophone Ballad Afternoon Relax', artist: 'Kenny G Style Saxophone', category: 'restaurant', genreKey: 'cafesax', url: 'https://cdn.pixabay.com/download/audio/2022/11/09/audio_1a60032f9c.mp3', badge: '🎷 Smooth Saxophone', sourceType: 'mp3', sourceLabel: 'Nguồn Pixabay Audio', nctLink: 'https://pixabay.com' },
+  { id: 'cs-5', title: 'Cafe Lounge Chillout Restaurant Atmosphere', artist: 'Jazz Lounge Ensemble', category: 'restaurant', genreKey: 'cafesax', url: 'https://cdn.pixabay.com/download/audio/2022/10/18/audio_2738a1a364.mp3', badge: '☕ Cafe Lounge', sourceType: 'mp3', sourceLabel: 'Nguồn Pixabay Audio', nctLink: 'https://pixabay.com' }
 ];
 
 // --- NHACCUATOI BATCH FETCHING LOGIC WITH ANTI-DUPLICATION USED_TRACK_IDS ---
@@ -731,12 +691,14 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const synthNodesRef = useRef<any[]>([]);
+  const [failedTrackIds, setFailedTrackIds] = useState<Set<string>>(new Set());
 
-  // Filtered tracks based on selected genre & search from randomized sessionCatalog
+  // Filtered tracks based on selected genre & search from randomized sessionCatalog (excluding failed tracks)
   const filteredCatalogTracks = useMemo(() => {
     if (!sessionCatalog || !Array.isArray(sessionCatalog)) return [];
     return sessionCatalog.filter(track => {
       if (!track) return false;
+      if (failedTrackIds.has(track.id)) return false; // REMOVE BROKEN TRACKS FROM PLAYLIST/QUEUE
       const matchesGenre = selectedGenreFilter === 'all' || track.genreKey === selectedGenreFilter;
       const q = (musicSearchQuery || '').toLowerCase().trim();
       const matchesSearch = !q || 
@@ -746,7 +708,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
         (track.sourceLabel && track.sourceLabel.toLowerCase().includes(q));
       return matchesGenre && matchesSearch;
     });
-  }, [sessionCatalog, selectedGenreFilter, musicSearchQuery]);
+  }, [sessionCatalog, selectedGenreFilter, musicSearchQuery, failedTrackIds]);
 
   const stopAmbientSynth = useCallback(() => {
     try {
@@ -786,13 +748,70 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
 
   const youtubeId = useMemo(() => getYouTubeId(activeMusicUrl), [activeMusicUrl]);
 
-  // Audio Playback Sync Effect
+  const handleSkipToNextValidTrack = useCallback((failedId?: string) => {
+    if (failedId) {
+      setFailedTrackIds(prev => {
+        const nextSet = new Set(prev);
+        nextSet.add(failedId);
+        return nextSet;
+      });
+    }
+    stopAmbientSynth();
+    
+    // Find next valid track
+    const currentGenre = selectedGenreFilter === 'all' ? 'vpop' : selectedGenreFilter;
+    const remainingValid = sessionCatalog.filter(t => t && t.id !== failedId && !failedTrackIds.has(t.id) && (selectedGenreFilter === 'all' || t.genreKey === currentGenre));
+    
+    if (remainingValid.length > 0) {
+      const nextTrack = remainingValid[0];
+      setCustomTrackUrl(nextTrack.url);
+      setIsPlayingMusic(true);
+      setRandomBannerMessage(`🎶 Đang phát: "${nextTrack.title}" (${nextTrack.artist})`);
+    } else {
+      // Pick a new batch from catalog that excludes failed tracks
+      const newBatch = fetchNhacCuaToiBatch(currentGenre as any, 5).filter(t => !failedTrackIds.has(t.id));
+      if (newBatch.length > 0) {
+        const selected = newBatch[0];
+        setSessionCatalog(prev => [...prev.filter(t => t.genreKey !== currentGenre), ...newBatch]);
+        setCustomTrackUrl(selected.url);
+        setIsPlayingMusic(true);
+        setRandomBannerMessage(`🎶 Đang phát bài mới: "${selected.title}" (${selected.artist})`);
+      } else {
+        setIsPlayingMusic(false);
+        setRandomBannerMessage(`⚠️ Bài hát không có source hợp lệ - Đã bỏ khỏi playlist`);
+      }
+    }
+  }, [stopAmbientSynth, selectedGenreFilter, sessionCatalog, failedTrackIds]);
+
+  // Audio Playback Sync Effect with strict validation logging
   useEffect(() => {
-    if (isPlayingMusic && activeMusicUrl && !youtubeId) {
+    if (isPlayingMusic && activeMusicUrl) {
       if (audioRef.current) {
         audioRef.current.src = activeMusicUrl;
-        audioRef.current.play().catch(err => {
-          console.warn("Audio element playback error:", err);
+        audioRef.current.play().then(() => {
+          console.log(`[Music Debug]
+TAB: ${(currentTrackObj?.genreKey || 'vpop').toUpperCase()}
+TITLE: ${currentTrackObj?.title || 'Unknown'}
+ARTIST: ${currentTrackObj?.artist || 'Unknown'}
+TRACK ID: ${currentTrackObj?.id || 'Unknown'}
+SOURCE: ${currentTrackObj?.sourceType || 'nhaccuatoi'}
+MUSIC URL: ${activeMusicUrl}
+PLAYBACK TYPE: MUSIC
+PLAYBACK STATUS: PLAYING`);
+        }).catch(err => {
+          console.warn(`[Music Debug]
+TAB: ${(currentTrackObj?.genreKey || 'vpop').toUpperCase()}
+TITLE: ${currentTrackObj?.title || 'Unknown'}
+ARTIST: ${currentTrackObj?.artist || 'Unknown'}
+TRACK ID: ${currentTrackObj?.id || 'Unknown'}
+MUSIC URL: ${activeMusicUrl}
+PLAYBACK TYPE: MUSIC
+PLAYBACK STATUS: NO_VALID_SOURCE
+ERROR: ${err?.message || 'Playback error'}`);
+          
+          if (currentTrackObj?.id) {
+            handleSkipToNextValidTrack(currentTrackObj.id);
+          }
         });
       }
     } else if (!isPlayingMusic) {
@@ -801,7 +820,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
       }
       stopAmbientSynth();
     }
-  }, [isPlayingMusic, activeMusicUrl, youtubeId, stopAmbientSynth]);
+  }, [isPlayingMusic, activeMusicUrl, currentTrackObj, stopAmbientSynth, handleSkipToNextValidTrack]);
 
   const togglePlayMusic = () => {
     if (!activeMusicUrl) return;
@@ -2067,12 +2086,15 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
       <audio
         ref={audioRef}
         src={!youtubeId ? activeMusicUrl : undefined}
-        loop
+        loop={false}
         onEnded={() => {
-          handlePickRandomTrack();
+          handleSkipToNextValidTrack();
         }}
         onError={(e) => {
-          console.warn("HTML5 audio stream notice:", e);
+          console.warn("HTML5 audio stream error, skipping:", e);
+          if (currentTrackObj?.id) {
+            handleSkipToNextValidTrack(currentTrackObj.id);
+          }
         }}
       />
     </div>
