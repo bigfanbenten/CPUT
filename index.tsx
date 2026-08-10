@@ -778,7 +778,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
         setRandomBannerMessage(`🎶 Đang phát bài mới: "${selected.title}" (${selected.artist})`);
       } else {
         setIsPlayingMusic(false);
-        setRandomBannerMessage(`⚠️ Bài hát không có source hợp lệ - Đã bỏ khỏi playlist`);
+        setRandomBannerMessage(`⚠️ Tạm hết bài hát ở thể loại này - Vui lòng chọn thể loại khác`);
       }
     }
   }, [stopAmbientSynth, selectedGenreFilter, sessionCatalog, failedTrackIds]);
@@ -799,10 +799,8 @@ MUSIC URL: ${activeMusicUrl}
 PLAYBACK TYPE: DIRECT MP3 AUDIO
 PLAYBACK STATUS: PLAYING`);
         }).catch(err => {
-          console.warn(`[Music Debug] Direct audio playback error:`, err);
-          if (currentTrackObj?.id) {
-            handleSkipToNextValidTrack(currentTrackObj.id);
-          }
+          console.warn(`[Music Debug] Direct audio playback notice (e.g. user gesture required or load state):`, err);
+          // DO NOT auto-skip on play() rejection to avoid cascading deletion of tracks
         });
       }
     } else if (isPlayingMusic && youtubeId) {
@@ -824,7 +822,7 @@ PLAYBACK STATUS: PLAYING`);
       }
       stopAmbientSynth();
     }
-  }, [isPlayingMusic, activeMusicUrl, currentTrackObj, stopAmbientSynth, handleSkipToNextValidTrack]);
+  }, [isPlayingMusic, activeMusicUrl, currentTrackObj, stopAmbientSynth, youtubeId]);
 
   const togglePlayMusic = () => {
     if (!activeMusicUrl) return;
@@ -855,8 +853,9 @@ PLAYBACK STATUS: PLAYING`);
     if (!selected) return;
     setCustomTrackUrl(selected.url);
     setIsPlayingMusic(true);
-    setRandomBannerMessage(`🎲 Đã chọn & phát bài MỚI từ Nhaccuatui.com: "${selected.title}" (${selected.artist})`);
-    if (audioRef.current) {
+    setRandomBannerMessage(`🎲 Đã chọn & phát bài MỚI: "${selected.title}" (${selected.artist})`);
+    const isYt = !!getYouTubeId(selected.url);
+    if (!isYt && audioRef.current) {
       audioRef.current.src = selected.url;
       audioRef.current.load();
       audioRef.current.play().catch(e => console.warn("Random track audio play notice:", e));
@@ -871,7 +870,8 @@ PLAYBACK STATUS: PLAYING`);
     if (foundTrack) {
       setRandomBannerMessage(`🎶 Đã chọn phát bài: "${foundTrack.title}" (${foundTrack.artist})`);
     }
-    if (audioRef.current) {
+    const isYt = !!getYouTubeId(trackUrl);
+    if (!isYt && audioRef.current) {
       audioRef.current.src = trackUrl;
       audioRef.current.load();
       audioRef.current.play().catch(e => console.warn("Track audio play notice:", e));
@@ -2097,10 +2097,7 @@ PLAYBACK STATUS: PLAYING`);
           handleSkipToNextValidTrack();
         }}
         onError={(e) => {
-          console.warn("HTML5 audio stream error, skipping:", e);
-          if (currentTrackObj?.id) {
-            handleSkipToNextValidTrack(currentTrackObj.id);
-          }
+          console.warn("HTML5 audio stream load notice for active URL:", activeMusicUrl);
         }}
       />
     </div>
