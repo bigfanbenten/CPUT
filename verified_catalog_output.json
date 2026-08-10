@@ -1,0 +1,122 @@
+[
+  {
+    "id": "vpop-1",
+    "title": "Nơi Này Có Anh",
+    "artist": "Sơn Tùng M-TP",
+    "category": "restaurant",
+    "genreKey": "vpop",
+    "url": "https://www.youtube.com/watch?v=FN7ALfpGxiI",
+    "badge": "🇻🇳 V-Pop Hit",
+    "sourceType": "youtube",
+    "sourceLabel": "Nguồn YouTube Official",
+    "nctLink": "https://www.youtube.com/watch?v=FN7ALfpGxiI"
+  },
+  {
+    "id": "vpop-2",
+    "title": "Hãy Trao Cho Anh",
+    "artist": "Sơn Tùng M-TP ft. Snoop Dogg",
+    "category": "restaurant",
+    "genreKey": "vpop",
+    "url": "https://www.youtube.com/watch?v=knW7-x7Y7RE",
+    "badge": "🇻🇳 World Hit",
+    "sourceType": "youtube",
+    "sourceLabel": "Nguồn YouTube Official",
+    "nctLink": "https://www.youtube.com/watch?v=knW7-x7Y7RE"
+  },
+  {
+    "id": "vpop-3",
+    "title": "Muộn Rồi Mà Sao Còn",
+    "artist": "Sơn Tùng M-TP",
+    "category": "restaurant",
+    "genreKey": "vpop",
+    "url": "https://www.youtube.com/watch?v=xypzmu5mMPY",
+    "badge": "🇻🇳 Pop R&B",
+    "sourceType": "youtube",
+    "sourceLabel": "Nguồn YouTube Official",
+    "nctLink": "https://www.youtube.com/watch?v=xypzmu5mMPY"
+  },
+  {
+    "id": "vpop-4",
+    "title": "Có Chắc Yêu Là Đây",
+    "artist": "Sơn Tùng M-TP",
+    "category": "restaurant",
+    "genreKey": "vpop",
+    "url": "https://www.youtube.com/watch?v=6t-MjBazs3o",
+    "badge": "🇻🇳 Sweet Pop",
+    "sourceType": "youtube",
+    "sourceLabel": "Nguồn YouTube Official",
+    "nctLink": "https://www.youtube.com/watch?v=6t-MjBazs3o"
+  },
+  {
+    "id": "vpop-5",
+    "title": "Chúng Ta Của Hiện Tại",
+    "artist": "Sơn Tùng M-TP",
+    "category": "restaurant",
+    "genreKey": "vpop",
+    "url": "https://www.youtube.com/watch?v=psZ1g9fMfeo",
+    "badge": "🇻🇳 Retro Pop",
+    "sourceType": "youtube",
+    "sourceLabel": "Nguồn YouTube Official",
+    "nctLink": "https://www.youtube.com/watch?v=psZ1g9fMfeo"
+  },
+  {
+    "id": "vpop-6",
+    "title": "Ngày Đầu Tiên",
+    "artist": "Đức Phúc",
+    "category": "restaurant",
+    "genreKey": "vpop",
+    "url": "https://www.youtube.com/watch?v=rIXhXaQ8tiM",
+    "badge": "🇻🇳 Love Song",
+    "sourceType": "youtube",
+    "sourceLabel": "Nguồn YouTube Official",
+    "nctLink": "https://www.youtube.com/watch?v=rIXhXaQ8tiM"
+  },
+  {
+    "id": "vpop-7",
+    "title": "Hơn Cả Yêu",
+    "artist": "Đức Phúc",
+    "category": "restaurant",
+    "genreKey": "vpop",
+    "url": "https://www.youtube.com/watch?v=__kGJZ-kPno",
+    "badge": "🇻🇳 V-Pop Ballad",
+    "sourceType": "youtube",
+    "sourceLabel": "Nguồn YouTube Official",
+    "nctLink": "https://www.youtube.com/watch?v=__kGJZ-kPno"
+  },
+  {
+    "id": "vpop-8",
+    "title": "Sau Lời Từ Khước",
+    "artist": "Phan Mạnh Quỳnh",
+    "category": "restaurant",
+    "genreKey": "vpop",
+    "url": "https://www.youtube.com/watch?v=mzqvF_rIOx8",
+    "badge": "🇻🇳 Nhạc Phim Mai",
+    "sourceType": "youtube",
+    "sourceLabel": "Nguồn YouTube Official",
+    "nctLink": "https://www.youtube.com/watch?v=mzqvF_rIOx8"
+  },
+  {
+    "id": "vpop-9",
+    "title": "Vợ Người Ta",
+    "artist": "Phan Mạnh Quỳnh",
+    "category": "restaurant",
+    "genreKey": "vpop",
+    "url": "https://www.youtube.com/watch?v=WwEISi0Ktu4",
+    "badge": "🇻🇳 V-Pop Hit",
+    "sourceType": "youtube",
+    "sourceLabel": "Nguồn YouTube Official",
+    "nctLink": "https://www.youtube.com/watch?v=WwEISi0Ktu4"
+  },
+  {
+    "id": "vpop-10",
+    "title": "Nàng Thơ",
+    "artist": "Hoàng Dũng",
+    "category": "restaurant",
+    "genreKey": "vpop",
+    "url": "https://www.youtube.com/watch?v=Zzn9-ATB9aU",
+    "badge": "🇻🇳 Nàng Thơ",
+    "sourceType": "youtube",
+    "sourceLabel": "Nguồn YouTube Official",
+    "nctLink": "https://www.youtube.com/watch?v=Zzn9-ATB9aU"
+  }
+]
