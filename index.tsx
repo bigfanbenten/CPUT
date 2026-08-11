@@ -1985,20 +1985,36 @@ PLAYBACK STATUS: PLAYING`);
                           </span>
                         </div>
 
-                        {/* Mobile-friendly YouTube IFrame Stream without key unmounting to preserve JS API and 1-tap playback */}
-                        {youtubeId && (
-                          <div className="w-full my-2 rounded-2xl overflow-hidden border border-amber-900/60 shadow-lg bg-black">
-                            <iframe
-                              ref={youtubeIframeRef}
-                              width="100%"
-                              height="180"
-                              src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&enablejsapi=1&playsinline=1&loop=1&playlist=${youtubeId}&origin=${encodeURIComponent(typeof window !== 'undefined' ? window.location.origin : '')}`}
-                              title="Audio Stream Player"
-                              allow="autoplay; encrypted-media; picture-in-picture"
-                              className="w-full h-[180px] sm:h-[220px] rounded-2xl block border-0"
+                        {/* Visual Media Showcase Card inside modal */}
+                        <div className="w-full my-2 rounded-2xl overflow-hidden border border-amber-900/60 shadow-lg bg-black relative h-[140px] sm:h-[180px] flex items-center justify-center">
+                          {youtubeId ? (
+                            <img
+                              src={`https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`}
+                              alt={currentTrackObj.title}
+                              className="w-full h-full object-cover opacity-60"
                             />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-r from-amber-950 via-stone-900 to-amber-900 flex items-center justify-center opacity-80" />
+                          )}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+                          
+                          <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between text-white">
+                            <div className="space-y-0.5 min-w-0 pr-2 text-left">
+                              <div className="text-amber-300 font-black text-xs sm:text-sm truncate">📻 {currentTrackObj.title}</div>
+                              <div className="text-stone-300 text-[11px] font-bold truncate">👤 {currentTrackObj.artist}</div>
+                            </div>
+                            <div className="flex items-center gap-1 shrink-0">
+                              {isPlayingMusic && (
+                                <div className="flex items-end gap-1 h-6 px-2 py-1 bg-emerald-950/90 border border-emerald-500/60 rounded-lg shadow-md">
+                                  <span className="w-1 bg-emerald-400 h-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                                  <span className="w-1 bg-emerald-400 h-3/4 animate-bounce" style={{ animationDelay: '150ms' }} />
+                                  <span className="w-1 bg-emerald-400 h-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                                  <span className="w-1 bg-emerald-400 h-1/2 animate-bounce" style={{ animationDelay: '450ms' }} />
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        )}
+                        </div>
 
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-1">
                           <div className="text-[11px] sm:text-xs text-stone-300 space-y-0.5">
@@ -2233,20 +2249,21 @@ PLAYBACK STATUS: PLAYING`);
         </div>
       )}
 
-      {/* Background YouTube Audio Stream Player for HD Vocal Tracks */}
-      {isPlayingMusic && youtubeId && (
-        <iframe
-          key={youtubeId}
-          width="200"
-          height="112"
-          src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&enablejsapi=1&loop=1&playlist=${youtubeId}&origin=${encodeURIComponent(typeof window !== 'undefined' ? window.location.origin : '')}`}
-          title="Audio Stream Player"
-          allow="autoplay; encrypted-media; picture-in-picture"
-          style={{ position: 'fixed', bottom: -200, right: -200, width: 200, height: 112, opacity: 0.01, pointerEvents: 'none', zIndex: -1 }}
-        />
-      )}
+      {/* PERSISTENT GLOBAL YOUTUBE AUDIO PLAYER ENGINE (PERSISTS ACROSS MODAL CLOSES & PAGE INTERACTIONS) */}
+      <iframe
+        ref={youtubeIframeRef}
+        width="200"
+        height="112"
+        src={youtubeId 
+          ? `https://www.youtube.com/embed/${youtubeId}?autoplay=1&enablejsapi=1&playsinline=1&loop=1&playlist=${youtubeId}&origin=${encodeURIComponent(typeof window !== 'undefined' ? window.location.origin : '')}`
+          : `https://www.youtube.com/embed/dQw4w9WgXcQ?enablejsapi=1&playsinline=1&origin=${encodeURIComponent(typeof window !== 'undefined' ? window.location.origin : '')}`
+        }
+        title="Audio Stream Player Persistent Engine"
+        allow="autoplay; encrypted-media; picture-in-picture"
+        style={{ position: 'fixed', bottom: -200, right: -200, width: 200, height: 112, opacity: 0.001, pointerEvents: 'none', zIndex: -100 }}
+      />
 
-      {/* Hidden HTML5 Audio Element for direct stream playback */}
+      {/* Hidden HTML5 Audio Element for direct stream MP3 playback */}
       <audio
         ref={audioRef}
         src={!youtubeId ? activeMusicUrl : undefined}
@@ -2254,9 +2271,18 @@ PLAYBACK STATUS: PLAYING`);
         onEnded={() => {
           handleSkipToNextValidTrack();
         }}
-        onError={() => {
-          console.warn("HTML5 audio stream load notice for active URL:", activeMusicUrl);
+        onError={(e) => {
+          console.warn("[Music Debug] Direct audio load notice:", e);
+          setIsLoadingTrack(false);
         }}
+        onPlaying={() => {
+          setIsLoadingTrack(false);
+          setIsPlayingMusic(true);
+        }}
+        onPause={() => {
+          setIsPlayingMusic(false);
+        }}
+        style={{ display: 'none' }}
       />
     </div>
   );
