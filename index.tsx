@@ -697,6 +697,44 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
     return `https://www.youtube.com/embed/dQw4w9WgXcQ?enablejsapi=1&playsinline=1&origin=${encodeURIComponent(origin)}`;
   }, []);
 
+  const activeMusicUrl = useMemo(() => {
+    if (customTrackUrl) return customTrackUrl;
+    return initialRandomTrack?.url || MULTI_GENRE_CATALOG[0]?.url;
+  }, [customTrackUrl, initialRandomTrack]);
+
+  const currentTrackObj = useMemo(() => {
+    const found = MULTI_GENRE_CATALOG.find(t => t.url === activeMusicUrl);
+    if (found) return found;
+    if (initialRandomTrack) return initialRandomTrack;
+    return MULTI_GENRE_CATALOG[0] || {
+      id: 'default',
+      title: 'Cơm Phần Út Trinh Nhạc Nền',
+      artist: 'Hòa Tấu Dân Ca',
+      category: 'restaurant',
+      genreKey: 'vpop',
+      url: 'https://cdn.pixabay.com/download/audio/2022/11/06/audio_c97a8e7e13.mp3',
+      badge: '🌾 Nhạc Út Trinh',
+      sourceType: 'mp3',
+      sourceLabel: 'Nguồn Pixabay Relax',
+      nctLink: 'https://pixabay.com'
+    };
+  }, [activeMusicUrl, initialRandomTrack]);
+
+  const youtubeId = useMemo(() => getYouTubeId(activeMusicUrl), [activeMusicUrl]);
+
+  const stopAmbientSynth = useCallback(() => {
+    try {
+      synthNodesRef.current.forEach(node => {
+        try { if (node.stop) node.stop(); node.disconnect(); } catch { /* ignore */ }
+      });
+      synthNodesRef.current = [];
+      if (audioCtxRef.current) {
+        audioCtxRef.current.close();
+        audioCtxRef.current = null;
+      }
+    } catch { /* ignore */ }
+  }, []);
+
   const sendYoutubeCommand = useCallback((funcName: 'playVideo' | 'pauseVideo' | 'loadVideoById' | 'cueVideoById', args: any = '') => {
     if (youtubeIframeRef.current && youtubeIframeRef.current.contentWindow) {
       try {
