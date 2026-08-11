@@ -690,11 +690,92 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
   const audioCtxRef = useRef<AudioContext | null>(null);
   const synthNodesRef = useRef<any[]>([]);
   const [failedTrackIds, setFailedTrackIds] = useState<Set<string>>(new Set());
-  const lastLoadedYtIdRef = useRef<string | null>(null);
 
-  const initialIframeSrc = useMemo(() => {
-    const origin = typeof window !== 'undefined' ? window.location.origin : '';
-    return `https://www.youtube.com/embed/dQw4w9WgXcQ?enablejsapi=1&playsinline=1&origin=${encodeURIComponent(origin)}`;
+  const sendYoutubeCommand = useCallback((funcName: 'playVideo' | 'pauseVideo' | 'loadVideoById', args: any = '') => {
+    if (youtubeIframeRef.current && youtubeIframeRef.current.contentWindow) {
+      try {
+        youtubeIframeRef.current.contentWindow.postMessage(
+          JSON.stringify({ event: 'command', func: funcName, args: args }),
+          '*'
+        );
+      } catch (err) {
+        console.warn("[Music Debug] YouTube postMessage command notice:", err);
+      }
+    }
+  }, []);
+
+  // Listen to YouTube IFrame API Messages for Real/Honest Playback Status & iOS Auto-sync
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      try {
+        if (!event.data) return;
+        let data = event.data;
+        if (typeof data === 'string') {
+          try { data = JSON.parse(data); } catch { return; }
+        }
+        if (data && (data.event === 'onStateChange' || data.info !== undefined)) {
+          const stateCode = data.info !== undefined ? data.info : data.data;
+          // YouTube State Codes: 1 = PLAYING, 2 = PAUSED, 3 = BUFFERING, 0 = ENDED, -1 = UNSTARTED
+          if (stateCode === 1) {
+            setIsLoadingTrack(false);
+            setIsPlayingMusic(true);
+            console.log(`[Music Debug]
+DEVICE: ${/iPhone|iPad|iPod/i.test(navigator.userAgent) ? 'iOS SAFARI' : 'DESKTOP/ANDROID'}
+PLAYBACK TYPE: YOUTUBE IFRAME
+STATE: PLAYING
+STATUS: AUDIO ACTIVE`);
+          } else if (stateCode === 2) {
+            setIsLoadingTrack(false);
+            setIsPlayingMusic(false);
+          } else if (stateCode === 3 || stateCode === -1) {
+            setIsLoadingTrack(true);
+          } else if (stateCode === 0) {
+            setIsLoadingTrack(false);
+            setIsPlayingMusic(false);
+          }
+        }
+        if (data && data.event === 'onReady') {
+          if (isPlayingMusic) {
+            sendYoutubeCommand('playVideo');
+          }
+        }
+      } catch {
+        // Ignore non-standard messages
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [isPlayingMusic, sendYoutubeCommand]);
+
+  // Filtered tracks based on selected genre & search from randomized sessionCatalog (excluding failed tracks)
+  const filteredCatalogTracks = useMemo(() => {
+    if (!sessionCatalog || !Array.isArray(sessionCatalog)) return [];
+    return sessionCatalog.filter(track => {
+      if (!track) return false;
+      if (failedTrackIds.has(track.id)) return false;
+      const matchesGenre = selectedGenreFilter === 'all' || track.genreKey === selectedGenreFilter;
+      const q = (musicSearchQuery || '').toLowerCase().trim();
+      const matchesSearch = !q || 
+        (track.title && track.title.toLowerCase().includes(q)) || 
+        (track.artist && track.artist.toLowerCase().includes(q)) || 
+        (track.badge && track.badge.toLowerCase().includes(q)) ||
+        (track.sourceLabel && track.sourceLabel.toLowerCase().includes(q));
+      return matchesGenre && matchesSearch;
+    });
+  }, [sessionCatalog, selectedGenreFilter, musicSearchQuery, failedTrackIds]);
+
+  const stopAmbientSynth = useCallback(() => {
+    try {
+      synthNodesRef.current.forEach(node => {
+        try { if (node.stop) node.stop(); node.disconnect(); } catch { /* ignore */ }
+      });
+      synthNodesRef.current = [];
+      if (audioCtxRef.current) {
+        audioCtxRef.current.close();
+        audioCtxRef.current = null;
+      }
+    } catch { /* ignore */ }
   }, []);
 
   const activeMusicUrl = useMemo(() => {
@@ -722,120 +803,6 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
 
   const youtubeId = useMemo(() => getYouTubeId(activeMusicUrl), [activeMusicUrl]);
 
-  const stopAmbientSynth = useCallback(() => {
-    try {
-      synthNodesRef.current.forEach(node => {
-        try { if (node.stop) node.stop(); node.disconnect(); } catch { /* ignore */ }
-      });
-      synthNodesRef.current = [];
-      if (audioCtxRef.current) {
-        audioCtxRef.current.close();
-        audioCtxRef.current = null;
-      }
-    } catch { /* ignore */ }
-  }, []);
-
-  const sendYoutubeCommand = useCallback((funcName: 'playVideo' | 'pauseVideo' | 'loadVideoById' | 'cueVideoById', args: any = '') => {
-    if (youtubeIframeRef.current && youtubeIframeRef.current.contentWindow) {
-      try {
-        youtubeIframeRef.current.contentWindow.postMessage(
-          JSON.stringify({ event: 'command', func: funcName, args: args }),
-          '*'
-        );
-      } catch (err) {
-        console.warn("[Music Debug] YouTube postMessage command notice:", err);
-      }
-    }
-  }, []);
-
-  const playYoutubeTrack = useCallback((ytId: string) => {
-    console.log(`[Music Debug]
-USER GESTURE: TAP
-TAB: ${(selectedGenreFilter || 'vpop').toUpperCase()}
-TITLE: ${currentTrackObj?.title || 'Unknown'}
-TRACK ID: ${ytId}
-PLAYER READY: true
-LOAD REQUEST: SENT
-PLAY REQUEST: SENT
-PLAYER STATE: LOADING
-PLAYBACK STATUS: INITIALIZING`);
-
-    lastLoadedYtIdRef.current = ytId;
-    sendYoutubeCommand('loadVideoById', [ytId, 0]);
-    sendYoutubeCommand('loadVideoById', { videoId: ytId, startSeconds: 0 });
-    sendYoutubeCommand('playVideo');
-    
-    setTimeout(() => {
-      sendYoutubeCommand('playVideo');
-    }, 80);
-    setTimeout(() => {
-      sendYoutubeCommand('playVideo');
-    }, 200);
-  }, [selectedGenreFilter, currentTrackObj, sendYoutubeCommand]);
-
-  // Listen to YouTube IFrame API Messages for Real/Honest Playback Status & iOS Auto-sync
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      try {
-        if (!event.data) return;
-        let data = event.data;
-        if (typeof data === 'string') {
-          try { data = JSON.parse(data); } catch { return; }
-        }
-        if (data && (data.event === 'onStateChange' || data.info !== undefined)) {
-          const stateCode = data.info !== undefined ? data.info : data.data;
-          // YouTube State Codes: 1 = PLAYING, 2 = PAUSED, 3 = BUFFERING, 0 = ENDED, -1 = UNSTARTED
-          if (stateCode === 1) {
-            setIsLoadingTrack(false);
-            setIsPlayingMusic(true);
-            console.log(`[Music Debug]
-DEVICE: ${/iPhone|iPad|iPod/i.test(navigator.userAgent) ? 'iOS SAFARI' : 'DESKTOP/ANDROID'}
-PLAYBACK TYPE: YOUTUBE IFRAME
-PLAYER STATE: PLAYING
-PLAYBACK STATUS: AUDIO ACTIVE`);
-          } else if (stateCode === 2) {
-            setIsLoadingTrack(false);
-            setIsPlayingMusic(false);
-          } else if (stateCode === 3 || stateCode === -1) {
-            setIsLoadingTrack(true);
-          } else if (stateCode === 0) {
-            setIsLoadingTrack(false);
-            setIsPlayingMusic(false);
-            handleSkipToNextValidTrack();
-          }
-        }
-        if (data && data.event === 'onReady') {
-          console.log('[Music Debug] Persistent YouTube Engine READY');
-          if (isPlayingMusic && youtubeId) {
-            playYoutubeTrack(youtubeId);
-          }
-        }
-      } catch {
-        // Ignore non-standard messages
-      }
-    };
-
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, [isPlayingMusic, youtubeId, playYoutubeTrack, handleSkipToNextValidTrack]);
-
-  // Filtered tracks based on selected genre & search from randomized sessionCatalog (excluding failed tracks)
-  const filteredCatalogTracks = useMemo(() => {
-    if (!sessionCatalog || !Array.isArray(sessionCatalog)) return [];
-    return sessionCatalog.filter(track => {
-      if (!track) return false;
-      if (failedTrackIds.has(track.id)) return false;
-      const matchesGenre = selectedGenreFilter === 'all' || track.genreKey === selectedGenreFilter;
-      const q = (musicSearchQuery || '').toLowerCase().trim();
-      const matchesSearch = !q || 
-        (track.title && track.title.toLowerCase().includes(q)) || 
-        (track.artist && track.artist.toLowerCase().includes(q)) || 
-        (track.badge && track.badge.toLowerCase().includes(q)) ||
-        (track.sourceLabel && track.sourceLabel.toLowerCase().includes(q));
-      return matchesGenre && matchesSearch;
-    });
-  }, [sessionCatalog, selectedGenreFilter, musicSearchQuery, failedTrackIds]);
-
   const handleSkipToNextValidTrack = useCallback((failedId?: string) => {
     if (failedId) {
       setFailedTrackIds(prev => {
@@ -856,10 +823,6 @@ PLAYBACK STATUS: AUDIO ACTIVE`);
       setIsPlayingMusic(true);
       setIsLoadingTrack(true);
       setRandomBannerMessage(`🎶 Đang chuyển bài: "${nextTrack.title}" (${nextTrack.artist})`);
-      const ytId = getYouTubeId(nextTrack.url);
-      if (ytId) {
-        playYoutubeTrack(ytId);
-      }
     } else {
       // Pick a new batch from catalog that excludes failed tracks
       const newBatch = fetchNhacCuaToiBatch(currentGenre as any, 5).filter(t => !failedTrackIds.has(t.id));
@@ -870,17 +833,13 @@ PLAYBACK STATUS: AUDIO ACTIVE`);
         setIsPlayingMusic(true);
         setIsLoadingTrack(true);
         setRandomBannerMessage(`🎶 Đang phát bài mới: "${selected.title}" (${selected.artist})`);
-        const ytId = getYouTubeId(selected.url);
-        if (ytId) {
-          playYoutubeTrack(ytId);
-        }
       } else {
         setIsPlayingMusic(false);
         setIsLoadingTrack(false);
         setRandomBannerMessage(`⚠️ Tạm hết bài hát ở thể loại này - Vui lòng chọn thể loại khác`);
       }
     }
-  }, [stopAmbientSynth, selectedGenreFilter, sessionCatalog, failedTrackIds, playYoutubeTrack]);
+  }, [stopAmbientSynth, selectedGenreFilter, sessionCatalog, failedTrackIds]);
 
   // Audio Playback Sync Effect - Direct Audio MP3 vs YouTube Iframe
   useEffect(() => {
@@ -907,11 +866,7 @@ PLAYBACK STATUS: PLAYING`);
       if (audioRef.current) {
         try { audioRef.current.pause(); } catch { /* ignore */ }
       }
-      if (lastLoadedYtIdRef.current !== youtubeId) {
-        playYoutubeTrack(youtubeId);
-      } else {
-        sendYoutubeCommand('playVideo');
-      }
+      sendYoutubeCommand('playVideo');
     } else if (!isPlayingMusic) {
       if (audioRef.current) {
         try { audioRef.current.pause(); } catch (e) { console.warn("Audio pause notice:", e); }
@@ -921,7 +876,7 @@ PLAYBACK STATUS: PLAYING`);
       }
       stopAmbientSynth();
     }
-  }, [isPlayingMusic, activeMusicUrl, currentTrackObj, stopAmbientSynth, youtubeId, sendYoutubeCommand, playYoutubeTrack]);
+  }, [isPlayingMusic, activeMusicUrl, currentTrackObj, stopAmbientSynth, youtubeId, sendYoutubeCommand]);
 
   const togglePlayMusic = () => {
     if (!activeMusicUrl) return;
@@ -945,12 +900,8 @@ PLAYBACK STATUS: PLAYING`);
         }
         audioRef.current.play().then(() => setIsLoadingTrack(false)).catch(err => console.warn("Audio play error:", err));
       } else if (youtubeId) {
-        if (lastLoadedYtIdRef.current !== youtubeId) {
-          playYoutubeTrack(youtubeId);
-        } else {
-          sendYoutubeCommand('playVideo');
-          setTimeout(() => sendYoutubeCommand('playVideo'), 100);
-        }
+        sendYoutubeCommand('playVideo');
+        setTimeout(() => sendYoutubeCommand('playVideo'), 100);
       }
     }
   };
@@ -979,9 +930,11 @@ PLAYBACK STATUS: PLAYING`);
       }
       audioRef.current.play().then(() => setIsLoadingTrack(false)).catch(e => console.warn("Random audio play notice:", e));
     } else if (targetYtId) {
-      playYoutubeTrack(targetYtId);
+      sendYoutubeCommand('loadVideoById', [targetYtId, 0]);
+      sendYoutubeCommand('playVideo');
+      setTimeout(() => sendYoutubeCommand('playVideo'), 150);
     }
-  }, [stopAmbientSynth, selectedGenreFilter, playYoutubeTrack]);
+  }, [stopAmbientSynth, selectedGenreFilter, sendYoutubeCommand]);
 
   const handleSelectPlaylistTrack = (trackUrl: string) => {
     const targetYtId = getYouTubeId(trackUrl);
@@ -1006,12 +959,8 @@ PLAYBACK STATUS: PLAYING`);
           }
           audioRef.current.play().then(() => setIsLoadingTrack(false)).catch(e => console.warn("Track play notice:", e));
         } else if (targetYtId) {
-          if (lastLoadedYtIdRef.current !== targetYtId) {
-            playYoutubeTrack(targetYtId);
-          } else {
-            sendYoutubeCommand('playVideo');
-            setTimeout(() => sendYoutubeCommand('playVideo'), 100);
-          }
+          sendYoutubeCommand('playVideo');
+          setTimeout(() => sendYoutubeCommand('playVideo'), 100);
         }
       }
     } else {
@@ -1029,7 +978,14 @@ PLAYBACK STATUS: PLAYING`);
         audioRef.current.load();
         audioRef.current.play().then(() => setIsLoadingTrack(false)).catch(e => console.warn("Track play notice:", e));
       } else if (targetYtId) {
-        playYoutubeTrack(targetYtId);
+        // Send loadVideoById & playVideo immediately within the user's tap gesture execution stack
+        sendYoutubeCommand('loadVideoById', [targetYtId, 0]);
+        sendYoutubeCommand('playVideo');
+        setTimeout(() => {
+          sendYoutubeCommand('loadVideoById', [targetYtId, 0]);
+          sendYoutubeCommand('playVideo');
+        }, 100);
+        setTimeout(() => sendYoutubeCommand('playVideo'), 300);
       }
     }
   };
@@ -2298,7 +2254,10 @@ PLAYBACK STATUS: PLAYING`);
         ref={youtubeIframeRef}
         width="200"
         height="112"
-        src={initialIframeSrc}
+        src={youtubeId 
+          ? `https://www.youtube.com/embed/${youtubeId}?autoplay=1&enablejsapi=1&playsinline=1&loop=1&playlist=${youtubeId}&origin=${encodeURIComponent(typeof window !== 'undefined' ? window.location.origin : '')}`
+          : `https://www.youtube.com/embed/dQw4w9WgXcQ?enablejsapi=1&playsinline=1&origin=${encodeURIComponent(typeof window !== 'undefined' ? window.location.origin : '')}`
+        }
         title="Audio Stream Player Persistent Engine"
         allow="autoplay; encrypted-media; picture-in-picture"
         style={{ position: 'fixed', bottom: -200, right: -200, width: 200, height: 112, opacity: 0.001, pointerEvents: 'none', zIndex: -100 }}
