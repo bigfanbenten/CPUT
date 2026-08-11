@@ -50,7 +50,8 @@
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
-import { ChevronRight, ChevronDown, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, MessageSquare, CheckCircle2, Facebook, Mail, Youtube, Users, Vote, Music, VolumeX, Play, Pause, BarChart2, Check, X, RefreshCw, Shuffle, ExternalLink } from 'lucide-react';
+import { ChevronRight, ChevronDown, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, MessageSquare, CheckCircle2, Facebook, Mail, Youtube, Users, Vote, Music, VolumeX, Play, Pause, BarChart2, Check, X, RefreshCw, Shuffle, ExternalLink, QrCode, Copy, Download } from 'lucide-react';
+import { QRCodeSVG, QRCodeCanvas } from 'qrcode.react';
 
 // --- CẤU HÌNH CỐ ĐỊNH ---
 const DEFAULT_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co';
@@ -510,7 +511,130 @@ export const VPOP_TRENDING_POOL = MULTI_GENRE_CATALOG.filter(t => t.category ===
 
 // --- COMPONENTS ---
 
-const Nav = ({ isAdmin = false, onShowQuickSelect, cartCount, onShowCart, theme, menuImageUrl }: any) => {
+// --- QR CODE MODAL COMPONENT ---
+const QRCodeModal = ({ isOpen, onClose, theme }: { isOpen: boolean; onClose: () => void; theme: string }) => {
+  const [copied, setCopied] = useState(false);
+  const themeData = THEMES[theme as Theme] || THEMES[Theme.White];
+
+  if (!isOpen) return null;
+
+  const menuUrl = typeof window !== 'undefined' 
+    ? `${window.location.protocol}//${window.location.host}${window.location.pathname}#menu` 
+    : 'https://comphanuttrinh.com';
+
+  const handleCopy = () => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(menuUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    }
+  };
+
+  const handleDownload = () => {
+    const canvas = document.getElementById('menu-qr-code-canvas') as HTMLCanvasElement;
+    if (canvas) {
+      const pngUrl = canvas.toDataURL('image/png');
+      const downloadLink = document.createElement('a');
+      downloadLink.href = pngUrl;
+      downloadLink.download = 'Menu-Com-Phan-Ut-Trinh-QR.png';
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-stone-950/80 backdrop-blur-md p-4 animate-[fadeIn_0.3s_ease-out]" onClick={onClose}>
+      <div 
+        className={`${themeData.bg} w-full max-w-md rounded-[35px] md:rounded-[45px] overflow-hidden shadow-2xl border-2 ${themeData.border} p-6 sm:p-10 relative flex flex-col items-center text-center`}
+        onClick={e => e.stopPropagation()}
+      >
+        <button 
+          onClick={onClose} 
+          className={`absolute top-5 right-5 ${themeData.text} opacity-40 hover:opacity-100 text-3xl transition-all cursor-pointer`}
+        >
+          ×
+        </button>
+
+        <div className="space-y-1.5 mb-5">
+          <div className="inline-flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/30 text-amber-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
+            <QrCode size={13} />
+            <span>Thực Đơn Điện Tử</span>
+          </div>
+          <h2 className={`text-2xl sm:text-3xl font-black uppercase tracking-tighter ${themeData.text}`}>
+            MÃ QR THỰC ĐƠN
+          </h2>
+          <p className="text-xs font-bold text-amber-700 uppercase tracking-widest">
+            CƠM PHẦN ÚT TRINH
+          </p>
+        </div>
+
+        <div className="bg-white p-4 sm:p-5 rounded-3xl shadow-xl border border-stone-200/80 flex flex-col items-center my-2 relative">
+          <QRCodeSVG 
+            value={menuUrl} 
+            size={200} 
+            level="H" 
+            includeMargin={true}
+            imageSettings={{
+              src: "https://i.postimg.cc/5tdmrBLb/6d45d4f.png",
+              x: undefined,
+              y: undefined,
+              height: 40,
+              width: 40,
+              excavate: true,
+            }}
+          />
+
+          <div style={{ display: 'none' }}>
+            <QRCodeCanvas 
+              id="menu-qr-code-canvas"
+              value={menuUrl} 
+              size={512} 
+              level="H" 
+              includeMargin={true}
+              imageSettings={{
+                src: "https://i.postimg.cc/5tdmrBLb/6d45d4f.png",
+                x: undefined,
+                y: undefined,
+                height: 96,
+                width: 96,
+                excavate: true,
+              }}
+            />
+          </div>
+        </div>
+
+        <p className={`text-xs ${themeData.text} opacity-75 font-medium mt-3 mb-5 leading-relaxed max-w-xs`}>
+          📱 Quét mã QR bằng camera điện thoại để xem và chọn thực đơn trực tiếp trên thiết bị của bạn.
+        </p>
+
+        <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <button 
+            onClick={handleCopy}
+            className={`flex items-center justify-center gap-2 py-3 px-3 rounded-2xl text-[11px] font-black uppercase tracking-wider transition-all border ${themeData.border} ${copied ? 'bg-emerald-600 text-white border-emerald-600' : `${themeData.bg === 'bg-white' ? 'bg-stone-100 hover:bg-stone-200' : 'bg-white/30 hover:bg-white/50'} ${themeData.text}`}`}
+          >
+            {copied ? <Check size={15} /> : <Copy size={15} />}
+            <span>{copied ? 'ĐÃ SAO CHÉP' : 'SAO CHÉP LINK'}</span>
+          </button>
+
+          <button 
+            onClick={handleDownload}
+            className={`${themeData.button} text-white flex items-center justify-center gap-2 py-3 px-3 rounded-2xl text-[11px] font-black uppercase tracking-wider hover:brightness-110 transition-all shadow-lg`}
+          >
+            <Download size={15} />
+            <span>TẢI MÃ QR (PNG)</span>
+          </button>
+        </div>
+
+        <div className={`mt-3.5 w-full p-2 rounded-xl text-[9px] font-mono truncate ${themeData.bg === 'bg-white' ? 'bg-stone-50 border border-stone-200' : 'bg-black/30 border border-white/10'} text-stone-500`}>
+          {menuUrl}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const Nav = ({ isAdmin = false, onShowQuickSelect, cartCount, onShowCart, theme, menuImageUrl, onShowQRCode }: any) => {
   const [showConciseMenu, setShowConciseMenu] = useState(false);
   const themeData = THEMES[theme as Theme] || THEMES[Theme.White];
   const defaultMenuPhoto = "https://i.postimg.cc/FRJy6Vds/3083583a-d289-482f-9d4e-09d3f06f8893.jpg";
@@ -549,6 +673,14 @@ const Nav = ({ isAdmin = false, onShowQuickSelect, cartCount, onShowCart, theme,
                   className={`${themeData.text} text-[8px] md:text-xs font-black uppercase tracking-widest hover:${themeData.accent} whitespace-nowrap`}
                 >
                   CHỌN MÓN NHANH
+                </button>
+                <button 
+                  onClick={onShowQRCode}
+                  className={`flex items-center gap-1 ${themeData.text} text-[8px] md:text-xs font-black uppercase tracking-widest hover:${themeData.accent} whitespace-nowrap`}
+                  title="Mở Mã QR Thực Đơn"
+                >
+                  <QrCode size={13} className="text-amber-600 inline shrink-0" />
+                  <span>MÃ QR MENU</span>
                 </button>
                 <button 
                   onClick={() => setShowConciseMenu(true)} 
@@ -630,6 +762,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
   const [showTetPopup, setShowTetPopup] = useState(false);
   const [activeNotif, setActiveNotif] = useState<any>(null);
   const [showQuickSelect, setShowQuickSelect] = useState(false);
+  const [showQRCodeModal, setShowQRCodeModal] = useState(false);
   const [showOrderConfirmModal, setShowOrderConfirmModal] = useState(false);
   const [quickSelectPath, setQuickSelectPath] = useState<QuickMenuItem[]>([]);
   const [quickMenuData, setQuickMenuData] = useState<QuickMenuItem[]>([]);
@@ -1254,6 +1387,14 @@ PLAYBACK STATUS: PLAYING`);
         onShowCart={() => setShowCart(true)}
         theme={currentTheme}
         menuImageUrl={menuImageUrl}
+        onShowQRCode={() => setShowQRCodeModal(true)}
+      />
+      
+      {/* QR Code Modal */}
+      <QRCodeModal 
+        isOpen={showQRCodeModal} 
+        onClose={() => setShowQRCodeModal(false)} 
+        theme={currentTheme} 
       />
       
       {/* Cart Modal */}
@@ -1476,7 +1617,17 @@ PLAYBACK STATUS: PLAYING`);
       {/* Menu List */}
       <main id="menu" className="max-w-7xl mx-auto py-24 px-6">
         <div className="text-center mb-20 space-y-6">
-          <h2 className={`text-4xl md:text-8xl font-black tracking-tighter uppercase ${themeData.text}`}>Món Ăn Đặc Sắc</h2>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 md:gap-5">
+            <h2 className={`text-4xl md:text-8xl font-black tracking-tighter uppercase ${themeData.text}`}>Món Ăn Đặc Sắc</h2>
+            <button 
+              onClick={() => setShowQRCodeModal(true)}
+              className="inline-flex items-center gap-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 border border-amber-500/30 px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider transition-all shadow-sm cursor-pointer"
+              title="Xem & Tải Mã QR Thực Đơn"
+            >
+              <QrCode size={16} />
+              <span>MÃ QR MENU</span>
+            </button>
+          </div>
           <div className={`flex flex-wrap justify-center gap-4 md:gap-12 border-b ${themeData.border} pb-8`}>
             {Object.values(Category).map((cat) => (
               <button key={cat} onClick={() => { setActiveFilter(cat); setCurrentPage(1); }} className={`text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] pb-3 border-b-2 transition-all ${activeFilter === cat ? `border-${themeData.primary} ${themeData.accent}` : 'border-transparent text-stone-300 hover:text-stone-900'}`}>{cat}</button>
