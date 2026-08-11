@@ -685,9 +685,23 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
   }, [sessionCatalog]);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const youtubeIframeRef = useRef<HTMLIFrameElement | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const synthNodesRef = useRef<any[]>([]);
   const [failedTrackIds, setFailedTrackIds] = useState<Set<string>>(new Set());
+
+  const sendYoutubeCommand = useCallback((funcName: 'playVideo' | 'pauseVideo') => {
+    if (youtubeIframeRef.current && youtubeIframeRef.current.contentWindow) {
+      try {
+        youtubeIframeRef.current.contentWindow.postMessage(
+          JSON.stringify({ event: 'command', func: funcName, args: '' }),
+          '*'
+        );
+      } catch (err) {
+        console.warn("[Music Debug] YouTube postMessage command notice:", err);
+      }
+    }
+  }, []);
 
   // Filtered tracks based on selected genre & search from randomized sessionCatalog (excluding failed tracks)
   const filteredCatalogTracks = useMemo(() => {
@@ -798,13 +812,13 @@ PLAYBACK TYPE: DIRECT MP3 AUDIO
 PLAYBACK STATUS: PLAYING`);
         }).catch(err => {
           console.warn(`[Music Debug] Direct audio playback notice (e.g. user gesture required or load state):`, err);
-          // DO NOT auto-skip on play() rejection to avoid cascading deletion of tracks
         });
       }
     } else if (isPlayingMusic && youtubeId) {
       if (audioRef.current) {
         try { audioRef.current.pause(); } catch { /* ignore */ }
       }
+      sendYoutubeCommand('playVideo');
       console.log(`[Music Debug]
 TAB: ${(currentTrackObj?.genreKey || 'vpop').toUpperCase()}
 TITLE: ${currentTrackObj?.title || 'Unknown'}
@@ -818,14 +832,22 @@ PLAYBACK STATUS: PLAYING`);
       if (audioRef.current) {
         try { audioRef.current.pause(); } catch (e) { console.warn("Audio pause error:", e); }
       }
+      if (youtubeId) {
+        sendYoutubeCommand('pauseVideo');
+      }
       stopAmbientSynth();
     }
-  }, [isPlayingMusic, activeMusicUrl, currentTrackObj, stopAmbientSynth, youtubeId]);
+  }, [isPlayingMusic, activeMusicUrl, currentTrackObj, stopAmbientSynth, youtubeId, sendYoutubeCommand]);
 
   const togglePlayMusic = () => {
     if (!activeMusicUrl) return;
     if (isPlayingMusic) {
-      if (audioRef.current) audioRef.current.pause();
+      if (audioRef.current) {
+        try { audioRef.current.pause(); } catch { /* ignore */ }
+      }
+      if (youtubeId) {
+        sendYoutubeCommand('pauseVideo');
+      }
       stopAmbientSynth();
       setIsPlayingMusic(false);
     } else {
@@ -836,6 +858,8 @@ PLAYBACK STATUS: PLAYING`);
           audioRef.current.src = activeMusicUrl;
         }
         audioRef.current.play().catch(err => console.warn("Audio play error:", err));
+      } else if (youtubeId) {
+        sendYoutubeCommand('playVideo');
       }
     }
   };
@@ -862,24 +886,33 @@ PLAYBACK STATUS: PLAYING`);
         audioRef.current.load();
       }
       audioRef.current.play().catch(e => console.warn("Random track audio play notice:", e));
+    } else if (isYt) {
+      setTimeout(() => sendYoutubeCommand('playVideo'), 150);
     }
-  }, [stopAmbientSynth, selectedGenreFilter]);
+  }, [stopAmbientSynth, selectedGenreFilter, sendYoutubeCommand]);
 
   const handleSelectPlaylistTrack = (trackUrl: string) => {
+    const targetYtId = getYouTubeId(trackUrl);
     if (trackUrl === activeMusicUrl) {
       if (isPlayingMusic) {
-        if (audioRef.current) audioRef.current.pause();
+        if (audioRef.current) {
+          try { audioRef.current.pause(); } catch { /* ignore */ }
+        }
+        if (targetYtId) {
+          sendYoutubeCommand('pauseVideo');
+        }
         stopAmbientSynth();
         setIsPlayingMusic(false);
       } else {
         stopAmbientSynth();
         setIsPlayingMusic(true);
-        const isYt = !!getYouTubeId(trackUrl);
-        if (!isYt && audioRef.current) {
+        if (!targetYtId && audioRef.current) {
           if (audioRef.current.src !== trackUrl) {
             audioRef.current.src = trackUrl;
           }
           audioRef.current.play().catch(e => console.warn("Track audio play notice:", e));
+        } else if (targetYtId) {
+          sendYoutubeCommand('playVideo');
         }
       }
     } else {
@@ -890,11 +923,12 @@ PLAYBACK STATUS: PLAYING`);
       if (foundTrack) {
         setRandomBannerMessage(`🎶 Đã chọn phát bài: "${foundTrack.title}" (${foundTrack.artist})`);
       }
-      const isYt = !!getYouTubeId(trackUrl);
-      if (!isYt && audioRef.current) {
+      if (!targetYtId && audioRef.current) {
         audioRef.current.src = trackUrl;
         audioRef.current.load();
         audioRef.current.play().catch(e => console.warn("Track audio play notice:", e));
+      } else if (targetYtId) {
+        setTimeout(() => sendYoutubeCommand('playVideo'), 150);
       }
     }
   };
@@ -1881,40 +1915,61 @@ PLAYBACK STATUS: PLAYING`);
                       )}
 
                       {/* CURRENT PLAYING BAR & ACTIVE TRACK CONTROLLER */}
-                      <div className="bg-stone-900 border-2 border-emerald-500/80 rounded-3xl p-3.5 text-white shadow-xl space-y-2">
-                        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-800 pb-2">
-                          <div className="flex items-center gap-2.5 truncate">
-                            <div className="w-3 h-3 bg-emerald-400 rounded-full animate-ping shrink-0" />
-                            <span className="text-amber-300 font-black text-xs md:text-sm truncate uppercase tracking-wider">
+                      <div className="bg-stone-900 border-2 border-amber-500/70 rounded-3xl p-4 text-white shadow-xl space-y-3">
+                        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-800 pb-2.5">
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className={`w-3 h-3 rounded-full shrink-0 ${isPlayingMusic ? 'bg-emerald-400 animate-ping' : 'bg-amber-500'}`} />
+                            <span className="text-amber-300 font-black text-xs sm:text-sm truncate uppercase tracking-wider">
                               📻 {currentTrackObj.title}
                             </span>
                           </div>
-                          <span className="bg-emerald-600 text-white text-[10px] px-2.5 py-1 rounded-full font-black uppercase tracking-wider shrink-0 shadow-sm">
+                          <span className="bg-amber-800 text-amber-100 text-[10px] px-2.5 py-1 rounded-full font-black uppercase tracking-wider shrink-0 shadow-sm border border-amber-600/50">
                             {currentTrackObj.badge}
                           </span>
                         </div>
 
-                        <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-                          <div className="text-[11px] text-stone-300">
-                            Nguồn: <strong className="text-amber-400">{currentTrackObj.sourceLabel || 'Nguồn Âm Thanh'}</strong> • Nghệ sĩ: <span className="text-white font-bold">{currentTrackObj.artist}</span>
+                        {/* Mobile-friendly YouTube IFrame Stream with inline playback and JS API control */}
+                        {youtubeId && (
+                          <div className="w-full my-2 rounded-2xl overflow-hidden border border-amber-900/60 shadow-lg bg-black">
+                            <iframe
+                              ref={youtubeIframeRef}
+                              key={youtubeId}
+                              width="100%"
+                              height="180"
+                              src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&enablejsapi=1&playsinline=1&loop=1&playlist=${youtubeId}&origin=${encodeURIComponent(typeof window !== 'undefined' ? window.location.origin : '')}`}
+                              title="Audio Stream Player"
+                              allow="autoplay; encrypted-media; picture-in-picture"
+                              className="w-full h-[180px] sm:h-[220px] rounded-2xl block border-0"
+                            />
                           </div>
-                          <div className="flex items-center gap-2">
+                        )}
+
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-1">
+                          <div className="text-[11px] sm:text-xs text-stone-300 space-y-0.5">
+                            <div>👤 Nghệ sĩ: <span className="text-white font-bold">{currentTrackObj.artist}</span></div>
+                            <div>🔊 Nguồn: <strong className="text-amber-400">{currentTrackObj.sourceLabel || 'Nguồn Âm Thanh'}</strong></div>
+                          </div>
+                          <div className="flex items-center gap-2 w-full sm:w-auto">
                             <button
                               type="button"
                               onClick={togglePlayMusic}
-                              className={`px-3 py-1.5 rounded-xl font-black text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-md ${isPlayingMusic ? 'bg-amber-600 hover:bg-amber-500 text-white' : 'bg-emerald-600 hover:bg-emerald-500 text-white'}`}
+                              className={`flex-1 sm:flex-initial px-5 py-2.5 rounded-2xl font-black text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg min-h-[44px] ${
+                                isPlayingMusic 
+                                  ? 'bg-emerald-600 hover:bg-emerald-500 text-white ring-2 ring-emerald-400/50' 
+                                  : 'bg-amber-600 hover:bg-amber-500 text-white ring-2 ring-amber-400/50'
+                              }`}
                             >
-                              {isPlayingMusic ? <><Pause size={14} /> Tạm dừng</> : <><Play size={14} /> Phát nhạc</>}
+                              {isPlayingMusic ? <><Pause size={16} /> <span>⏸ ĐANG PHÁT</span></> : <><Play size={16} /> <span>▶ TIẾP TỤC</span></>}
                             </button>
                             {currentTrackObj.nctLink && (
                               <a
                                 href={currentTrackObj.nctLink}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="bg-stone-800 hover:bg-stone-700 text-amber-300 px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1 transition-all"
+                                className="bg-stone-800 hover:bg-stone-700 text-amber-300 px-3.5 py-2.5 rounded-2xl font-bold text-xs flex items-center justify-center gap-1 transition-all min-h-[44px] shrink-0 border border-stone-700"
                                 title="Xem nguồn bài hát"
                               >
-                                <ExternalLink size={12} /> Nguồn ↗
+                                <ExternalLink size={14} /> Nguồn ↗
                               </a>
                             )}
                           </div>
@@ -1930,8 +1985,8 @@ PLAYBACK STATUS: PLAYING`);
                           <span className="text-[10px] text-stone-500 font-bold">6 Thể loại tuyển chọn</span>
                         </div>
 
-                        {/* 6 Category Tabs Grid */}
-                        <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
+                        {/* 6 Category Tabs Grid - Mobile First 3 Columns */}
+                        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
                           {[
                             { key: 'vpop', label: 'Nhạc Việt', icon: '🇻🇳', count: MULTI_GENRE_CATALOG.filter(t => t.genreKey === 'vpop').length },
                             { key: 'usuk', label: 'Âu - Mỹ', icon: '🌎', count: MULTI_GENRE_CATALOG.filter(t => t.genreKey === 'usuk').length },
@@ -1946,15 +2001,15 @@ PLAYBACK STATUS: PLAYING`);
                                 key={tab.key}
                                 type="button"
                                 onClick={() => setSelectedGenreFilter(tab.key as any)}
-                                className={`p-2 rounded-2xl border text-center transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer shadow-sm ${
+                                className={`p-2.5 rounded-2xl border text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer shadow-sm min-h-[56px] ${
                                   isSelected 
-                                    ? 'bg-amber-800 text-white border-amber-900 font-black ring-2 ring-amber-600 scale-[1.02]' 
-                                    : 'bg-stone-50 hover:bg-amber-100 text-stone-800 border-stone-200'
+                                    ? 'bg-amber-900 text-amber-100 border-amber-950 font-black ring-2 ring-amber-500 scale-[1.02] shadow-md' 
+                                    : 'bg-white hover:bg-amber-50 text-stone-800 border-stone-200'
                                 }`}
                               >
-                                <span className="text-base">{tab.icon}</span>
-                                <span className="text-[11px] font-bold leading-tight whitespace-nowrap">{tab.label}</span>
-                                <span className={`text-[8px] px-1.5 py-0.2 rounded-full font-black whitespace-nowrap ${isSelected ? 'bg-amber-950 text-amber-200' : 'bg-stone-200 text-stone-600'}`}>
+                                <span className="text-base sm:text-lg">{tab.icon}</span>
+                                <span className="text-[11px] font-bold leading-tight truncate w-full">{tab.label}</span>
+                                <span className={`text-[8px] px-2 py-0.5 rounded-full font-black truncate max-w-full ${isSelected ? 'bg-amber-950 text-amber-300' : 'bg-stone-100 text-stone-500'}`}>
                                   {tab.count} bài
                                 </span>
                               </button>
@@ -1979,7 +2034,7 @@ PLAYBACK STATUS: PLAYING`);
                           <button
                             type="button"
                             onClick={() => setSelectedGenreFilter('all')}
-                            className="text-[10px] font-black text-amber-900 bg-amber-200 hover:bg-amber-300 px-3 py-2 rounded-xl shrink-0 transition-all cursor-pointer w-full sm:w-auto text-center"
+                            className="text-[10px] font-black text-amber-900 bg-amber-200 hover:bg-amber-300 px-3 py-2 rounded-xl shrink-0 transition-all cursor-pointer w-full sm:w-auto text-center min-h-[38px]"
                           >
                             Tất cả 6 Thể loại ({MULTI_GENRE_CATALOG.length})
                           </button>
@@ -1996,16 +2051,16 @@ PLAYBACK STATUS: PLAYING`);
                             <button
                               type="button"
                               onClick={handleReshuffleCatalog}
-                              className="bg-stone-800 hover:bg-stone-900 text-amber-300 font-black text-xs px-3.5 py-2 rounded-xl shadow-md flex items-center justify-center gap-1.5 cursor-pointer transition-all hover:scale-105 active:scale-95 min-h-[38px] w-full sm:w-auto"
+                              className="bg-stone-900 hover:bg-black text-amber-300 font-black text-xs px-4 py-2.5 rounded-xl shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95 min-h-[42px] w-full sm:w-auto"
                               title="Tải nhóm bài hát mới hoàn toàn cho cả 6 tab"
                             >
-                              <RefreshCw size={13} />
+                              <RefreshCw size={14} />
                               <span>🔄 TẢI LẠI BÀI MỚI</span>
                             </button>
                             <button
                               type="button"
                               onClick={() => handlePickRandomTrack(selectedGenreFilter)}
-                              className="bg-amber-800 hover:bg-amber-700 text-white font-black text-xs px-3.5 py-2 rounded-xl shadow-md flex items-center justify-center gap-1.5 cursor-pointer transition-all hover:scale-105 active:scale-95 min-h-[38px] w-full sm:w-auto"
+                              className="bg-amber-800 hover:bg-amber-700 text-white font-black text-xs px-4 py-2.5 rounded-xl shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95 min-h-[42px] w-full sm:w-auto"
                               title="Chọn ngẫu nhiên 1 bài hát từ danh sách này"
                             >
                               <Shuffle size={14} />
@@ -2014,7 +2069,7 @@ PLAYBACK STATUS: PLAYING`);
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-[320px] overflow-y-auto pr-1">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 max-h-[320px] overflow-y-auto pr-1">
                           {filteredCatalogTracks.length === 0 ? (
                             <div className="col-span-1 md:col-span-2 text-center py-8 bg-stone-50 rounded-2xl border border-dashed border-stone-300 text-xs text-stone-500 font-medium">
                               Không tìm thấy bài hát nào. 
@@ -2032,7 +2087,7 @@ PLAYBACK STATUS: PLAYING`);
                                 <div
                                   key={track.id}
                                   onClick={() => handleSelectPlaylistTrack(track.url)}
-                                  className={`p-3 rounded-2xl border transition-all flex items-center justify-between gap-2.5 shadow-sm cursor-pointer ${
+                                  className={`p-3.5 rounded-2xl border transition-all flex items-center justify-between gap-3 shadow-sm cursor-pointer ${
                                     isActive 
                                       ? 'bg-amber-100/90 border-amber-600 text-amber-950 ring-2 ring-amber-500 font-bold' 
                                       : 'bg-white hover:bg-amber-50/80 border-stone-200 text-stone-800'
@@ -2058,7 +2113,7 @@ PLAYBACK STATUS: PLAYING`);
                                         e.stopPropagation();
                                         handleSelectPlaylistTrack(track.url);
                                       }}
-                                      className={`px-3 py-2 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1 shadow-md min-h-[36px] shrink-0 ${
+                                      className={`px-3.5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-md min-h-[40px] shrink-0 ${
                                         isActive
                                           ? isPlayingMusic
                                             ? 'bg-emerald-600 hover:bg-emerald-700 text-white animate-pulse ring-2 ring-emerald-400'
@@ -2068,12 +2123,12 @@ PLAYBACK STATUS: PLAYING`);
                                     >
                                       {isActive ? (
                                         isPlayingMusic ? (
-                                          <><Pause size={12} /> <span>⏸ ĐANG PHÁT</span></>
+                                          <><Pause size={14} /> <span>⏸ ĐANG PHÁT</span></>
                                         ) : (
-                                          <><Play size={12} /> <span>▶ TIẾP TỤC</span></>
+                                          <><Play size={14} /> <span>▶ TIẾP TỤC</span></>
                                         )
                                       ) : (
-                                        <><Play size={12} /> <span>▶ PHÁT</span></>
+                                        <><Play size={14} /> <span>▶ PHÁT</span></>
                                       )}
                                     </button>
                                   </div>
