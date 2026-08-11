@@ -646,6 +646,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
   const [showPollModal, setShowPollModal] = useState(false);
   const [votedChoice, setVotedChoice] = useState<string | null>(() => localStorage.getItem(VOTED_KEY));
   const [isPlayingMusic, setIsPlayingMusic] = useState(false);
+  const [isLoadingTrack, setIsLoadingTrack] = useState(false);
   const [customTrackUrl, setCustomTrackUrl] = useState<string>('');
   const [randomBannerMessage, setRandomBannerMessage] = useState<string>('');
   
@@ -653,7 +654,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
   const [selectedGenreFilter, setSelectedGenreFilter] = useState<'all' | 'vpop' | 'usuk' | 'kpop' | 'khongloi' | 'thien' | 'cafesax'>('all');
   const [musicSearchQuery, setMusicSearchQuery] = useState<string>('');
 
-  // Randomized track list per page visit/refresh using anti-duplication Nhaccuatui batch fetching
+  // Randomized track list per page visit/refresh using anti-duplication batch fetching
   const [sessionCatalog, setSessionCatalog] = useState<PlaylistItem[]>(() => {
     return fetchAllGenresNhacCuaToiBatch(5);
   });
@@ -690,11 +691,11 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
   const synthNodesRef = useRef<any[]>([]);
   const [failedTrackIds, setFailedTrackIds] = useState<Set<string>>(new Set());
 
-  const sendYoutubeCommand = useCallback((funcName: 'playVideo' | 'pauseVideo') => {
+  const sendYoutubeCommand = useCallback((funcName: 'playVideo' | 'pauseVideo' | 'loadVideoById', args: any = '') => {
     if (youtubeIframeRef.current && youtubeIframeRef.current.contentWindow) {
       try {
         youtubeIframeRef.current.contentWindow.postMessage(
-          JSON.stringify({ event: 'command', func: funcName, args: '' }),
+          JSON.stringify({ event: 'command', func: funcName, args: args }),
           '*'
         );
       } catch (err) {
@@ -703,12 +704,56 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
     }
   }, []);
 
+  // Listen to YouTube IFrame API Messages for Real/Honest Playback Status & iOS Auto-sync
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      try {
+        if (!event.data) return;
+        let data = event.data;
+        if (typeof data === 'string') {
+          try { data = JSON.parse(data); } catch { return; }
+        }
+        if (data && (data.event === 'onStateChange' || data.info !== undefined)) {
+          const stateCode = data.info !== undefined ? data.info : data.data;
+          // YouTube State Codes: 1 = PLAYING, 2 = PAUSED, 3 = BUFFERING, 0 = ENDED, -1 = UNSTARTED
+          if (stateCode === 1) {
+            setIsLoadingTrack(false);
+            setIsPlayingMusic(true);
+            console.log(`[Music Debug]
+DEVICE: ${/iPhone|iPad|iPod/i.test(navigator.userAgent) ? 'iOS SAFARI' : 'DESKTOP/ANDROID'}
+PLAYBACK TYPE: YOUTUBE IFRAME
+STATE: PLAYING
+STATUS: AUDIO ACTIVE`);
+          } else if (stateCode === 2) {
+            setIsLoadingTrack(false);
+            setIsPlayingMusic(false);
+          } else if (stateCode === 3 || stateCode === -1) {
+            setIsLoadingTrack(true);
+          } else if (stateCode === 0) {
+            setIsLoadingTrack(false);
+            setIsPlayingMusic(false);
+          }
+        }
+        if (data && data.event === 'onReady') {
+          if (isPlayingMusic) {
+            sendYoutubeCommand('playVideo');
+          }
+        }
+      } catch {
+        // Ignore non-standard messages
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [isPlayingMusic, sendYoutubeCommand]);
+
   // Filtered tracks based on selected genre & search from randomized sessionCatalog (excluding failed tracks)
   const filteredCatalogTracks = useMemo(() => {
     if (!sessionCatalog || !Array.isArray(sessionCatalog)) return [];
     return sessionCatalog.filter(track => {
       if (!track) return false;
-      if (failedTrackIds.has(track.id)) return false; // REMOVE BROKEN TRACKS FROM PLAYLIST/QUEUE
+      if (failedTrackIds.has(track.id)) return false;
       const matchesGenre = selectedGenreFilter === 'all' || track.genreKey === selectedGenreFilter;
       const q = (musicSearchQuery || '').toLowerCase().trim();
       const matchesSearch = !q || 
@@ -776,7 +821,8 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
       const nextTrack = remainingValid[0];
       setCustomTrackUrl(nextTrack.url);
       setIsPlayingMusic(true);
-      setRandomBannerMessage(`🎶 Đang phát: "${nextTrack.title}" (${nextTrack.artist})`);
+      setIsLoadingTrack(true);
+      setRandomBannerMessage(`🎶 Đang chuyển bài: "${nextTrack.title}" (${nextTrack.artist})`);
     } else {
       // Pick a new batch from catalog that excludes failed tracks
       const newBatch = fetchNhacCuaToiBatch(currentGenre as any, 5).filter(t => !failedTrackIds.has(t.id));
@@ -785,15 +831,17 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
         setSessionCatalog(prev => [...prev.filter(t => t.genreKey !== currentGenre), ...newBatch]);
         setCustomTrackUrl(selected.url);
         setIsPlayingMusic(true);
+        setIsLoadingTrack(true);
         setRandomBannerMessage(`🎶 Đang phát bài mới: "${selected.title}" (${selected.artist})`);
       } else {
         setIsPlayingMusic(false);
+        setIsLoadingTrack(false);
         setRandomBannerMessage(`⚠️ Tạm hết bài hát ở thể loại này - Vui lòng chọn thể loại khác`);
       }
     }
   }, [stopAmbientSynth, selectedGenreFilter, sessionCatalog, failedTrackIds]);
 
-  // Audio Playback Sync Effect - Separated Direct Audio MP3 vs YouTube Iframe
+  // Audio Playback Sync Effect - Direct Audio MP3 vs YouTube Iframe
   useEffect(() => {
     if (isPlayingMusic && activeMusicUrl && !youtubeId) {
       if (audioRef.current) {
@@ -801,17 +849,17 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
           audioRef.current.src = activeMusicUrl;
         }
         audioRef.current.play().then(() => {
+          setIsLoadingTrack(false);
           console.log(`[Music Debug]
 TAB: ${(currentTrackObj?.genreKey || 'vpop').toUpperCase()}
 TITLE: ${currentTrackObj?.title || 'Unknown'}
 ARTIST: ${currentTrackObj?.artist || 'Unknown'}
 TRACK ID: ${currentTrackObj?.id || 'Unknown'}
 SOURCE: ${currentTrackObj?.sourceType || 'mp3'}
-MUSIC URL: ${activeMusicUrl}
 PLAYBACK TYPE: DIRECT MP3 AUDIO
 PLAYBACK STATUS: PLAYING`);
         }).catch(err => {
-          console.warn(`[Music Debug] Direct audio playback notice (e.g. user gesture required or load state):`, err);
+          console.warn(`[Music Debug] Direct audio play notice:`, err);
         });
       }
     } else if (isPlayingMusic && youtubeId) {
@@ -819,18 +867,9 @@ PLAYBACK STATUS: PLAYING`);
         try { audioRef.current.pause(); } catch { /* ignore */ }
       }
       sendYoutubeCommand('playVideo');
-      console.log(`[Music Debug]
-TAB: ${(currentTrackObj?.genreKey || 'vpop').toUpperCase()}
-TITLE: ${currentTrackObj?.title || 'Unknown'}
-ARTIST: ${currentTrackObj?.artist || 'Unknown'}
-TRACK ID: ${currentTrackObj?.id || 'Unknown'}
-SOURCE: YouTube Stream (${youtubeId})
-MUSIC URL: ${activeMusicUrl}
-PLAYBACK TYPE: YOUTUBE IFRAME
-PLAYBACK STATUS: PLAYING`);
     } else if (!isPlayingMusic) {
       if (audioRef.current) {
-        try { audioRef.current.pause(); } catch (e) { console.warn("Audio pause error:", e); }
+        try { audioRef.current.pause(); } catch (e) { console.warn("Audio pause notice:", e); }
       }
       if (youtubeId) {
         sendYoutubeCommand('pauseVideo');
@@ -850,16 +889,19 @@ PLAYBACK STATUS: PLAYING`);
       }
       stopAmbientSynth();
       setIsPlayingMusic(false);
+      setIsLoadingTrack(false);
     } else {
       stopAmbientSynth();
+      setIsLoadingTrack(true);
       setIsPlayingMusic(true);
       if (!youtubeId && audioRef.current) {
         if (audioRef.current.src !== activeMusicUrl) {
           audioRef.current.src = activeMusicUrl;
         }
-        audioRef.current.play().catch(err => console.warn("Audio play error:", err));
+        audioRef.current.play().then(() => setIsLoadingTrack(false)).catch(err => console.warn("Audio play error:", err));
       } else if (youtubeId) {
         sendYoutubeCommand('playVideo');
+        setTimeout(() => sendYoutubeCommand('playVideo'), 100);
       }
     }
   };
@@ -877,22 +919,27 @@ PLAYBACK STATUS: PLAYING`);
     const selected = newBatch[0];
     if (!selected) return;
     setCustomTrackUrl(selected.url);
+    setIsLoadingTrack(true);
     setIsPlayingMusic(true);
     setRandomBannerMessage(`🎲 Đã chọn & phát bài MỚI: "${selected.title}" (${selected.artist})`);
-    const isYt = !!getYouTubeId(selected.url);
-    if (!isYt && audioRef.current) {
+    const targetYtId = getYouTubeId(selected.url);
+    if (!targetYtId && audioRef.current) {
       if (audioRef.current.src !== selected.url) {
         audioRef.current.src = selected.url;
         audioRef.current.load();
       }
-      audioRef.current.play().catch(e => console.warn("Random track audio play notice:", e));
-    } else if (isYt) {
+      audioRef.current.play().then(() => setIsLoadingTrack(false)).catch(e => console.warn("Random audio play notice:", e));
+    } else if (targetYtId) {
+      sendYoutubeCommand('loadVideoById', [targetYtId, 0]);
+      sendYoutubeCommand('playVideo');
       setTimeout(() => sendYoutubeCommand('playVideo'), 150);
     }
   }, [stopAmbientSynth, selectedGenreFilter, sendYoutubeCommand]);
 
   const handleSelectPlaylistTrack = (trackUrl: string) => {
     const targetYtId = getYouTubeId(trackUrl);
+    stopAmbientSynth();
+
     if (trackUrl === activeMusicUrl) {
       if (isPlayingMusic) {
         if (audioRef.current) {
@@ -901,34 +948,44 @@ PLAYBACK STATUS: PLAYING`);
         if (targetYtId) {
           sendYoutubeCommand('pauseVideo');
         }
-        stopAmbientSynth();
         setIsPlayingMusic(false);
+        setIsLoadingTrack(false);
       } else {
-        stopAmbientSynth();
+        setIsLoadingTrack(true);
         setIsPlayingMusic(true);
         if (!targetYtId && audioRef.current) {
           if (audioRef.current.src !== trackUrl) {
             audioRef.current.src = trackUrl;
           }
-          audioRef.current.play().catch(e => console.warn("Track audio play notice:", e));
+          audioRef.current.play().then(() => setIsLoadingTrack(false)).catch(e => console.warn("Track play notice:", e));
         } else if (targetYtId) {
           sendYoutubeCommand('playVideo');
+          setTimeout(() => sendYoutubeCommand('playVideo'), 100);
         }
       }
     } else {
-      stopAmbientSynth();
+      setIsLoadingTrack(true);
       setCustomTrackUrl(trackUrl);
       setIsPlayingMusic(true);
+      
       const foundTrack = MULTI_GENRE_CATALOG.find(t => t.url === trackUrl);
       if (foundTrack) {
         setRandomBannerMessage(`🎶 Đã chọn phát bài: "${foundTrack.title}" (${foundTrack.artist})`);
       }
+
       if (!targetYtId && audioRef.current) {
         audioRef.current.src = trackUrl;
         audioRef.current.load();
-        audioRef.current.play().catch(e => console.warn("Track audio play notice:", e));
+        audioRef.current.play().then(() => setIsLoadingTrack(false)).catch(e => console.warn("Track play notice:", e));
       } else if (targetYtId) {
-        setTimeout(() => sendYoutubeCommand('playVideo'), 150);
+        // Send loadVideoById & playVideo immediately within the user's tap gesture execution stack
+        sendYoutubeCommand('loadVideoById', [targetYtId, 0]);
+        sendYoutubeCommand('playVideo');
+        setTimeout(() => {
+          sendYoutubeCommand('loadVideoById', [targetYtId, 0]);
+          sendYoutubeCommand('playVideo');
+        }, 100);
+        setTimeout(() => sendYoutubeCommand('playVideo'), 300);
       }
     }
   };
@@ -1918,7 +1975,7 @@ PLAYBACK STATUS: PLAYING`);
                       <div className="bg-stone-900 border-2 border-amber-500/70 rounded-3xl p-4 text-white shadow-xl space-y-3">
                         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-800 pb-2.5">
                           <div className="flex items-center gap-2.5 min-w-0">
-                            <div className={`w-3 h-3 rounded-full shrink-0 ${isPlayingMusic ? 'bg-emerald-400 animate-ping' : 'bg-amber-500'}`} />
+                            <div className={`w-3 h-3 rounded-full shrink-0 ${isLoadingTrack ? 'bg-amber-400 animate-ping' : isPlayingMusic ? 'bg-emerald-400 animate-ping' : 'bg-stone-500'}`} />
                             <span className="text-amber-300 font-black text-xs sm:text-sm truncate uppercase tracking-wider">
                               📻 {currentTrackObj.title}
                             </span>
@@ -1928,12 +1985,11 @@ PLAYBACK STATUS: PLAYING`);
                           </span>
                         </div>
 
-                        {/* Mobile-friendly YouTube IFrame Stream with inline playback and JS API control */}
+                        {/* Mobile-friendly YouTube IFrame Stream without key unmounting to preserve JS API and 1-tap playback */}
                         {youtubeId && (
                           <div className="w-full my-2 rounded-2xl overflow-hidden border border-amber-900/60 shadow-lg bg-black">
                             <iframe
                               ref={youtubeIframeRef}
-                              key={youtubeId}
                               width="100%"
                               height="180"
                               src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&enablejsapi=1&playsinline=1&loop=1&playlist=${youtubeId}&origin=${encodeURIComponent(typeof window !== 'undefined' ? window.location.origin : '')}`}
@@ -1954,12 +2010,20 @@ PLAYBACK STATUS: PLAYING`);
                               type="button"
                               onClick={togglePlayMusic}
                               className={`flex-1 sm:flex-initial px-5 py-2.5 rounded-2xl font-black text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg min-h-[44px] ${
-                                isPlayingMusic 
-                                  ? 'bg-emerald-600 hover:bg-emerald-500 text-white ring-2 ring-emerald-400/50' 
-                                  : 'bg-amber-600 hover:bg-amber-500 text-white ring-2 ring-amber-400/50'
+                                isLoadingTrack
+                                  ? 'bg-amber-700 hover:bg-amber-600 text-white animate-pulse'
+                                  : isPlayingMusic 
+                                    ? 'bg-emerald-600 hover:bg-emerald-500 text-white ring-2 ring-emerald-400/50' 
+                                    : 'bg-amber-600 hover:bg-amber-500 text-white ring-2 ring-amber-400/50'
                               }`}
                             >
-                              {isPlayingMusic ? <><Pause size={16} /> <span>⏸ ĐANG PHÁT</span></> : <><Play size={16} /> <span>▶ TIẾP TỤC</span></>}
+                              {isLoadingTrack ? (
+                                <><RefreshCw size={16} className="animate-spin" /> <span>⏳ ĐANG TẢI...</span></>
+                              ) : isPlayingMusic ? (
+                                <><Pause size={16} /> <span>⏸ ĐANG PHÁT</span></>
+                              ) : (
+                                <><Play size={16} /> <span>▶ TIẾP TỤC</span></>
+                              )}
                             </button>
                             {currentTrackObj.nctLink && (
                               <a
@@ -1988,12 +2052,12 @@ PLAYBACK STATUS: PLAYING`);
                         {/* 6 Category Tabs Grid - Mobile First 3 Columns */}
                         <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
                           {[
-                            { key: 'vpop', label: 'Nhạc Việt', icon: '🇻🇳', count: MULTI_GENRE_CATALOG.filter(t => t.genreKey === 'vpop').length },
-                            { key: 'usuk', label: 'Âu - Mỹ', icon: '🌎', count: MULTI_GENRE_CATALOG.filter(t => t.genreKey === 'usuk').length },
-                            { key: 'kpop', label: 'Hàn Quốc', icon: '🇰🇷', count: MULTI_GENRE_CATALOG.filter(t => t.genreKey === 'kpop').length },
-                            { key: 'khongloi', label: 'Không Lời', icon: '🎹', count: MULTI_GENRE_CATALOG.filter(t => t.genreKey === 'khongloi').length },
-                            { key: 'thien', label: 'Thiền', icon: '🧘', count: MULTI_GENRE_CATALOG.filter(t => t.genreKey === 'thien').length },
-                            { key: 'cafesax', label: 'Cafe', icon: '🎷', count: MULTI_GENRE_CATALOG.filter(t => t.genreKey === 'cafesax').length },
+                            { key: 'vpop', label: 'Nhạc Việt', icon: '🇻🇳', count: sessionCatalog.filter(t => t.genreKey === 'vpop').length },
+                            { key: 'usuk', label: 'Âu - Mỹ', icon: '🌎', count: sessionCatalog.filter(t => t.genreKey === 'usuk').length },
+                            { key: 'kpop', label: 'Hàn Quốc', icon: '🇰🇷', count: sessionCatalog.filter(t => t.genreKey === 'kpop').length },
+                            { key: 'khongloi', label: 'Không Lời', icon: '🎹', count: sessionCatalog.filter(t => t.genreKey === 'khongloi').length },
+                            { key: 'thien', label: 'Thiền', icon: '🧘', count: sessionCatalog.filter(t => t.genreKey === 'thien').length },
+                            { key: 'cafesax', label: 'Cafe', icon: '🎷', count: sessionCatalog.filter(t => t.genreKey === 'cafesax').length },
                           ].map(tab => {
                             const isSelected = selectedGenreFilter === tab.key;
                             return (
@@ -2001,7 +2065,7 @@ PLAYBACK STATUS: PLAYING`);
                                 key={tab.key}
                                 type="button"
                                 onClick={() => setSelectedGenreFilter(tab.key as any)}
-                                className={`p-2.5 rounded-2xl border text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer shadow-sm min-h-[56px] ${
+                                className={`p-2.5 rounded-2xl border text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer shadow-sm min-h-[56px] active:scale-95 ${
                                   isSelected 
                                     ? 'bg-amber-900 text-amber-100 border-amber-950 font-black ring-2 ring-amber-500 scale-[1.02] shadow-md' 
                                     : 'bg-white hover:bg-amber-50 text-stone-800 border-stone-200'
@@ -2051,7 +2115,7 @@ PLAYBACK STATUS: PLAYING`);
                             <button
                               type="button"
                               onClick={handleReshuffleCatalog}
-                              className="bg-stone-900 hover:bg-black text-amber-300 font-black text-xs px-4 py-2.5 rounded-xl shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95 min-h-[42px] w-full sm:w-auto"
+                              className="bg-stone-900 hover:bg-black text-amber-300 font-black text-xs px-4 py-2.5 rounded-xl shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95 min-h-[44px] w-full sm:w-auto"
                               title="Tải nhóm bài hát mới hoàn toàn cho cả 6 tab"
                             >
                               <RefreshCw size={14} />
@@ -2060,7 +2124,7 @@ PLAYBACK STATUS: PLAYING`);
                             <button
                               type="button"
                               onClick={() => handlePickRandomTrack(selectedGenreFilter)}
-                              className="bg-amber-800 hover:bg-amber-700 text-white font-black text-xs px-4 py-2.5 rounded-xl shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95 min-h-[42px] w-full sm:w-auto"
+                              className="bg-amber-800 hover:bg-amber-700 text-white font-black text-xs px-4 py-2.5 rounded-xl shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95 min-h-[44px] w-full sm:w-auto"
                               title="Chọn ngẫu nhiên 1 bài hát từ danh sách này"
                             >
                               <Shuffle size={14} />
@@ -2069,7 +2133,7 @@ PLAYBACK STATUS: PLAYING`);
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 max-h-[320px] overflow-y-auto pr-1">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 max-h-[340px] overflow-y-auto pr-1">
                           {filteredCatalogTracks.length === 0 ? (
                             <div className="col-span-1 md:col-span-2 text-center py-8 bg-stone-50 rounded-2xl border border-dashed border-stone-300 text-xs text-stone-500 font-medium">
                               Không tìm thấy bài hát nào. 
@@ -2087,7 +2151,7 @@ PLAYBACK STATUS: PLAYING`);
                                 <div
                                   key={track.id}
                                   onClick={() => handleSelectPlaylistTrack(track.url)}
-                                  className={`p-3.5 rounded-2xl border transition-all flex items-center justify-between gap-3 shadow-sm cursor-pointer ${
+                                  className={`p-3.5 rounded-2xl border transition-all flex items-center justify-between gap-3 shadow-sm cursor-pointer min-h-[64px] active:scale-[0.99] ${
                                     isActive 
                                       ? 'bg-amber-100/90 border-amber-600 text-amber-950 ring-2 ring-amber-500 font-bold' 
                                       : 'bg-white hover:bg-amber-50/80 border-stone-200 text-stone-800'
@@ -2113,16 +2177,20 @@ PLAYBACK STATUS: PLAYING`);
                                         e.stopPropagation();
                                         handleSelectPlaylistTrack(track.url);
                                       }}
-                                      className={`px-3.5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-md min-h-[40px] shrink-0 ${
+                                      className={`px-3.5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-md min-h-[44px] shrink-0 ${
                                         isActive
-                                          ? isPlayingMusic
-                                            ? 'bg-emerald-600 hover:bg-emerald-700 text-white animate-pulse ring-2 ring-emerald-400'
-                                            : 'bg-amber-600 hover:bg-amber-700 text-white ring-2 ring-amber-400'
+                                          ? isLoadingTrack
+                                            ? 'bg-amber-700 text-white animate-pulse'
+                                            : isPlayingMusic
+                                              ? 'bg-emerald-600 hover:bg-emerald-700 text-white animate-pulse ring-2 ring-emerald-400'
+                                              : 'bg-amber-600 hover:bg-amber-700 text-white ring-2 ring-amber-400'
                                           : 'bg-amber-800 hover:bg-amber-900 text-white'
                                       }`}
                                     >
                                       {isActive ? (
-                                        isPlayingMusic ? (
+                                        isLoadingTrack ? (
+                                          <><RefreshCw size={14} className="animate-spin" /> <span>⏳ TẢI...</span></>
+                                        ) : isPlayingMusic ? (
                                           <><Pause size={14} /> <span>⏸ ĐANG PHÁT</span></>
                                         ) : (
                                           <><Play size={14} /> <span>▶ TIẾP TỤC</span></>
