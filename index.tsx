@@ -1559,7 +1559,7 @@ PLAYBACK STATUS: PLAYING`);
           <div className="space-y-10">
             <div className="space-y-4">
               <span className={`${themeData.accent} font-black uppercase tracking-[0.4em] text-[10px]`}>Kết nối với quán</span>
-              <h2 className={`text-4xl md:text-6xl font-black uppercase tracking-tighter ${themeData.text}`}>GÓP Ý & LỜI CHÚC</h2>
+              <h2 className={`text-4xl md:text-6xl font-black uppercase tracking-tighter ${themeData.text}`}>GÓP Ý VÀ LỜI KHEN</h2>
               <p className={`${themeData.text} opacity-60 italic`}>"Mọi ý kiến đóng góp của quý khách là động lực để Út Trinh hoàn thiện hơn mỗi ngày."</p>
             </div>
 
@@ -1614,7 +1614,7 @@ PLAYBACK STATUS: PLAYING`);
           {/* Entries List */}
           <div className="space-y-10 flex flex-col">
             <div className="flex justify-between items-end">
-              <h3 className={`text-2xl font-black uppercase tracking-tighter ${themeData.text}`}>Lời chúc mới nhất</h3>
+              <h3 className={`text-2xl font-black uppercase tracking-tighter ${themeData.text}`}>Những đóng góp ý kiến mới nhất</h3>
             </div>
 
             <div className="flex-1 space-y-6 overflow-y-auto max-h-[600px] pr-4 no-scrollbar">
