@@ -50,7 +50,7 @@
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
-import { ChevronRight, ChevronDown, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, MessageSquare, CheckCircle2, Facebook, Mail, Youtube, Users, Vote, Music, VolumeX, Play, Pause, BarChart2, Check, X, RefreshCw, Shuffle, ExternalLink } from 'lucide-react';
+import { ChevronRight, ChevronDown, ChevronUp, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, MessageSquare, CheckCircle2, Facebook, Mail, Youtube, Users, Vote, Music, VolumeX, Play, Pause, BarChart2, Check, X, RefreshCw, Shuffle, ExternalLink } from 'lucide-react';
 
 // --- CẤU HÌNH CỐ ĐỊNH ---
 const DEFAULT_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co';
@@ -653,6 +653,25 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
   // Music Filters & Search
   const [selectedGenreFilter, setSelectedGenreFilter] = useState<'all' | 'vpop' | 'usuk' | 'kpop' | 'khongloi' | 'thien' | 'cafesax'>('all');
   const [musicSearchQuery, setMusicSearchQuery] = useState<string>('');
+
+  // Scroll To Top State & Listener
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 300) {
+        setShowScrollTop(true);
+      } else {
+        setShowScrollTop(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   // Randomized track list per page visit/refresh using anti-duplication batch fetching
   const [sessionCatalog, setSessionCatalog] = useState<PlaylistItem[]>(() => {
@@ -2283,6 +2302,18 @@ PLAYBACK STATUS: PLAYING`);
         }}
         style={{ display: 'none' }}
       />
+
+      {/* Floating Scroll To Top Button */}
+      {showScrollTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-6 right-6 z-[120] bg-amber-800/90 hover:bg-amber-900 text-white p-3.5 sm:p-4 rounded-full shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95 border-2 border-white/40 flex items-center justify-center group cursor-pointer backdrop-blur-sm"
+          title="Trở về đầu trang"
+          aria-label="Trở về đầu trang"
+        >
+          <ChevronUp size={22} className="group-hover:-translate-y-0.5 transition-transform" />
+        </button>
+      )}
     </div>
   );
 };
