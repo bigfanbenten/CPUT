@@ -1747,7 +1747,7 @@ PLAYBACK STATUS: PLAYING`);
                 <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-amber-500"><Users size={20} /></div>
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Tổng lượt xem</p>
-                  <p className="text-2xl font-black tabular-nums">{totalViews.toLocaleString('vi-VN')}</p>
+                  <p className="text-2xl font-black tabular-nums">{totalViews}</p>
                 </div>
               </div>
               <div className="flex items-center gap-4">
@@ -2881,7 +2881,7 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                     <div>
                       <span className="text-[10px] font-black uppercase tracking-widest text-stone-400 block">Lượt truy cập</span>
                       <div className="text-3xl font-black text-stone-900 tabular-nums">
-                        {totalViews.toLocaleString('vi-VN')}
+                        {totalViews}
                       </div>
                     </div>
                   </div>
