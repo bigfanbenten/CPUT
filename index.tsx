@@ -1735,6 +1735,17 @@ PLAYBACK STATUS: PLAYING`);
             <h4 className="text-xs font-black uppercase tracking-[0.3em] text-white/40">Liên hệ</h4>
             <div className="space-y-4">
               <p className="text-sm font-bold leading-relaxed">Địa chỉ: 158A đường Trần Vĩnh Kiết. Phường Tân An, Quận Ninh Kiều, TP Cần Thơ</p>
+              <div>
+                <a 
+                  href="https://www.google.com/maps?cid=4432329112330468584" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-400 hover:text-amber-300 transition-colors underline underline-offset-4"
+                >
+                  <span>Xem địa chỉ quán trên Google Map</span>
+                  <ExternalLink size={12} />
+                </a>
+              </div>
               <p className="text-sm font-bold">Hotline: 0939.70.90.20</p>
               <p className="text-sm font-bold">Email: comphanuttrinh@gmail.com</p>
             </div>
