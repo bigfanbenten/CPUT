@@ -341,66 +341,8 @@ export function scoreTrackForGenre(track: PlaylistItem, targetGenreKey: string):
   return 50;
 }
 
-export const MULTI_GENRE_CATALOG: PlaylistItem[] = [
-  { id: 'vpop-1', title: 'Nơi Này Có Anh', artist: 'Sơn Tùng M-TP', category: 'restaurant', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=FN7ALfpGxiI', badge: '🇻🇳 V-Pop Hit', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=FN7ALfpGxiI' },
-  { id: 'vpop-2', title: 'Hãy Trao Cho Anh', artist: 'Sơn Tùng M-TP ft. Snoop Dogg', category: 'restaurant', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=knW7-x7Y7RE', badge: '🇻🇳 World Hit', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=knW7-x7Y7RE' },
-  { id: 'vpop-3', title: 'Muộn Rồi Mà Sao Còn', artist: 'Sơn Tùng M-TP', category: 'restaurant', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=xypzmu5mMPY', badge: '🇻🇳 Pop R&B', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=xypzmu5mMPY' },
-  { id: 'vpop-4', title: 'Có Chắc Yêu Là Đây', artist: 'Sơn Tùng M-TP', category: 'restaurant', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=6t-MjBazs3o', badge: '🇻🇳 Sweet Pop', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=6t-MjBazs3o' },
-  { id: 'vpop-5', title: 'Chúng Ta Của Hiện Tại', artist: 'Sơn Tùng M-TP', category: 'restaurant', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=psZ1g9fMfeo', badge: '🇻🇳 Retro Pop', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=psZ1g9fMfeo' },
-  { id: 'vpop-6', title: 'Ngày Đầu Tiên', artist: 'Đức Phúc', category: 'restaurant', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=rIXhXaQ8tiM', badge: '🇻🇳 Love Song', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=rIXhXaQ8tiM' },
-  { id: 'vpop-7', title: 'Hơn Cả Yêu', artist: 'Đức Phúc', category: 'restaurant', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=__kGJZ-kPno', badge: '🇻🇳 V-Pop Ballad', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=__kGJZ-kPno' },
-  { id: 'vpop-8', title: 'Sau Lời Từ Khước', artist: 'Phan Mạnh Quỳnh', category: 'restaurant', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=mzqvF_rIOx8', badge: '🇻🇳 Nhạc Phim Mai', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=mzqvF_rIOx8' },
-  { id: 'vpop-9', title: 'Vợ Người Ta', artist: 'Phan Mạnh Quỳnh', category: 'restaurant', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=Ooykd6ZUxrU', badge: '🇻🇳 V-Pop Hit', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=Ooykd6ZUxrU' },
-  { id: 'vpop-10', title: 'Nàng Thơ', artist: 'Hoàng Dũng', category: 'restaurant', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=Zzn9-ATB9aU', badge: '🇻🇳 Nàng Thơ', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=Zzn9-ATB9aU' },
-  { id: 'vpop-11', title: 'Bước Qua Nhau', artist: 'Vũ', category: 'restaurant', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=ixdSsW5n2rI', badge: '🇻🇳 Indie V-Pop', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=ixdSsW5n2rI' },
-  { id: 'vpop-12', title: 'Bùa Yêu', artist: 'Bích Phương', category: 'restaurant', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=FkOt19CUC30', badge: '🇻🇳 Bích Phương Hit', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=FkOt19CUC30' },
-  { id: 'vpop-13', title: 'Anh Nhà Ở Đâu Thế', artist: 'AMEE x B RAY', category: 'restaurant', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=iE52-XXnQqs', badge: '🇻🇳 AMEE Pop', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=iE52-XXnQqs' },
-  { id: 'vpop-14', title: 'Phía Sau Một Cô Gái', artist: 'Soobin Hoàng Sơn', category: 'restaurant', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=j__Q13iAxNk', badge: '🇻🇳 Soobin Ballad', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=j__Q13iAxNk' },
-  { id: 'vpop-15', title: 'Tháng Tư Là Lời Nói Dối Của Em', artist: 'Hà Anh Tuấn', category: 'restaurant', genreKey: 'vpop', url: 'https://www.youtube.com/watch?v=UCXao7aTDQM', badge: '🇻🇳 V-Pop Acoustic', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=UCXao7aTDQM' },
-  { id: 'usuk-16', title: 'Shape of You', artist: 'Ed Sheeran', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=JGwWNGJdvx8', badge: '🌎 US-UK Hit', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=JGwWNGJdvx8' },
-  { id: 'usuk-17', title: 'Perfect', artist: 'Ed Sheeran', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=2Vv-BfVoq4g', badge: '🌎 Love Song', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=2Vv-BfVoq4g' },
-  { id: 'usuk-18', title: 'Someone Like You', artist: 'Adele', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=hLQl3WQQoQ0', badge: '🌎 Soul Vocal', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=hLQl3WQQoQ0' },
-  { id: 'usuk-19', title: 'Easy On Me', artist: 'Adele', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=U3ASj1L6_sY', badge: '🌎 Adele Vocal', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=U3ASj1L6_sY' },
-  { id: 'usuk-20', title: 'All of Me', artist: 'John Legend', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=450p7goxZqg', badge: '🌎 Love Song', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=450p7goxZqg' },
-  { id: 'usuk-21', title: 'Counting Stars', artist: 'OneRepublic', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=hT_nvWreIhg', badge: '🌎 Folk Pop', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=hT_nvWreIhg' },
-  { id: 'usuk-22', title: 'Flowers', artist: 'Miley Cyrus', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=G7KNmW9a75Y', badge: '🌎 Pop Hit', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=G7KNmW9a75Y' },
-  { id: 'usuk-23', title: 'As It Was', artist: 'Harry Styles', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=H5v3kku4y6Q', badge: '🌎 Synth Pop', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=H5v3kku4y6Q' },
-  { id: 'usuk-24', title: 'Until I Found You', artist: 'Stephen Sanchez', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=GxldQ9eX2wo', badge: '🌎 Retro US-UK', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=GxldQ9eX2wo' },
-  { id: 'usuk-25', title: 'Shallow', artist: 'Lady Gaga & Bradley Cooper', category: 'restaurant', genreKey: 'usuk', url: 'https://www.youtube.com/watch?v=bo_efYhYU2A', badge: '🌎 Movie OST', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=bo_efYhYU2A' },
-  { id: 'kpop-26', title: 'Stay With Me', artist: 'Chanyeol & Punch', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=wdHeiVf0mds', badge: '🇰🇷 Goblin OST', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=wdHeiVf0mds' },
-  { id: 'kpop-27', title: 'Everytime', artist: 'Chen & Punch', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=xQk_hnuRejE', badge: '🇰🇷 Hậu Duệ Mặt Trời', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=xQk_hnuRejE' },
-  { id: 'kpop-28', title: 'Flower', artist: 'Jisoo', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=YudHcBIxlYw', badge: '🇰🇷 K-Pop Vocal', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=YudHcBIxlYw' },
-  { id: 'kpop-29', title: 'Solo', artist: 'Jennie', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=b73BI9eUkjM', badge: '🇰🇷 Jennie Hit', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=b73BI9eUkjM' },
-  { id: 'kpop-30', title: 'Dynamite', artist: 'BTS', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=gdZLi9oWNZg', badge: '🇰🇷 BTS World', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=gdZLi9oWNZg' },
-  { id: 'kpop-31', title: 'Butter', artist: 'BTS', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=WMweEpGlu_U', badge: '🇰🇷 BTS Pop', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=WMweEpGlu_U' },
-  { id: 'kpop-32', title: 'Seven', artist: 'Jung Kook ft. Latto', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=QU9c0053UAU', badge: '🇰🇷 Jung Kook Hit', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=QU9c0053UAU' },
-  { id: 'kpop-33', title: 'Super Shy', artist: 'NewJeans', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=ArmDp-zijuc', badge: '🇰🇷 NewJeans Pop', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=ArmDp-zijuc' },
-  { id: 'kpop-34', title: 'OMG', artist: 'NewJeans', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=_ZAgIHmHLdc', badge: '🇰🇷 K-Pop Dance', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=_ZAgIHmHLdc' },
-  { id: 'kpop-35', title: 'Love Lee', artist: 'AKMU', category: 'restaurant', genreKey: 'kpop', url: 'https://www.youtube.com/watch?v=EIz09kLzN9k', badge: '🇰🇷 AKMU Duo', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=EIz09kLzN9k' },
-  { id: 'khongloi-36', title: 'Canon in D Major', artist: 'Johann Pachelbel', category: 'restaurant', genreKey: 'khongloi', url: 'https://www.youtube.com/watch?v=NlprozGcs80', badge: '🎹 Canon in D', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=NlprozGcs80' },
-  { id: 'khongloi-37', title: 'Für Elise', artist: 'Ludwig van Beethoven', category: 'restaurant', genreKey: 'khongloi', url: 'https://www.youtube.com/watch?v=e4d0LOuP4Uw', badge: '🎹 Beethoven Piano', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=e4d0LOuP4Uw' },
-  { id: 'khongloi-38', title: 'Moonlight Sonata', artist: 'Ludwig van Beethoven', category: 'restaurant', genreKey: 'khongloi', url: 'https://www.youtube.com/watch?v=sbTVZMJ9Z2I', badge: '🎹 Moonlight Sonata', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=sbTVZMJ9Z2I' },
-  { id: 'khongloi-39', title: 'Clair De Lune', artist: 'Claude Debussy', category: 'restaurant', genreKey: 'khongloi', url: 'https://www.youtube.com/watch?v=-Bxpm0EmOMU', badge: '🎹 Clair De Lune', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=-Bxpm0EmOMU' },
-  { id: 'khongloi-40', title: 'Air on the G String', artist: 'Johann Sebastian Bach', category: 'restaurant', genreKey: 'khongloi', url: 'https://www.youtube.com/watch?v=1PkD47rNkfY', badge: '🎹 Bach String', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=1PkD47rNkfY' },
-  { id: 'khongloi-41', title: 'The Blue Danube Waltz', artist: 'Johann Strauss II', category: 'restaurant', genreKey: 'khongloi', url: 'https://www.youtube.com/watch?v=_CTYymbbEL4', badge: '🎹 Classic Waltz', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=_CTYymbbEL4' },
-  { id: 'khongloi-42', title: 'The Four Seasons - Spring', artist: 'Antonio Vivaldi', category: 'restaurant', genreKey: 'khongloi', url: 'https://www.youtube.com/watch?v=t2cIUu-sS7w', badge: '🎻 Vivaldi Classic', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=t2cIUu-sS7w' },
-  { id: 'khongloi-43', title: 'River Flows In You', artist: 'Yiruma', category: 'restaurant', genreKey: 'khongloi', url: 'https://www.youtube.com/watch?v=7maJOI3QMu0', badge: '🎹 Yiruma Piano', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=7maJOI3QMu0' },
-  { id: 'khongloi-44', title: 'Kiss the Rain', artist: 'Yiruma', category: 'restaurant', genreKey: 'khongloi', url: 'https://www.youtube.com/watch?v=imGaOIm5HOk', badge: '🎹 Healing Piano', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=imGaOIm5HOk' },
-  { id: 'khongloi-45', title: 'Mariage D\'Amour', artist: 'Richard Clayderman', category: 'restaurant', genreKey: 'khongloi', url: 'https://www.youtube.com/watch?v=fy1esxfjb6c', badge: '🎹 Romantic Piano', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=fy1esxfjb6c' },
-  { id: 'thien-46', title: 'Nhạc Spa 432Hz & Chuông Xoay Tĩnh Tâm', artist: 'Meditation Bowl Spa', category: 'restaurant', genreKey: 'thien', url: 'https://www.youtube.com/watch?v=1FbGw1pdqx0', badge: '🧘 Spa 432Hz', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=1FbGw1pdqx0' },
-  { id: 'thien-47', title: 'Sáo Trúc & Tiếng Mưa Thiền Định', artist: 'Zen Bamboo Flute', category: 'restaurant', genreKey: 'thien', url: 'https://www.youtube.com/watch?v=X4VbdwhkE10', badge: '🧘 Sáo Trúc 432Hz', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=X4VbdwhkE10' },
-  { id: 'thien-48', title: 'Chuông Xoay Tây Tạng 432Hz', artist: 'Tibetan Healing', category: 'restaurant', genreKey: 'thien', url: 'https://www.youtube.com/watch?v=3NycM9lYdRI', badge: '🧘 Chuông Xoay Tĩnh', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=3NycM9lYdRI' },
-  { id: 'thien-49', title: 'Tiếng Suối Reo & Rừng Xanh Thư Giãn', artist: 'Nature Calm', category: 'restaurant', genreKey: 'thien', url: 'https://www.youtube.com/watch?v=eWLVBP3VrO4', badge: '🧘 Suối Reo Spa', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=eWLVBP3VrO4' },
-  { id: 'thien-50', title: 'Lofi Chill Study Beats', artist: 'Lofi Girl Relax', category: 'restaurant', genreKey: 'thien', url: 'https://www.youtube.com/watch?v=rPjez8z61rI', badge: '🧘 Lofi Chill', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=rPjez8z61rI' },
-  { id: 'thien-51', title: 'Mưa Đêm & Piano Lofi Thư Giãn', artist: 'Rainy Lofi Cafe', category: 'restaurant', genreKey: 'thien', url: 'https://www.youtube.com/watch?v=K0-6reET2BY', badge: '🧘 Rain Lofi', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=K0-6reET2BY' },
-  { id: 'thien-52', title: 'Nhạc Thiền Giảm Căng Thẳng 432Hz', artist: 'Deep Meditation', category: 'restaurant', genreKey: 'thien', url: 'https://www.youtube.com/watch?v=u3papaX85MA', badge: '🧘 Stress Relief', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=u3papaX85MA' },
-  { id: 'cafesax-53', title: 'Smooth Saxophone Jazz Collection', artist: 'Kenny G Style Saxophone', category: 'restaurant', genreKey: 'cafesax', url: 'https://www.youtube.com/watch?v=36YnV9STBqc', badge: '🎷 Saxophone Jazz', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=36YnV9STBqc' },
-  { id: 'cafesax-54', title: 'Solo Saxophone Chiều Quán Cafe', artist: 'Smooth Jazz Ensemble', category: 'restaurant', genreKey: 'cafesax', url: 'https://www.youtube.com/watch?v=G6gRMc6v0mI', badge: '🎷 Sax Lãng Mạn', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=G6gRMc6v0mI' },
-  { id: 'cafesax-55', title: 'Acoustic Guitar Unplugged Chill', artist: 'Guitar Unplugged', category: 'restaurant', genreKey: 'cafesax', url: 'https://www.youtube.com/watch?v=HwuYQua_Ovc', badge: '🎸 Acoustic Cafe', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=HwuYQua_Ovc' },
-  { id: 'cafesax-56', title: 'Cafe Lounge Chillout Atmosphere', artist: 'Jazz Lounge Trio', category: 'restaurant', genreKey: 'cafesax', url: 'https://www.youtube.com/watch?v=MYPVQccHhAQ', badge: '☕ Cafe Lounge', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=MYPVQccHhAQ' },
-  { id: 'cafesax-57', title: 'Bossa Nova Cafe Jazz', artist: 'Bossa Nova Brasil', category: 'restaurant', genreKey: 'cafesax', url: 'https://www.youtube.com/watch?v=9WF7ebD_Fco', badge: '☕ Bossa Nova', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=9WF7ebD_Fco' },
-  { id: 'cafesax-58', title: 'Morning Coffee Acoustic Jazz', artist: 'Coffee Jazz Ensemble', category: 'restaurant', genreKey: 'cafesax', url: 'https://www.youtube.com/watch?v=8cN7LWGO-gE', badge: '☕ Morning Jazz', sourceType: 'youtube', sourceLabel: 'Nguồn YouTube Official', nctLink: 'https://www.youtube.com/watch?v=8cN7LWGO-gE' }
-];
+import { MULTI_GENRE_CATALOG } from './musicCatalog';
+export { MULTI_GENRE_CATALOG };
 
 // --- BATCH FETCHING LOGIC WITH ANTI-DUPLICATION USED_TRACK_IDS ---
 const USED_TRACKS_KEY = 'cput_used_track_ids_v5';
@@ -429,7 +371,7 @@ export function saveUsedTrackIdsMap(map: Record<string, string[]>) {
 // Request & Fetch a BRAND NEW batch of songs for a genre from catalog
 export function fetchNhacCuaToiBatch(
   genreKey: 'vpop' | 'usuk' | 'kpop' | 'khongloi' | 'thien' | 'cafesax',
-  targetCount: number = 5
+  targetCount: number = 8
 ): PlaylistItem[] {
   console.log(`[Music] Fetching brand new tracks for tab ${genreKey.toUpperCase()}...`);
 
@@ -438,7 +380,7 @@ export function fetchNhacCuaToiBatch(
 
   if (validPool.length === 0) {
     console.warn(`[Music] No valid tracks found for genre ${genreKey}`);
-    return [];
+    return genrePool.slice(0, targetCount);
   }
 
   const usedMap = getUsedTrackIdsMap();
@@ -496,7 +438,7 @@ export function fetchNhacCuaToiBatch(
 }
 
 // Fetch new batches for all 6 genres combined
-export function fetchAllGenresNhacCuaToiBatch(targetCountPerGenre: number = 5): PlaylistItem[] {
+export function fetchAllGenresNhacCuaToiBatch(targetCountPerGenre: number = 8): PlaylistItem[] {
   console.log(`[Music] --- FETCHING BRAND NEW BATCHES FOR ALL 6 TABS ---`);
   const genres: ('vpop' | 'usuk' | 'kpop' | 'khongloi' | 'thien' | 'cafesax')[] = [
     'vpop', 'usuk', 'kpop', 'khongloi', 'thien', 'cafesax'
@@ -675,11 +617,11 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
 
   // Randomized track list per page visit/refresh using anti-duplication batch fetching
   const [sessionCatalog, setSessionCatalog] = useState<PlaylistItem[]>(() => {
-    return fetchAllGenresNhacCuaToiBatch(5);
+    return fetchAllGenresNhacCuaToiBatch(8);
   });
 
   const handleReshuffleCatalog = useCallback(() => {
-    const newCatalog = fetchAllGenresNhacCuaToiBatch(5);
+    const newCatalog = fetchAllGenresNhacCuaToiBatch(8);
     setSessionCatalog(newCatalog);
     setRandomBannerMessage(`🔄 Đã tải nhóm bài hát MỚI cho 6 tab (Đã loại bỏ tất cả bài đã xuất hiện)`);
   }, []);
@@ -932,7 +874,7 @@ PLAYBACK STATUS: PLAYING`);
     const effectiveGenre = (!targetGenreKey || targetGenreKey === 'all') 
       ? (selectedGenreFilter === 'all' ? 'vpop' : selectedGenreFilter) 
       : targetGenreKey;
-    const newBatch = fetchNhacCuaToiBatch(effectiveGenre as any, 5);
+    const newBatch = fetchNhacCuaToiBatch(effectiveGenre as any, 8);
     setSessionCatalog(prev => {
       const others = prev.filter(t => t.genreKey !== effectiveGenre);
       return [...others, ...newBatch];
