@@ -341,8 +341,8 @@ export function scoreTrackForGenre(track: PlaylistItem, targetGenreKey: string):
   return 50;
 }
 
-import { MULTI_GENRE_CATALOG } from './musicCatalog';
-export { MULTI_GENRE_CATALOG };
+import { MULTI_GENRE_CATALOG, CATALOG_BY_URL } from './musicCatalog';
+export { MULTI_GENRE_CATALOG, CATALOG_BY_URL };
 
 // --- BATCH FETCHING LOGIC WITH ANTI-DUPLICATION USED_TRACK_IDS ---
 const USED_TRACKS_KEY = 'cput_used_track_ids_v5';
@@ -652,7 +652,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
   }, [customTrackUrl, initialRandomTrack]);
 
   const currentTrackObj = useMemo(() => {
-    const found = MULTI_GENRE_CATALOG.find(t => t.url === activeMusicUrl);
+    const found = CATALOG_BY_URL.get(activeMusicUrl);
     if (found) return found;
     if (initialRandomTrack) return initialRandomTrack;
     return MULTI_GENRE_CATALOG[0] || {
@@ -677,6 +677,20 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
   const synthNodesRef = useRef<any[]>([]);
   const [failedTrackIds, setFailedTrackIds] = useState<Set<string>>(new Set());
 
+  // Performance tracking refs to prevent duplicate loadVideoById commands and message listener churn
+  const currentLoadedVideoIdRef = useRef<string | null>(null);
+  const isPlayingMusicRef = useRef<boolean>(isPlayingMusic);
+  const youtubeIdRef = useRef<string | null>(youtubeId);
+  const isYoutubeReadyRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    isPlayingMusicRef.current = isPlayingMusic;
+  }, [isPlayingMusic]);
+
+  useEffect(() => {
+    youtubeIdRef.current = youtubeId;
+  }, [youtubeId]);
+
   const sendYoutubeCommand = useCallback((funcName: 'playVideo' | 'pauseVideo' | 'loadVideoById', args: any = '') => {
     if (youtubeIframeRef.current && youtubeIframeRef.current.contentWindow) {
       try {
@@ -689,68 +703,6 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
       }
     }
   }, []);
-
-  // Listen to YouTube IFrame API Messages for Real/Honest Playback Status & iOS Auto-sync
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      try {
-        if (!event.data) return;
-        let data = event.data;
-        if (typeof data === 'string') {
-          try { data = JSON.parse(data); } catch { return; }
-        }
-        if (data && (data.event === 'onStateChange' || data.info !== undefined)) {
-          const stateCode = data.info !== undefined ? data.info : data.data;
-          // YouTube State Codes: 1 = PLAYING, 2 = PAUSED, 3 = BUFFERING, 0 = ENDED, -1 = UNSTARTED
-          if (stateCode === 1) {
-            setIsLoadingTrack(false);
-            setIsPlayingMusic(true);
-            console.log(`[Music Debug]
-DEVICE: ${/iPhone|iPad|iPod/i.test(navigator.userAgent) ? 'iOS SAFARI' : 'DESKTOP/ANDROID'}
-PLAYBACK TYPE: YOUTUBE IFRAME
-STATE: PLAYING
-STATUS: AUDIO ACTIVE`);
-          } else if (stateCode === 2) {
-            setIsLoadingTrack(false);
-            setIsPlayingMusic(false);
-          } else if (stateCode === 3 || stateCode === -1) {
-            setIsLoadingTrack(true);
-          } else if (stateCode === 0) {
-            setIsLoadingTrack(false);
-            setIsPlayingMusic(false);
-          }
-        }
-        if (data && data.event === 'onReady') {
-          if (youtubeId && isPlayingMusic) {
-            sendYoutubeCommand('loadVideoById', [youtubeId, 0]);
-            sendYoutubeCommand('playVideo');
-          }
-        }
-      } catch {
-        // Ignore non-standard messages
-      }
-    };
-
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, [isPlayingMusic, sendYoutubeCommand, youtubeId]);
-
-  // Filtered tracks based on selected genre & search from randomized sessionCatalog (excluding failed tracks)
-  const filteredCatalogTracks = useMemo(() => {
-    if (!sessionCatalog || !Array.isArray(sessionCatalog)) return [];
-    return sessionCatalog.filter(track => {
-      if (!track) return false;
-      if (failedTrackIds.has(track.id)) return false;
-      const matchesGenre = selectedGenreFilter === 'all' || track.genreKey === selectedGenreFilter;
-      const q = (musicSearchQuery || '').toLowerCase().trim();
-      const matchesSearch = !q || 
-        (track.title && track.title.toLowerCase().includes(q)) || 
-        (track.artist && track.artist.toLowerCase().includes(q)) || 
-        (track.badge && track.badge.toLowerCase().includes(q)) ||
-        (track.sourceLabel && track.sourceLabel.toLowerCase().includes(q));
-      return matchesGenre && matchesSearch;
-    });
-  }, [sessionCatalog, selectedGenreFilter, musicSearchQuery, failedTrackIds]);
 
   const stopAmbientSynth = useCallback(() => {
     try {
@@ -785,9 +737,19 @@ STATUS: AUDIO ACTIVE`);
       setIsPlayingMusic(true);
       setIsLoadingTrack(true);
       setRandomBannerMessage(`🎶 Đang chuyển bài: "${nextTrack.title}" (${nextTrack.artist})`);
+      const targetYtId = getYouTubeId(nextTrack.url);
+      if (targetYtId) {
+        currentLoadedVideoIdRef.current = targetYtId;
+        sendYoutubeCommand('loadVideoById', [targetYtId, 0]);
+      } else if (audioRef.current) {
+        currentLoadedVideoIdRef.current = null;
+        audioRef.current.src = nextTrack.url;
+        audioRef.current.load();
+        audioRef.current.play().then(() => setIsLoadingTrack(false)).catch(e => console.warn("Audio next track notice:", e));
+      }
     } else {
       // Pick a new batch from catalog that excludes failed tracks
-      const newBatch = fetchNhacCuaToiBatch(currentGenre as any, 5).filter(t => !failedTrackIds.has(t.id));
+      const newBatch = fetchNhacCuaToiBatch(currentGenre as any, 8).filter(t => !failedTrackIds.has(t.id));
       if (newBatch.length > 0) {
         const selected = newBatch[0];
         setSessionCatalog(prev => [...prev.filter(t => t.genreKey !== currentGenre), ...newBatch]);
@@ -795,13 +757,81 @@ STATUS: AUDIO ACTIVE`);
         setIsPlayingMusic(true);
         setIsLoadingTrack(true);
         setRandomBannerMessage(`🎶 Đang phát bài mới: "${selected.title}" (${selected.artist})`);
+        const targetYtId = getYouTubeId(selected.url);
+        if (targetYtId) {
+          currentLoadedVideoIdRef.current = targetYtId;
+          sendYoutubeCommand('loadVideoById', [targetYtId, 0]);
+        } else if (audioRef.current) {
+          currentLoadedVideoIdRef.current = null;
+          audioRef.current.src = selected.url;
+          audioRef.current.load();
+          audioRef.current.play().then(() => setIsLoadingTrack(false)).catch(e => console.warn("Audio next track notice:", e));
+        }
       } else {
         setIsPlayingMusic(false);
         setIsLoadingTrack(false);
         setRandomBannerMessage(`⚠️ Tạm hết bài hát ở thể loại này - Vui lòng chọn thể loại khác`);
       }
     }
-  }, [stopAmbientSynth, selectedGenreFilter, sessionCatalog, failedTrackIds]);
+  }, [stopAmbientSynth, selectedGenreFilter, sessionCatalog, failedTrackIds, sendYoutubeCommand]);
+
+  // Listen to YouTube IFrame API Messages for Real/Honest Playback Status (Registered ONCE on mount)
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      try {
+        if (!event.data) return;
+        let data = event.data;
+        if (typeof data === 'string') {
+          try { data = JSON.parse(data); } catch { return; }
+        }
+        if (data && (data.event === 'onStateChange' || data.info !== undefined)) {
+          const stateCode = data.info !== undefined ? data.info : data.data;
+          // YouTube State Codes: 1 = PLAYING, 2 = PAUSED, 3 = BUFFERING, 0 = ENDED, -1 = UNSTARTED
+          if (stateCode === 1) {
+            setIsLoadingTrack(false);
+            setIsPlayingMusic(true);
+          } else if (stateCode === 2) {
+            setIsLoadingTrack(false);
+            setIsPlayingMusic(false);
+          } else if (stateCode === 3 || stateCode === -1) {
+            setIsLoadingTrack(true);
+          } else if (stateCode === 0) {
+            setIsLoadingTrack(false);
+            handleSkipToNextValidTrack();
+          }
+        }
+        if (data && data.event === 'onReady') {
+          isYoutubeReadyRef.current = true;
+          if (youtubeIdRef.current && isPlayingMusicRef.current) {
+            currentLoadedVideoIdRef.current = youtubeIdRef.current;
+            sendYoutubeCommand('loadVideoById', [youtubeIdRef.current, 0]);
+          }
+        }
+      } catch {
+        // Ignore non-standard messages
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [sendYoutubeCommand, handleSkipToNextValidTrack]);
+
+  // Filtered tracks based on selected genre & search from randomized sessionCatalog (excluding failed tracks)
+  const filteredCatalogTracks = useMemo(() => {
+    if (!sessionCatalog || !Array.isArray(sessionCatalog)) return [];
+    return sessionCatalog.filter(track => {
+      if (!track) return false;
+      if (failedTrackIds.has(track.id)) return false;
+      const matchesGenre = selectedGenreFilter === 'all' || track.genreKey === selectedGenreFilter;
+      const q = (musicSearchQuery || '').toLowerCase().trim();
+      const matchesSearch = !q || 
+        (track.title && track.title.toLowerCase().includes(q)) || 
+        (track.artist && track.artist.toLowerCase().includes(q)) || 
+        (track.badge && track.badge.toLowerCase().includes(q)) ||
+        (track.sourceLabel && track.sourceLabel.toLowerCase().includes(q));
+      return matchesGenre && matchesSearch;
+    });
+  }, [sessionCatalog, selectedGenreFilter, musicSearchQuery, failedTrackIds]);
 
   // Audio Playback Sync Effect - Direct Audio MP3 vs YouTube Iframe
   useEffect(() => {
@@ -809,17 +839,10 @@ STATUS: AUDIO ACTIVE`);
       if (audioRef.current) {
         if (audioRef.current.src !== activeMusicUrl) {
           audioRef.current.src = activeMusicUrl;
+          audioRef.current.load();
         }
         audioRef.current.play().then(() => {
           setIsLoadingTrack(false);
-          console.log(`[Music Debug]
-TAB: ${(currentTrackObj?.genreKey || 'vpop').toUpperCase()}
-TITLE: ${currentTrackObj?.title || 'Unknown'}
-ARTIST: ${currentTrackObj?.artist || 'Unknown'}
-TRACK ID: ${currentTrackObj?.id || 'Unknown'}
-SOURCE: ${currentTrackObj?.sourceType || 'mp3'}
-PLAYBACK TYPE: DIRECT MP3 AUDIO
-PLAYBACK STATUS: PLAYING`);
         }).catch(err => {
           console.warn(`[Music Debug] Direct audio play notice:`, err);
         });
@@ -828,8 +851,10 @@ PLAYBACK STATUS: PLAYING`);
       if (audioRef.current) {
         try { audioRef.current.pause(); } catch { /* ignore */ }
       }
-      sendYoutubeCommand('loadVideoById', [youtubeId, 0]);
-      sendYoutubeCommand('playVideo');
+      if (currentLoadedVideoIdRef.current !== youtubeId) {
+        currentLoadedVideoIdRef.current = youtubeId;
+        sendYoutubeCommand('loadVideoById', [youtubeId, 0]);
+      }
     } else if (!isPlayingMusic) {
       if (audioRef.current) {
         try { audioRef.current.pause(); } catch (e) { console.warn("Audio pause notice:", e); }
@@ -839,9 +864,9 @@ PLAYBACK STATUS: PLAYING`);
       }
       stopAmbientSynth();
     }
-  }, [isPlayingMusic, activeMusicUrl, currentTrackObj, stopAmbientSynth, youtubeId, sendYoutubeCommand]);
+  }, [isPlayingMusic, activeMusicUrl, stopAmbientSynth, youtubeId, sendYoutubeCommand]);
 
-  const togglePlayMusic = () => {
+  const togglePlayMusic = useCallback(() => {
     if (!activeMusicUrl) return;
     if (isPlayingMusic) {
       if (audioRef.current) {
@@ -860,14 +885,19 @@ PLAYBACK STATUS: PLAYING`);
       if (!youtubeId && audioRef.current) {
         if (audioRef.current.src !== activeMusicUrl) {
           audioRef.current.src = activeMusicUrl;
+          audioRef.current.load();
         }
         audioRef.current.play().then(() => setIsLoadingTrack(false)).catch(err => console.warn("Audio play error:", err));
       } else if (youtubeId) {
-        sendYoutubeCommand('playVideo');
-        setTimeout(() => sendYoutubeCommand('playVideo'), 100);
+        if (currentLoadedVideoIdRef.current !== youtubeId) {
+          currentLoadedVideoIdRef.current = youtubeId;
+          sendYoutubeCommand('loadVideoById', [youtubeId, 0]);
+        } else {
+          sendYoutubeCommand('playVideo');
+        }
       }
     }
-  };
+  }, [activeMusicUrl, isPlayingMusic, sendYoutubeCommand, stopAmbientSynth, youtubeId]);
 
   const handlePickRandomTrack = useCallback((targetGenreKey?: string) => {
     stopAmbientSynth();
@@ -887,19 +917,22 @@ PLAYBACK STATUS: PLAYING`);
     setRandomBannerMessage(`🎲 Đã chọn & phát bài MỚI: "${selected.title}" (${selected.artist})`);
     const targetYtId = getYouTubeId(selected.url);
     if (!targetYtId && audioRef.current) {
+      currentLoadedVideoIdRef.current = null;
       if (audioRef.current.src !== selected.url) {
         audioRef.current.src = selected.url;
         audioRef.current.load();
       }
       audioRef.current.play().then(() => setIsLoadingTrack(false)).catch(e => console.warn("Random audio play notice:", e));
     } else if (targetYtId) {
+      if (audioRef.current) {
+        try { audioRef.current.pause(); } catch { /* ignore */ }
+      }
+      currentLoadedVideoIdRef.current = targetYtId;
       sendYoutubeCommand('loadVideoById', [targetYtId, 0]);
-      sendYoutubeCommand('playVideo');
-      setTimeout(() => sendYoutubeCommand('playVideo'), 150);
     }
   }, [stopAmbientSynth, selectedGenreFilter, sendYoutubeCommand]);
 
-  const handleSelectPlaylistTrack = (trackUrl: string) => {
+  const handleSelectPlaylistTrack = useCallback((trackUrl: string) => {
     const targetYtId = getYouTubeId(trackUrl);
     stopAmbientSynth();
 
@@ -923,35 +956,37 @@ PLAYBACK STATUS: PLAYING`);
           audioRef.current.play().then(() => setIsLoadingTrack(false)).catch(e => console.warn("Track play notice:", e));
         } else if (targetYtId) {
           sendYoutubeCommand('playVideo');
-          setTimeout(() => sendYoutubeCommand('playVideo'), 100);
         }
       }
-    } else {
-      setIsLoadingTrack(true);
-      setCustomTrackUrl(trackUrl);
-      setIsPlayingMusic(true);
-      
-      const foundTrack = MULTI_GENRE_CATALOG.find(t => t.url === trackUrl);
-      if (foundTrack) {
-        setRandomBannerMessage(`🎶 Đã chọn phát bài: "${foundTrack.title}" (${foundTrack.artist})`);
-      }
+      return;
+    }
 
-      if (!targetYtId && audioRef.current) {
+    // Instant UI reaction
+    setIsLoadingTrack(true);
+    setCustomTrackUrl(trackUrl);
+    setIsPlayingMusic(true);
+    
+    const foundTrack = CATALOG_BY_URL.get(trackUrl);
+    if (foundTrack) {
+      setRandomBannerMessage(`🎶 Đang chuyển bài: "${foundTrack.title}" (${foundTrack.artist})`);
+    }
+
+    if (!targetYtId) {
+      currentLoadedVideoIdRef.current = null;
+      if (audioRef.current) {
         audioRef.current.src = trackUrl;
         audioRef.current.load();
         audioRef.current.play().then(() => setIsLoadingTrack(false)).catch(e => console.warn("Track play notice:", e));
-      } else if (targetYtId) {
-        // Send loadVideoById & playVideo immediately within the user's tap gesture execution stack
-        sendYoutubeCommand('loadVideoById', [targetYtId, 0]);
-        sendYoutubeCommand('playVideo');
-        setTimeout(() => {
-          sendYoutubeCommand('loadVideoById', [targetYtId, 0]);
-          sendYoutubeCommand('playVideo');
-        }, 100);
-        setTimeout(() => sendYoutubeCommand('playVideo'), 300);
       }
+    } else {
+      if (audioRef.current) {
+        try { audioRef.current.pause(); } catch { /* ignore */ }
+      }
+      // Single authoritative loadVideoById inside user gesture
+      currentLoadedVideoIdRef.current = targetYtId;
+      sendYoutubeCommand('loadVideoById', [targetYtId, 0]);
     }
-  };
+  }, [activeMusicUrl, isPlayingMusic, sendYoutubeCommand, stopAmbientSynth]);
 
   const handleUserVote = (option: 'yes' | 'no') => {
     try {

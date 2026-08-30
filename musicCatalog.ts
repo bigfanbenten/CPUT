@@ -393,6 +393,10 @@ export const MULTI_GENRE_CATALOG: PlaylistItem[] = [
   ...CAFESAX_POOL
 ];
 
+export const CATALOG_BY_URL: Map<string, PlaylistItem> = new Map(
+  MULTI_GENRE_CATALOG.map(track => [track.url, track])
+);
+
 export const GENRE_POOLS: Record<string, PlaylistItem[]> = {
   vpop: VPOP_POOL,
   usuk: USUK_POOL,
