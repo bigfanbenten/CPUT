@@ -13,6 +13,7 @@ export interface Dish {
   image_url: string;
   category_id: string;
   is_available: boolean;
+  calories?: string | number;
 }
 
 export interface Category {

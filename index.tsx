@@ -87,6 +87,69 @@ interface Dish {
   price: string;
   image_url: string;
   category: Category;
+  calories?: string | number;
+}
+
+export function getDishCalories(dish: Dish): string {
+  if (dish.calories) {
+    const calStr = String(dish.calories).trim();
+    if (/kcal|calo|cal/i.test(calStr)) return calStr;
+    return `~${calStr} kcal`;
+  }
+
+  const name = (dish.name || '').toLowerCase();
+  
+  if (name.includes('sườn') || name.includes('cốt lết') || name.includes('thịt quay') || name.includes('ba rọi')) {
+    return '~550 - 620 kcal';
+  }
+  if (name.includes('thịt kho') || name.includes('kho tiêu') || name.includes('kho trứng') || name.includes('xá xíu')) {
+    return '~520 - 580 kcal';
+  }
+  if (name.includes('gà') || name.includes('đùi gà') || name.includes('cánh gà') || name.includes('gà chiên')) {
+    return '~500 - 570 kcal';
+  }
+  if (name.includes('cá') || name.includes('cá lóc') || name.includes('cá hú') || name.includes('cá điêu hồng') || name.includes('cá bớp')) {
+    return '~380 - 450 kcal';
+  }
+  if (name.includes('tôm') || name.includes('mực') || name.includes('hải sản') || name.includes('bạch tuộc')) {
+    return '~320 - 400 kcal';
+  }
+  if (name.includes('trứng') || name.includes('chả trứng') || name.includes('ốp la')) {
+    return '~350 - 420 kcal';
+  }
+  if (name.includes('đậu hũ') || name.includes('đậu phụ') || name.includes('dồn thịt')) {
+    return '~280 - 360 kcal';
+  }
+  if (name.includes('canh chua') || name.includes('khổ qua') || name.includes('canh rau') || name.includes('canh cải')) {
+    return '~120 - 190 kcal';
+  }
+  if (name.includes('canh xương') || name.includes('canh sườn') || name.includes('canh củ') || name.includes('canh bí')) {
+    return '~180 - 260 kcal';
+  }
+  if (name.includes('rau xào') || name.includes('xào tỏi') || name.includes('rau luộc') || name.includes('kho quẹt')) {
+    return '~130 - 200 kcal';
+  }
+  if (name.includes('trà đá') || name.includes('nước lọc') || name.includes('nước suối')) {
+    return '~0 - 5 kcal';
+  }
+  if (name.includes('trà tắc') || name.includes('chanh') || name.includes('nước ngọt') || name.includes('cà phê') || name.includes('cafe') || name.includes('sữa')) {
+    return '~90 - 160 kcal';
+  }
+
+  switch (dish.category) {
+    case Category.MainCourse:
+      return '~480 - 560 kcal';
+    case Category.Soup:
+      return '~150 - 220 kcal';
+    case Category.StirFry:
+      return '~280 - 370 kcal';
+    case Category.Vegetable:
+      return '~120 - 180 kcal';
+    case Category.Drink:
+      return '~80 - 150 kcal';
+    default:
+      return '~450 kcal';
+  }
 }
 
 interface HeroSlide {
@@ -1489,8 +1552,14 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
               </div>
               <div className="px-2 space-y-4 text-center sm:text-left">
                 <div className="flex flex-col sm:flex-row justify-between items-center sm:items-start gap-2">
-                  <h3 className={`font-black text-2xl md:text-3xl uppercase tracking-tighter leading-tight group-hover:${themeData.accent} transition-colors`}>{dish.name}</h3>
-                  <span className={`${themeData.accent} font-black text-2xl tracking-tighter`}>{dish.price}</span>
+                  <div className="space-y-1.5">
+                    <h3 className={`font-black text-2xl md:text-3xl uppercase tracking-tighter leading-tight group-hover:${themeData.accent} transition-colors`}>{dish.name}</h3>
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50/90 text-amber-900 border border-amber-200/70 shadow-xs">
+                      <span>🔥</span>
+                      <span className="tracking-tight">{getDishCalories(dish)}</span>
+                    </div>
+                  </div>
+                  <span className={`${themeData.accent} font-black text-2xl tracking-tighter shrink-0`}>{dish.price}</span>
                 </div>
                 <p className="text-stone-400 text-sm italic line-clamp-2">"{dish.description || 'Hương vị gia truyền đậm đà.'}"</p>
               </div>
@@ -1516,7 +1585,13 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
               <img src={selectedDish.image_url} className="w-full h-full object-cover animate-[scaleSlow_10s_linear_infinite]" />
             </div>
             <div className={`flex-1 p-12 md:p-20 flex flex-col justify-center ${themeData.bg} space-y-8`}>
-              <span className="bg-red-600 text-white font-black uppercase tracking-[0.2em] text-[10px] px-4 py-2 rounded-md self-start">CƠM PHẦN ÚT TRINH</span>
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <span className="bg-red-600 text-white font-black uppercase tracking-[0.2em] text-[10px] px-4 py-2 rounded-md self-start">CƠM PHẦN ÚT TRINH</span>
+                <span className="bg-amber-100/90 text-amber-900 border border-amber-300/80 font-black text-[10px] px-3.5 py-2 rounded-md self-start flex items-center gap-1.5 shadow-xs">
+                  <span>🔥</span>
+                  <span>{getDishCalories(selectedDish)} (dự kiến)</span>
+                </span>
+              </div>
               <h2 className={`text-4xl md:text-7xl font-black uppercase tracking-tighter leading-none ${themeData.text}`}>{selectedDish.name}</h2>
               <div className={`text-4xl md:text-6xl font-black ${themeData.accent} tabular-nums`}>{selectedDish.price}</div>
               <p className={`${themeData.text} opacity-60 text-lg md:text-xl italic font-light leading-relaxed max-w-lg`}>"{selectedDish.description || 'Món ăn truyền thống chuẩn vị mẹ nấu.'}"</p>
@@ -2697,14 +2772,14 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                       />
                     </div>
                     <div className="w-40 h-40 rounded-[25px] overflow-hidden bg-stone-200 border-4 border-white shrink-0"><img src={dish.image_url || 'https://placehold.co/400x400'} className="w-full h-full object-cover" /></div>
-                    <div className="flex-1 grid grid-cols-3 gap-5">
+                    <div className="flex-1 grid grid-cols-4 gap-4">
                       <input 
                         value={dish.name} 
                         onChange={e => { 
                           const newMenu = menu.map((d: any, idx: number) => idx === i ? { ...d, name: e.target.value } : d);
                           setMenu(newMenu);
                         }} 
-                        className="p-4 border rounded-2xl text-sm font-bold" 
+                        className="col-span-2 p-4 border rounded-2xl text-sm font-bold" 
                         placeholder="Tên món" 
                       />
                       <input 
@@ -2727,12 +2802,21 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                         {Object.values(Category).filter(c => c !== Category.All).map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
                       <input 
+                        value={dish.calories || ''} 
+                        onChange={e => { 
+                          const newMenu = menu.map((d: any, idx: number) => idx === i ? { ...d, calories: e.target.value } : d);
+                          setMenu(newMenu);
+                        }} 
+                        className="col-span-2 p-4 border rounded-2xl text-xs font-semibold text-amber-900 bg-amber-50/50" 
+                        placeholder={`Calories dự kiến (tự tính: ${getDishCalories(dish)})`} 
+                      />
+                      <input 
                         value={dish.image_url} 
                         onChange={e => { 
                           const newMenu = menu.map((d: any, idx: number) => idx === i ? { ...d, image_url: e.target.value } : d);
                           setMenu(newMenu);
                         }} 
-                        className="col-span-3 p-4 border rounded-2xl text-[10px] font-mono" 
+                        className="col-span-2 p-4 border rounded-2xl text-[10px] font-mono" 
                         placeholder="Link ảnh (URL)" 
                       />
                     </div>

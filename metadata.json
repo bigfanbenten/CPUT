@@ -1,6 +1,6 @@
 {
-  "name": "CƠM PHẦN ÚT TRINH - BẢN SAVE 4",
-  "description": "Hệ thống thực đơn điện tử, giỏ hàng, chọn món nhanh, góp ý khách hàng, phát nhạc nền và liên kết Google Map - Phiên bản hoàn thiện BẢN SAVE 4.",
+  "name": "CƠM PHẦN ÚT TRINH - BẢN SAVE 5",
+  "description": "Hệ thống thực đơn điện tử, giỏ hàng, chọn món nhanh, góp ý khách hàng, phát nhạc nền Random-First đa thể loại 360+ bài và chuyển bài siêu tốc - Phiên bản hoàn thiện BẢN SAVE 5.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
