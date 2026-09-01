@@ -804,6 +804,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
       if (targetYtId) {
         currentLoadedVideoIdRef.current = targetYtId;
         sendYoutubeCommand('loadVideoById', [targetYtId, 0]);
+        sendYoutubeCommand('playVideo');
       } else if (audioRef.current) {
         currentLoadedVideoIdRef.current = null;
         audioRef.current.src = nextTrack.url;
@@ -824,6 +825,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
         if (targetYtId) {
           currentLoadedVideoIdRef.current = targetYtId;
           sendYoutubeCommand('loadVideoById', [targetYtId, 0]);
+          sendYoutubeCommand('playVideo');
         } else if (audioRef.current) {
           currentLoadedVideoIdRef.current = null;
           audioRef.current.src = selected.url;
@@ -868,6 +870,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
           if (youtubeIdRef.current && isPlayingMusicRef.current) {
             currentLoadedVideoIdRef.current = youtubeIdRef.current;
             sendYoutubeCommand('loadVideoById', [youtubeIdRef.current, 0]);
+            sendYoutubeCommand('playVideo');
           }
         }
       } catch {
@@ -917,6 +920,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
       if (currentLoadedVideoIdRef.current !== youtubeId) {
         currentLoadedVideoIdRef.current = youtubeId;
         sendYoutubeCommand('loadVideoById', [youtubeId, 0]);
+        sendYoutubeCommand('playVideo');
       }
     } else if (!isPlayingMusic) {
       if (audioRef.current) {
@@ -955,6 +959,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
         if (currentLoadedVideoIdRef.current !== youtubeId) {
           currentLoadedVideoIdRef.current = youtubeId;
           sendYoutubeCommand('loadVideoById', [youtubeId, 0]);
+          sendYoutubeCommand('playVideo');
         } else {
           sendYoutubeCommand('playVideo');
         }
@@ -992,6 +997,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
       }
       currentLoadedVideoIdRef.current = targetYtId;
       sendYoutubeCommand('loadVideoById', [targetYtId, 0]);
+      sendYoutubeCommand('playVideo');
     }
   }, [stopAmbientSynth, selectedGenreFilter, sendYoutubeCommand]);
 
@@ -1045,9 +1051,10 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
       if (audioRef.current) {
         try { audioRef.current.pause(); } catch { /* ignore */ }
       }
-      // Single authoritative loadVideoById inside user gesture
+      // Immediate dual command in direct user gesture stack for Mobile WebKit / Chromium
       currentLoadedVideoIdRef.current = targetYtId;
       sendYoutubeCommand('loadVideoById', [targetYtId, 0]);
+      sendYoutubeCommand('playVideo');
     }
   }, [activeMusicUrl, isPlayingMusic, sendYoutubeCommand, stopAmbientSynth]);
 
@@ -2336,12 +2343,23 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
       {/* PERSISTENT GLOBAL YOUTUBE AUDIO PLAYER ENGINE (PERSISTS ACROSS MODAL CLOSES & PAGE INTERACTIONS) */}
       <iframe
         ref={youtubeIframeRef}
-        width="200"
-        height="112"
-        src={`https://www.youtube.com/embed/dQw4w9WgXcQ?enablejsapi=1&playsinline=1&origin=${encodeURIComponent(typeof window !== 'undefined' ? window.location.origin : '')}`}
+        width="64"
+        height="64"
+        src="https://www.youtube.com/embed/dQw4w9WgXcQ?enablejsapi=1&playsinline=1&controls=0&rel=0&iv_load_policy=3"
         title="Audio Stream Player Persistent Engine"
         allow="autoplay; encrypted-media; picture-in-picture"
-        style={{ position: 'fixed', bottom: -200, right: -200, width: 200, height: 112, opacity: 0.001, pointerEvents: 'none', zIndex: -100 }}
+        style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          width: '64px',
+          height: '64px',
+          opacity: 0.005,
+          pointerEvents: 'none',
+          zIndex: -50,
+          border: 'none',
+          overflow: 'hidden'
+        }}
       />
 
       {/* Hidden HTML5 Audio Element for direct stream MP3 playback */}
