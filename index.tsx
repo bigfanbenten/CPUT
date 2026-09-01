@@ -1850,11 +1850,8 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
                 <p className="text-[11px] font-black truncate text-amber-300">
                   {currentTrackObj.title}
                 </p>
-                <p className="text-[9px] text-emerald-400 font-bold truncate flex items-center gap-1">
-                  <span>{currentTrackObj.artist}</span>
-                  <span className="text-[8px] bg-emerald-950 text-emerald-300 px-1 py-0.2 rounded border border-emerald-800 shrink-0">
-                    Nguồn Nhaccuatui.com
-                  </span>
+                <p className="text-[9px] text-emerald-400 font-bold truncate">
+                  {currentTrackObj.artist}
                 </p>
               </div>
             </div>
@@ -1872,7 +1869,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
                 type="button"
                 onClick={() => setShowPollModal(true)}
                 className="px-2 py-1 bg-amber-800 hover:bg-amber-700 rounded-lg text-white text-[9px] font-black uppercase transition-all cursor-pointer shadow-sm"
-                title="Mở kho 6 tab Nhaccuatui"
+                title="Mở kho 6 tab nhạc"
               >
                 Đổi Bài
               </button>
@@ -1900,19 +1897,10 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
               <button
                 onClick={() => handlePickRandomTrack()}
                 className="text-amber-300 hover:text-white font-bold flex items-center gap-1 cursor-pointer"
-                title="Phát ngẫu nhiên bài khác từ Nhaccuatui.com"
+                title="Phát ngẫu nhiên bài khác"
               >
                 <Shuffle size={12} /> Ngẫu nhiên
               </button>
-              <a
-                href={currentTrackObj.nctLink || 'https://www.nhaccuatui.com'}
-                target="_blank"
-                rel="noreferrer"
-                className="text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1 cursor-pointer underline"
-                title="Mở bản gốc trên Nhaccuatui.com"
-              >
-                <ExternalLink size={10} /> NCT.com ↗
-              </a>
             </div>
           </div>
         </div>
