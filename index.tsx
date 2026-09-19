@@ -1,6 +1,6 @@
 
 /**
- * BẢN SAVE SỐ 4 - PHIÊN BẢN TỐI ƯU GIAO DIỆN & THÔNG TIN LIÊN HỆ
+ * CƠM PHẦN ÚT TRINH - MỞ HỘP LÀ THẤY NGON
  * -------------------------------------------------------
  * Các tính năng đã tích hợp:
  * 1. Hiển thị món ăn RANDOM (ngẫu nhiên) mỗi khi tải trang hoặc đổi danh mục.
