@@ -1,6 +1,6 @@
 {
-  "name": "CƠM PHẦN ÚT TRINH - BẢN SAVE 5",
-  "description": "Hệ thống thực đơn điện tử, giỏ hàng, chọn món nhanh, góp ý khách hàng, phát nhạc nền Random-First đa thể loại 360+ bài và chuyển bài siêu tốc - Phiên bản hoàn thiện BẢN SAVE 5.",
+  "name": "CƠM PHẦN ÚT TRINH - MỞ HỘP LÀ THẤY NGON",
+  "description": "Hệ thống thực đơn điện tử, giỏ hàng, tính calories dự kiến, góp ý khách hàng, phát nhạc nền Random-First đa thể loại 360+ bài và chuyển bài 1-Tap siêu tốc cho Mobile & PC - Cơm Phần Út Trinh - Mở Hộp Là Thấy Ngon.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
