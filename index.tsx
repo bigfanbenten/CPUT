@@ -822,7 +822,7 @@ const HeroCinematicVideo = ({
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [hasError, setHasError] = useState(false);
-  const fallbackPoster = poster || DEFAULT_HERO_POSTER;
+  const cleanPoster = poster && poster.trim() ? poster.trim() : undefined;
 
   // Xử lý play/pause/reset khi slide thay đổi active state
   useEffect(() => {
@@ -897,29 +897,47 @@ const HeroCinematicVideo = ({
   };
 
   if (hasError || !src) {
+    if (cleanPoster) {
+      return (
+        <img
+          src={cleanPoster}
+          alt="Hero Media Fallback"
+          className="w-full h-full object-cover"
+          loading="eager"
+        />
+      );
+    }
     return (
-      <img
-        src={fallbackPoster}
-        alt="Hero Media Fallback"
-        className="w-full h-full object-cover"
-        loading="eager"
-      />
+      <div className="w-full h-full bg-stone-950 flex flex-col items-center justify-center relative overflow-hidden select-none">
+        <div className="absolute inset-0 bg-gradient-to-b from-stone-900/60 via-stone-950/80 to-stone-900/90 pointer-events-none" />
+        <div className="relative z-10 text-center space-y-2 px-6">
+          <span className="text-3xl md:text-4xl block animate-pulse">🎬</span>
+          <p className="text-xs md:text-sm font-black uppercase tracking-[0.25em] text-amber-500/90">
+            CƠM PHẦN ÚT TRINH
+          </p>
+          <p className="text-[10px] md:text-xs text-stone-400 font-medium tracking-wider">
+            Cinematic Hero Media
+          </p>
+        </div>
+      </div>
     );
   }
 
   return (
-    <div className="relative w-full h-full overflow-hidden">
-      {/* Background poster ngăn ngừa chớp trắng / đen khi video đang load */}
-      <img
-        src={fallbackPoster}
-        alt="Poster Fallback"
-        className="absolute inset-0 w-full h-full object-cover -z-10"
-        loading="eager"
-      />
+    <div className="relative w-full h-full overflow-hidden bg-stone-950">
+      {/* Background poster ngăn ngừa chớp trắng / đen khi video đang load nếu có poster thủ công */}
+      {cleanPoster && (
+        <img
+          src={cleanPoster}
+          alt="Poster Fallback"
+          className="absolute inset-0 w-full h-full object-cover -z-10 pointer-events-none"
+          loading="eager"
+        />
+      )}
       <video
         ref={videoRef}
         src={src}
-        poster={fallbackPoster}
+        poster={cleanPoster}
         autoPlay
         muted
         loop={isSingleMedia}
@@ -1890,7 +1908,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
               {isVideo ? (
                 <HeroCinematicVideo
                   src={slide.media_url || slide.image_url}
-                  poster={slide.poster_url || DEFAULT_HERO_POSTER}
+                  poster={slide.poster_url?.trim() ? slide.poster_url.trim() : undefined}
                   isActive={isCurrent}
                   isSingleMedia={displayHeroSlides.length === 1}
                   onEnded={nextHeroSlide}
@@ -3492,7 +3510,7 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                                 <video
                                   key={parsed.media_url}
                                   src={parsed.media_url}
-                                  poster={parsed.poster_url || DEFAULT_HERO_POSTER}
+                                  poster={parsed.poster_url?.trim() ? parsed.poster_url.trim() : undefined}
                                   controls
                                   muted
                                   playsInline
@@ -3545,16 +3563,22 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                                   />
                                 </div>
                                 <div className="space-y-1.5">
-                                  <label className="text-[10px] font-black uppercase text-stone-600 tracking-wider flex items-center gap-1.5">
-                                    <span>🖼️</span>
-                                    <span>ẢNH POSTER / FALLBACK (TÙY CHỌN CHO VIDEO)</span>
+                                  <label className="text-[10px] font-black uppercase text-stone-600 tracking-wider flex items-center justify-between">
+                                    <span className="flex items-center gap-1.5">
+                                      <span>🖼️</span>
+                                      <span>POSTER / FALLBACK IMAGE URL (TÙY CHỌN)</span>
+                                    </span>
+                                    <span className="text-[9px] font-bold text-stone-400 lowercase italic">(optional)</span>
                                   </label>
                                   <input
                                     value={parsed.poster_url || ''}
                                     onChange={e => updateCurrentSlide({ poster_url: e.target.value })}
                                     className="w-full p-3.5 bg-white border border-stone-200 rounded-2xl text-xs font-mono text-stone-800 focus:outline-none focus:border-amber-700 shadow-inner"
-                                    placeholder="https://... Link ảnh poster hiển thị khi video đang tải hoặc trình duyệt hạn chế autoplay"
+                                    placeholder="https://... Link ảnh poster (để trống nếu không muốn dùng poster riêng)"
                                   />
+                                  <p className="text-[10px] text-stone-400 italic">
+                                    Để trống nếu không muốn sử dụng poster riêng. Video sẽ tự động hiển thị khung hình đầu tiên.
+                                  </p>
                                 </div>
                               </>
                             ) : (
