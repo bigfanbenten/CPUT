@@ -156,7 +156,99 @@ interface HeroSlide {
   id: string;
   image_url: string;
   quote: string;
+  media_type?: 'image' | 'video';
+  media_url?: string;
+  poster_url?: string;
 }
+
+const DEFAULT_HERO_POSTER = 'https://images.unsplash.com/photo-1599354607459-81c8b0d90bf5?q=80&w=1167&auto=format&fit=crop&ixlib=rb-4.1.0';
+
+const isVideoExtension = (url: string | null | undefined): boolean => {
+  if (!url) return false;
+  const clean = url.split('#')[0].split('?')[0].toLowerCase();
+  return clean.endsWith('.mp4') || clean.endsWith('.webm') || clean.endsWith('.ogg') || clean.endsWith('.mov') || clean.endsWith('.m4v');
+};
+
+const parseHeroSlide = (slide: HeroSlide): HeroSlide => {
+  const rawUrl = slide.image_url || '';
+  let media_type: 'image' | 'video' = 'image';
+  let media_url = rawUrl;
+  let poster_url = slide.poster_url || '';
+
+  if (rawUrl.startsWith('[VIDEO]') || rawUrl.startsWith('video:')) {
+    media_type = 'video';
+    media_url = rawUrl.replace(/^\[VIDEO\]|^video:/, '');
+  } else if (slide.media_type === 'video') {
+    media_type = 'video';
+  } else if (isVideoExtension(rawUrl)) {
+    media_type = 'video';
+  }
+
+  if (media_url.includes('#poster=')) {
+    const parts = media_url.split('#poster=');
+    media_url = parts[0];
+    poster_url = parts[1] || poster_url;
+  } else if (media_url.includes('::poster::')) {
+    const parts = media_url.split('::poster::');
+    media_url = parts[0];
+    poster_url = parts[1] || poster_url;
+  }
+
+  return {
+    ...slide,
+    media_type,
+    media_url: media_url.trim(),
+    poster_url: poster_url.trim(),
+    quote: slide.quote || ''
+  };
+};
+
+const serializeHeroSlide = (slide: HeroSlide): { id?: string; image_url: string; quote: string } => {
+  const type = slide.media_type || (isVideoExtension(slide.media_url || slide.image_url) ? 'video' : 'image');
+  let finalUrl = (slide.media_url !== undefined ? slide.media_url : slide.image_url) || '';
+  finalUrl = finalUrl.trim();
+
+  if (type === 'video') {
+    if (!isVideoExtension(finalUrl) && !finalUrl.startsWith('[VIDEO]')) {
+      finalUrl = `[VIDEO]${finalUrl}`;
+    }
+    if (slide.poster_url && slide.poster_url.trim()) {
+      finalUrl = `${finalUrl}#poster=${slide.poster_url.trim()}`;
+    }
+  }
+
+  return {
+    image_url: finalUrl,
+    quote: slide.quote || ''
+  };
+};
+
+const DEFAULT_HERO_SLIDES: HeroSlide[] = [
+  {
+    id: 'default-hero-1',
+    image_url: 'https://images.unsplash.com/photo-1599354607459-81c8b0d90bf5?q=80&w=1167&auto=format&fit=crop&ixlib=rb-4.1.0',
+    quote: 'Út Trinh: Gói trọn phong vị quê hương.',
+    media_type: 'image',
+    media_url: 'https://images.unsplash.com/photo-1599354607459-81c8b0d90bf5?q=80&w=1167&auto=format&fit=crop&ixlib=rb-4.1.0',
+    poster_url: ''
+  },
+  {
+    id: 'default-hero-2',
+    image_url: 'https://plus.unsplash.com/premium_photo-1669687063580-81339d767897?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0',
+    quote: 'Cơm nhà không chỉ để no lòng, mà để sưởi ấm những tâm hồn sau một ngày dài bận rộn',
+    media_type: 'image',
+    media_url: 'https://plus.unsplash.com/premium_photo-1669687063580-81339d767897?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0',
+    poster_url: ''
+  },
+  {
+    id: 'default-hero-3',
+    image_url: 'https://i.postimg.cc/FsxScNHZ/image-(27).jpg',
+    quote: 'Nấu bằng cả trái tim — Mỗi món ăn là sự kết tinh của tâm huyết và nguyên liệu thượng hạng',
+    media_type: 'image',
+    media_url: 'https://i.postimg.cc/FsxScNHZ/image-(27).jpg',
+    poster_url: ''
+  }
+];
 
 interface GuestbookEntry {
   id: string;
@@ -624,6 +716,154 @@ const ThemeSwitcher = ({ currentTheme, onThemeChange }: any) => {
         })}
       </div>
     </div>
+  );
+};
+
+// Component hiển thị Video Hero Cinematic trên Trang chủ
+const HeroCinematicVideo = ({
+  src,
+  poster,
+  isActive,
+  isSingleMedia,
+  onEnded
+}: {
+  src: string;
+  poster?: string;
+  isActive: boolean;
+  isSingleMedia: boolean;
+  onEnded: () => void;
+}) => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [hasError, setHasError] = useState(false);
+  const fallbackPoster = poster || DEFAULT_HERO_POSTER;
+
+  // Xử lý play/pause/reset khi slide thay đổi active state
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || hasError || !src) return;
+
+    if (isActive) {
+      try {
+        video.currentTime = 0;
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {
+            // graceful fallback without console spam
+          });
+        }
+      } catch {
+        // ignore
+      }
+    } else {
+      try {
+        video.pause();
+        video.currentTime = 0;
+      } catch {
+        // ignore
+      }
+    }
+  }, [isActive, hasError, src]);
+
+  // Xử lý tạm dừng khi ẩn tab trình duyệt và tiếp tục khi mở lại
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      const video = videoRef.current;
+      if (!video || !isActive || hasError || !src) return;
+      if (document.hidden) {
+        try {
+          video.pause();
+        } catch {
+          // ignore
+        }
+      } else {
+        try {
+          const playPromise = video.play();
+          if (playPromise !== undefined) {
+            playPromise.catch(() => {});
+          }
+        } catch {
+          // ignore
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isActive, hasError, src]);
+
+  // Fallback timer: nếu video bị lỗi hoặc thiếu URL, tự động chuyển sau 6.5s để không bị kẹt carousel
+  useEffect(() => {
+    if ((hasError || !src) && isActive && !isSingleMedia) {
+      const errorTimer = setTimeout(() => {
+        onEnded();
+      }, 6500);
+      return () => clearTimeout(errorTimer);
+    }
+  }, [hasError, src, isActive, isSingleMedia, onEnded]);
+
+  const handleEnded = () => {
+    // Nếu chỉ có 1 media thì loop liên tục, không gọi nextSlide
+    if (isSingleMedia) return;
+    onEnded();
+  };
+
+  if (hasError || !src) {
+    return (
+      <img
+        src={fallbackPoster}
+        alt="Hero Media Fallback"
+        className="w-full h-full object-cover"
+        loading="eager"
+      />
+    );
+  }
+
+  return (
+    <div className="relative w-full h-full overflow-hidden">
+      {/* Background poster ngăn ngừa chớp trắng / đen khi video đang load */}
+      <img
+        src={fallbackPoster}
+        alt="Poster Fallback"
+        className="absolute inset-0 w-full h-full object-cover -z-10"
+        loading="eager"
+      />
+      <video
+        ref={videoRef}
+        src={src}
+        poster={fallbackPoster}
+        autoPlay
+        muted
+        loop={isSingleMedia}
+        playsInline
+        preload="metadata"
+        onEnded={handleEnded}
+        onError={() => setHasError(true)}
+        className="w-full h-full object-cover pointer-events-none"
+      />
+    </div>
+  );
+};
+
+// Component hiển thị Image Hero Cinematic trên Trang chủ
+const HeroCinematicImage = ({
+  src,
+  alt
+}: {
+  src: string;
+  alt: string;
+}) => {
+  return (
+    <img
+      src={src || DEFAULT_HERO_POSTER}
+      alt={alt}
+      onError={(e) => {
+        (e.currentTarget as HTMLImageElement).src = DEFAULT_HERO_POSTER;
+      }}
+      className="w-full h-full object-cover"
+      loading="eager"
+    />
   );
 };
 
@@ -1267,11 +1507,34 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
     return () => { channel.unsubscribe(); };
   }, [supabase]);
 
-  useEffect(() => {
-    if (!heroSlides.length) return;
-    const interval = setInterval(() => setCurrentSlide(prev => (prev + 1) % heroSlides.length), 5000);
-    return () => clearInterval(interval);
+  const displayHeroSlides = useMemo(() => {
+    return heroSlides && heroSlides.length > 0 ? heroSlides.map(parseHeroSlide) : DEFAULT_HERO_SLIDES;
   }, [heroSlides]);
+
+  const activeHeroSlide = displayHeroSlides[currentSlide] || displayHeroSlides[0];
+
+  const nextHeroSlide = useCallback(() => {
+    if (displayHeroSlides.length <= 1) return;
+    setCurrentSlide(prev => (prev + 1) % displayHeroSlides.length);
+  }, [displayHeroSlides.length]);
+
+  const prevHeroSlide = useCallback(() => {
+    if (displayHeroSlides.length <= 1) return;
+    setCurrentSlide(prev => (prev - 1 + displayHeroSlides.length) % displayHeroSlides.length);
+  }, [displayHeroSlides.length]);
+
+  // IMAGE = TIMER BASED (6.5s)
+  // VIDEO = EVENT BASED (onEnded), TUYỆT ĐỐI KHÔNG tạo timer cho video
+  useEffect(() => {
+    if (!displayHeroSlides.length || displayHeroSlides.length <= 1) return;
+
+    if (activeHeroSlide.media_type === 'image') {
+      const timer = setTimeout(() => {
+        nextHeroSlide();
+      }, 6500);
+      return () => clearTimeout(timer);
+    }
+  }, [currentSlide, activeHeroSlide.media_type, displayHeroSlides.length, nextHeroSlide]);
 
   // Logic hiển thị ngẫu nhiên (Random)
   const filteredMenu = useMemo(() => {
@@ -1524,19 +1787,118 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
         </div>
       )}
 
-      {/* Hero */}
-      <header className="relative h-[85vh] md:h-[95vh] flex items-center justify-center overflow-hidden">
-        {heroSlides.map((slide: HeroSlide, index: number) => (
-          <div key={slide.id} className={`absolute inset-0 transition-all duration-[1.5s] ease-in-out ${index === currentSlide ? 'opacity-100 scale-100' : 'opacity-0 scale-110'}`}>
-            <img src={slide.image_url} className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-b from-stone-900/60 via-stone-900/20 to-stone-950/80"></div>
+      {/* Cinematic Hero Media (Hỗ trợ Image & Video xen kẽ) */}
+      <header className="relative h-[85vh] md:h-[95vh] flex items-center justify-center overflow-hidden bg-stone-950">
+        {displayHeroSlides.map((slide: HeroSlide, index: number) => {
+          const isCurrent = index === currentSlide;
+          const isVideo = slide.media_type === 'video';
+
+          return (
+            <div
+              key={slide.id || index}
+              className={`absolute inset-0 transition-all duration-[1500ms] ease-in-out ${
+                isCurrent ? 'opacity-100 scale-100 z-10' : 'opacity-0 scale-105 pointer-events-none z-0'
+              }`}
+            >
+              {isVideo ? (
+                <HeroCinematicVideo
+                  src={slide.media_url || slide.image_url}
+                  poster={slide.poster_url || DEFAULT_HERO_POSTER}
+                  isActive={isCurrent}
+                  isSingleMedia={displayHeroSlides.length === 1}
+                  onEnded={nextHeroSlide}
+                />
+              ) : (
+                <HeroCinematicImage
+                  src={slide.media_url || slide.image_url}
+                  alt={slide.quote || 'Cơm Phần Út Trinh'}
+                />
+              )}
+              {/* Lớp phủ cinematic bảo đảm tương phản chữ nhưng không làm tối hoặc biến đổi màu thức ăn */}
+              <div className="absolute inset-0 bg-gradient-to-b from-stone-950/70 via-stone-900/30 to-stone-950/85 pointer-events-none" />
+            </div>
+          );
+        })}
+
+        {/* Badge nhận diện loại Media và Số thứ tự Slide */}
+        {activeHeroSlide && (
+          <div className="absolute top-28 md:top-32 right-6 md:right-10 z-30 pointer-events-none">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-stone-900/60 backdrop-blur-md border border-white/15 text-white text-[10px] font-black tracking-widest uppercase shadow-lg">
+              {activeHeroSlide.media_type === 'video' ? (
+                <>
+                  <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+                  <span>🎥 CINEMATIC VIDEO</span>
+                </>
+              ) : (
+                <>
+                  <span className="w-2 h-2 rounded-full bg-amber-400" />
+                  <span>🖼️ HIGH-RES IMAGE</span>
+                </>
+              )}
+              <span className="text-white/40">|</span>
+              <span className="text-white/70">{currentSlide + 1}/{displayHeroSlides.length}</span>
+            </div>
           </div>
-        ))}
+        )}
+
+        {/* Nút điều hướng Trái / Phải trên Desktop */}
+        {displayHeroSlides.length > 1 && (
+          <>
+            <button
+              type="button"
+              onClick={prevHeroSlide}
+              className="hidden md:flex absolute left-6 z-30 w-12 h-12 rounded-full bg-stone-900/40 hover:bg-stone-900/80 backdrop-blur-md border border-white/20 text-white items-center justify-center transition-all hover:scale-110 active:scale-95 cursor-pointer shadow-xl"
+              aria-label="Slide trước"
+            >
+              <ChevronRight className="rotate-180" size={24} />
+            </button>
+            <button
+              type="button"
+              onClick={nextHeroSlide}
+              className="hidden md:flex absolute right-6 z-30 w-12 h-12 rounded-full bg-stone-900/40 hover:bg-stone-900/80 backdrop-blur-md border border-white/20 text-white items-center justify-center transition-all hover:scale-110 active:scale-95 cursor-pointer shadow-xl"
+              aria-label="Slide tiếp theo"
+            >
+              <ChevronRight size={24} />
+            </button>
+          </>
+        )}
+
+        {/* Nội dung trung tâm của Hero */}
         <div className="relative z-20 text-center px-6 max-w-5xl pt-24">
-          <span className={`${themeData.accent} text-[10px] md:text-xs font-black uppercase tracking-[0.6em] mb-6 block animate-pulse`}>Tinh hoa ẩm thực Việt</span>
-          <h1 className="text-white text-5xl md:text-[130px] font-black tracking-tighter leading-none mb-8 drop-shadow-2xl">ÚT TRINH<br/><span className={`${themeData.accent} italic`}>KITCHEN</span></h1>
-          <p className="text-white/90 text-lg md:text-3xl font-light italic leading-relaxed">"{heroSlides[currentSlide]?.quote || 'Nơi lưu giữ hương vị cơm nhà truyền thống'}"</p>
+          <span className={`${themeData.accent} text-[10px] md:text-xs font-black uppercase tracking-[0.6em] mb-6 block animate-pulse`}>
+            Tinh hoa ẩm thực Việt
+          </span>
+          <h1 className="text-white text-5xl md:text-[130px] font-black tracking-tighter leading-none mb-8 drop-shadow-2xl">
+            ÚT TRINH<br/><span className={`${themeData.accent} italic`}>KITCHEN</span>
+          </h1>
+          <p className="text-white/90 text-lg md:text-3xl font-light italic leading-relaxed min-h-[3rem] transition-all duration-700">
+            "{activeHeroSlide?.quote || 'Nơi lưu giữ hương vị cơm nhà truyền thống'}"
+          </p>
         </div>
+
+        {/* Thanh Indicator hiển thị tiến trình và cho phép chuyển slide nhanh */}
+        {displayHeroSlides.length > 1 && (
+          <div className="absolute bottom-8 left-0 right-0 z-30 flex justify-center items-center gap-2 px-4">
+            {displayHeroSlides.map((s, idx) => {
+              const isCurrent = idx === currentSlide;
+              const isVid = s.media_type === 'video';
+              return (
+                <button
+                  key={s.id || idx}
+                  type="button"
+                  onClick={() => setCurrentSlide(idx)}
+                  className={`transition-all duration-500 rounded-full cursor-pointer h-2 ${
+                    isCurrent
+                      ? `w-8 md:w-10 ${isVid ? 'bg-rose-500 shadow-rose-500/50' : 'bg-amber-400 shadow-amber-400/50'} shadow-lg`
+                      : 'w-2 bg-white/40 hover:bg-white/80'
+                  }`}
+                  aria-label={`Chuyển đến slide ${idx + 1}`}
+                  title={`${isVid ? 'Video' : 'Ảnh'}: ${s.quote || `Slide ${idx + 1}`}`}
+                />
+              );
+            })}
+          </div>
+        )}
       </header>
 
       {/* Menu List */}
@@ -2727,7 +3089,7 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
       <div className="max-w-6xl mx-auto bg-white rounded-[40px] shadow-2xl overflow-hidden border border-stone-200">
         <div className="flex bg-stone-50 border-b p-3 gap-2 overflow-x-auto">
           <button onClick={() => setActiveTab('menu')} className={`flex-1 py-4 px-3 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${activeTab === 'menu' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>🍱 THỰC ĐƠN</button>
-          <button onClick={() => setActiveTab('hero')} className={`flex-1 py-4 px-3 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${activeTab === 'hero' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>🖼️ HERO SLIDES</button>
+          <button onClick={() => setActiveTab('hero')} className={`flex-1 py-4 px-3 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${activeTab === 'hero' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>🎬 CINEMATIC HERO MEDIA</button>
           <button onClick={() => setActiveTab('quick')} className={`flex-1 py-4 px-3 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${activeTab === 'quick' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>⚡ CHỌN NHANH</button>
           <button onClick={() => setActiveTab('notifications')} className={`flex-1 py-4 px-3 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${activeTab === 'notifications' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>🔔 THÔNG BÁO</button>
           <button onClick={() => setActiveTab('poll')} className={`flex-1 py-4 px-3 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${activeTab === 'poll' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>🎵 QUẢN LÝ NHẠC & BÌNH CHỌN</button>
@@ -2863,29 +3225,281 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
             </div>
           ) : activeTab === 'hero' ? (
             <div className="space-y-10">
-              <div className="flex justify-between items-end border-b pb-6">
-                <h2 className="text-3xl font-black uppercase text-stone-900">BANNER HERO</h2>
-                <div className="flex gap-3">
-                  <button onClick={onSave} className="bg-green-600 text-white px-8 py-3.5 text-[10px] font-black rounded-xl uppercase tracking-widest shadow-lg">ĐỒNG BỘ</button>
-                  <button onClick={() => setHeroSlides([...heroSlides, { id: Date.now().toString(), image_url: '', quote: '' }])} className="bg-amber-800 text-white px-8 py-3.5 text-[10px] font-black rounded-xl uppercase tracking-widest shadow-lg">+ THÊM SLIDE</button>
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-end border-b pb-6 gap-4">
+                <div>
+                  <h2 className="text-2xl md:text-3xl font-black uppercase text-stone-900 tracking-tight flex items-center gap-3">
+                    <span className="text-amber-800">🎬</span>
+                    <span>CINEMATIC HERO MEDIA</span>
+                  </h2>
+                  <p className="text-xs text-stone-500 font-medium mt-1">
+                    Quản lý media trình chiếu đa phương tiện (Ảnh & Video xen kẽ) trên trang chủ
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-stone-400 bg-stone-100 px-3 py-2 rounded-xl">
+                    {heroSlides.length} Items ({heroSlides.filter(s => parseHeroSlide(s).media_type === 'video').length} Video, {heroSlides.filter(s => parseHeroSlide(s).media_type !== 'video').length} Ảnh)
+                  </span>
+                  <button
+                    type="button"
+                    onClick={onSave}
+                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 text-[10px] font-black rounded-xl uppercase tracking-widest shadow-md flex items-center gap-1.5 cursor-pointer transition-all active:scale-95"
+                  >
+                    <CheckCircle2 size={16} />
+                    <span>ĐỒNG BỘ</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setHeroSlides([
+                      ...heroSlides,
+                      {
+                        id: Date.now().toString(),
+                        media_type: 'image',
+                        media_url: '',
+                        image_url: '',
+                        poster_url: '',
+                        quote: ''
+                      }
+                    ])}
+                    className="bg-amber-800 hover:bg-amber-900 text-white px-4 py-3 text-[10px] font-black rounded-xl uppercase tracking-widest shadow-md flex items-center gap-1 cursor-pointer transition-all active:scale-95"
+                  >
+                    <span>+ THÊM ẢNH</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setHeroSlides([
+                      ...heroSlides,
+                      {
+                        id: Date.now().toString(),
+                        media_type: 'video',
+                        media_url: '',
+                        image_url: '[VIDEO]',
+                        poster_url: '',
+                        quote: ''
+                      }
+                    ])}
+                    className="bg-rose-700 hover:bg-rose-800 text-white px-4 py-3 text-[10px] font-black rounded-xl uppercase tracking-widest shadow-md flex items-center gap-1 cursor-pointer transition-all active:scale-95"
+                  >
+                    <span>+ THÊM VIDEO</span>
+                  </button>
                 </div>
               </div>
-              <div className="grid gap-6">
-                {heroSlides.map((slide: HeroSlide, i: number) => (
-                  <div key={slide.id} className="p-8 border border-stone-100 rounded-[35px] bg-stone-50/40 flex gap-10 items-center">
-                    <div className="w-72 aspect-video rounded-3xl overflow-hidden bg-stone-200 border-4 border-white"><img src={slide.image_url} className="w-full h-full object-cover" /></div>
-                    <div className="flex-1 space-y-5">
-                      <input value={slide.image_url} onChange={e => { const s = [...heroSlides]; s[i].image_url = e.target.value; setHeroSlides(s); }} className="w-full p-4 border rounded-2xl text-[10px] font-mono" placeholder="Link ảnh Hero" />
-                      <input value={slide.quote} onChange={e => { const s = [...heroSlides]; s[i].quote = e.target.value; setHeroSlides(s); }} className="w-full p-4 border rounded-2xl text-sm italic" placeholder="Slogan" />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <button onClick={() => moveHero(i, 'up')} disabled={i === 0} className="w-14 h-14 bg-white border rounded-2xl font-bold">↑</button>
-                      <button onClick={() => moveHero(i, 'down')} disabled={i === heroSlides.length - 1} className="w-14 h-14 bg-white border rounded-2xl font-bold">↓</button>
-                      <button onClick={() => { if(confirm('Xóa slide?')) setHeroSlides(heroSlides.filter(s => s.id !== slide.id)) }} className="w-14 h-14 bg-red-50 text-red-500 rounded-2xl text-2xl font-bold">×</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+
+              {heroSlides.length === 0 ? (
+                <div className="text-center py-16 bg-stone-50 rounded-[35px] border border-stone-200 p-8 space-y-4">
+                  <div className="text-4xl">🎬</div>
+                  <h3 className="text-base font-black uppercase text-stone-800">Chưa có Hero Media nào</h3>
+                  <p className="text-xs text-stone-500 max-w-md mx-auto">
+                    Nhấn nút "+ THÊM ẢNH" hoặc "+ THÊM VIDEO" ở trên để bổ sung media trình chiếu cho trang chủ Cơm Phần Út Trinh.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid gap-6">
+                  {heroSlides.map((slide: HeroSlide, i: number) => {
+                    const parsed = parseHeroSlide(slide);
+                    const isVideo = parsed.media_type === 'video';
+
+                    const updateCurrentSlide = (updates: Partial<HeroSlide>) => {
+                      const newSlides = [...heroSlides];
+                      const cur = parseHeroSlide(newSlides[i]);
+                      const updated: HeroSlide = {
+                        ...cur,
+                        ...updates
+                      };
+                      if (updates.media_type !== undefined) updated.media_type = updates.media_type;
+                      if (updates.media_url !== undefined) updated.media_url = updates.media_url;
+                      if (updates.poster_url !== undefined) updated.poster_url = updates.poster_url;
+                      if (updates.quote !== undefined) updated.quote = updates.quote;
+
+                      const serialized = serializeHeroSlide(updated);
+                      updated.image_url = serialized.image_url;
+                      newSlides[i] = updated;
+                      setHeroSlides(newSlides);
+                    };
+
+                    return (
+                      <div
+                        key={slide.id || i}
+                        className={`p-6 md:p-8 border rounded-[35px] transition-all ${
+                          isVideo
+                            ? 'bg-rose-50/30 border-rose-200/80 shadow-xs'
+                            : 'bg-stone-50/50 border-stone-200 shadow-xs'
+                        }`}
+                      >
+                        {/* Top bar của Card: Số thứ tự + Media Type Toggle + Reorder/Delete */}
+                        <div className="flex flex-wrap items-center justify-between gap-3 mb-6 pb-4 border-b border-stone-200/60">
+                          <div className="flex items-center gap-3">
+                            <span className="w-8 h-8 rounded-full bg-stone-800 text-white font-black text-xs flex items-center justify-center">
+                              #{i + 1}
+                            </span>
+                            {/* Segmented Control chọn Media Type */}
+                            <div className="inline-flex p-1 bg-stone-200/70 rounded-2xl gap-1">
+                              <button
+                                type="button"
+                                onClick={() => updateCurrentSlide({ media_type: 'image' })}
+                                className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                                  !isVideo
+                                    ? 'bg-amber-800 text-white shadow-sm'
+                                    : 'text-stone-600 hover:text-stone-900'
+                                }`}
+                              >
+                                🖼️ ẢNH (IMAGE)
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => updateCurrentSlide({ media_type: 'video' })}
+                                className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                                  isVideo
+                                    ? 'bg-rose-700 text-white shadow-sm'
+                                    : 'text-stone-600 hover:text-stone-900'
+                                }`}
+                              >
+                                🎥 VIDEO
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => moveHero(i, 'up')}
+                              disabled={i === 0}
+                              className="w-10 h-10 bg-white border border-stone-200 rounded-xl font-bold text-stone-700 hover:bg-stone-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center transition-all shadow-xs"
+                              title="Di chuyển lên trên"
+                            >
+                              ↑
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => moveHero(i, 'down')}
+                              disabled={i === heroSlides.length - 1}
+                              className="w-10 h-10 bg-white border border-stone-200 rounded-xl font-bold text-stone-700 hover:bg-stone-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center transition-all shadow-xs"
+                              title="Di chuyển xuống dưới"
+                            >
+                              ↓
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (confirm(`Xóa media #${i + 1} (${isVideo ? 'Video' : 'Ảnh'})?`)) {
+                                  setHeroSlides(heroSlides.filter(s => s.id !== slide.id));
+                                }
+                              }}
+                              className="w-10 h-10 bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 rounded-xl text-xl font-black cursor-pointer flex items-center justify-center transition-all shadow-xs"
+                              title="Xóa media này"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Thân Card: Preview Area & Form Inputs */}
+                        <div className="flex flex-col lg:flex-row gap-6 items-start">
+                          {/* Live Preview Area */}
+                          <div className="w-full lg:w-80 aspect-video rounded-2xl overflow-hidden bg-stone-900 border-2 border-stone-300 relative group flex items-center justify-center shrink-0 shadow-inner">
+                            {isVideo ? (
+                              parsed.media_url ? (
+                                <video
+                                  key={parsed.media_url}
+                                  src={parsed.media_url}
+                                  poster={parsed.poster_url || DEFAULT_HERO_POSTER}
+                                  controls
+                                  muted
+                                  playsInline
+                                  preload="metadata"
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="text-center p-4 text-stone-400">
+                                  <span className="text-2xl block mb-1">🎥</span>
+                                  <span className="text-[11px] font-bold">Chưa có URL Video</span>
+                                </div>
+                              )
+                            ) : (
+                              parsed.media_url || parsed.image_url ? (
+                                <img
+                                  src={parsed.media_url || parsed.image_url}
+                                  alt="Hero Preview"
+                                  className="w-full h-full object-cover"
+                                  onError={e => {
+                                    (e.target as HTMLElement).style.display = 'none';
+                                  }}
+                                />
+                              ) : (
+                                <div className="text-center p-4 text-stone-400">
+                                  <span className="text-2xl block mb-1">🖼️</span>
+                                  <span className="text-[11px] font-bold">Chưa có URL Ảnh</span>
+                                </div>
+                              )
+                            )}
+                            {/* Badge góc preview */}
+                            <div className="absolute top-2 left-2 bg-stone-950/80 backdrop-blur-xs text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-md border border-white/10 pointer-events-none">
+                              {isVideo ? '🎥 VIDEO PREVIEW' : '🖼️ IMAGE PREVIEW'}
+                            </div>
+                          </div>
+
+                          {/* Inputs Fields */}
+                          <div className="flex-1 w-full space-y-4">
+                            {isVideo ? (
+                              <>
+                                <div className="space-y-1.5">
+                                  <label className="text-[10px] font-black uppercase text-rose-800 tracking-wider flex items-center gap-1.5">
+                                    <span>🎥</span>
+                                    <span>ĐƯỜNG DẪN VIDEO (URL MP4 / WEBM)</span>
+                                  </label>
+                                  <input
+                                    value={parsed.media_url}
+                                    onChange={e => updateCurrentSlide({ media_url: e.target.value })}
+                                    className="w-full p-3.5 bg-white border border-stone-200 rounded-2xl text-xs font-mono text-stone-800 focus:outline-none focus:border-rose-600 shadow-inner"
+                                    placeholder="https://... Link file video .mp4, .webm"
+                                  />
+                                </div>
+                                <div className="space-y-1.5">
+                                  <label className="text-[10px] font-black uppercase text-stone-600 tracking-wider flex items-center gap-1.5">
+                                    <span>🖼️</span>
+                                    <span>ẢNH POSTER / FALLBACK (TÙY CHỌN CHO VIDEO)</span>
+                                  </label>
+                                  <input
+                                    value={parsed.poster_url || ''}
+                                    onChange={e => updateCurrentSlide({ poster_url: e.target.value })}
+                                    className="w-full p-3.5 bg-white border border-stone-200 rounded-2xl text-xs font-mono text-stone-800 focus:outline-none focus:border-amber-700 shadow-inner"
+                                    placeholder="https://... Link ảnh poster hiển thị khi video đang tải hoặc trình duyệt hạn chế autoplay"
+                                  />
+                                </div>
+                              </>
+                            ) : (
+                              <div className="space-y-1.5">
+                                <label className="text-[10px] font-black uppercase text-amber-900 tracking-wider flex items-center gap-1.5">
+                                  <span>🖼️</span>
+                                  <span>ĐƯỜNG DẪN ẢNH (IMAGE URL)</span>
+                                </label>
+                                <input
+                                  value={parsed.media_url || parsed.image_url}
+                                  onChange={e => updateCurrentSlide({ media_url: e.target.value })}
+                                  className="w-full p-3.5 bg-white border border-stone-200 rounded-2xl text-xs font-mono text-stone-800 focus:outline-none focus:border-amber-700 shadow-inner"
+                                  placeholder="https://... Link ảnh độ phân giải cao (.jpg, .png, .webp)"
+                                />
+                              </div>
+                            )}
+
+                            {/* Slogan / Caption Input */}
+                            <div className="space-y-1.5">
+                              <label className="text-[10px] font-black uppercase text-stone-600 tracking-wider">
+                                SLOGAN / LỜI DẪN TRÌNH CHIẾU HERO
+                              </label>
+                              <input
+                                value={slide.quote || ''}
+                                onChange={e => updateCurrentSlide({ quote: e.target.value })}
+                                className="w-full p-3.5 bg-white border border-stone-200 rounded-2xl text-sm italic text-stone-800 focus:outline-none focus:border-amber-700 shadow-inner"
+                                placeholder="Nhập câu slogan hoặc lời dẫn hiển thị trên Hero banner..."
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           ) : activeTab === 'guestbook' ? (
             <div className="space-y-10">
@@ -3388,7 +4002,7 @@ const App = () => {
       const { data: stats } = await supabase.from('site_stats').select('*').eq('id', 1).maybeSingle();
       
       if (dishes) setMenu(dishes);
-      if (slides) setHeroSlides(slides);
+      if (slides) setHeroSlides(slides.map(parseHeroSlide));
       if (stats) {
         if (stats.menu_image_url) setMenuImageUrl(stats.menu_image_url);
         if (stats.poll_question !== undefined || stats.poll_is_active !== undefined) {
@@ -3518,9 +4132,17 @@ const App = () => {
         if (insDishesError) throw new Error("Lỗi khi chèn dữ liệu món ăn: " + insDishesError.message);
       }
 
-      // Chèn Slides
+      // Chèn Slides (Sanitize bảo đảm đúng schema Supabase id, image_url, quote)
       if (heroSlides && heroSlides.length > 0) {
-        const { error: insSlidesError } = await supabase.from('hero_slides').insert(sanitize(heroSlides));
+        const sanitizedSlides = heroSlides.map(slide => {
+          const parsed = parseHeroSlide(slide);
+          const serialized = serializeHeroSlide(parsed);
+          return {
+            image_url: serialized.image_url,
+            quote: serialized.quote || ''
+          };
+        });
+        const { error: insSlidesError } = await supabase.from('hero_slides').insert(sanitizedSlides);
         if (insSlidesError) throw new Error("Lỗi khi chèn dữ liệu banner: " + insSlidesError.message);
       }
 
