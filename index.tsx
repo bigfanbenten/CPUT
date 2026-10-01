@@ -223,9 +223,72 @@ const serializeHeroSlide = (slide: HeroSlide): { id?: string; image_url: string;
   };
 };
 
+const getCanonicalMediaUrl = (url: string | null | undefined): string => {
+  if (!url) return '';
+  let clean = url.trim().replace(/^\[VIDEO\]|^video:/i, '');
+  if (clean.includes('#poster=')) clean = clean.split('#poster=')[0];
+  if (clean.includes('::poster::')) clean = clean.split('::poster::')[0];
+  try {
+    const parsed = new URL(clean);
+    const searchParams = new URLSearchParams(parsed.search);
+    searchParams.delete('updatedAt');
+    searchParams.delete('timestamp');
+    searchParams.delete('_t');
+    searchParams.delete('t');
+    searchParams.delete('v');
+    const newQuery = searchParams.toString();
+    parsed.search = newQuery ? `?${newQuery}` : '';
+    parsed.hash = '';
+    return parsed.toString().toLowerCase();
+  } catch {
+    return clean.split('?')[0].split('#')[0].toLowerCase();
+  }
+};
+
+const deduplicateHeroSlides = (slides: HeroSlide[]): HeroSlide[] => {
+  if (!slides || slides.length === 0) return [];
+  const seen = new Map<string, HeroSlide>();
+  const result: HeroSlide[] = [];
+
+  for (const slide of slides) {
+    const parsed = parseHeroSlide(slide);
+    const mediaUrl = parsed.media_url || parsed.image_url;
+    if (!mediaUrl || !mediaUrl.trim()) {
+      result.push(parsed);
+      continue;
+    }
+
+    const canonicalUrl = getCanonicalMediaUrl(mediaUrl);
+    const key = `${parsed.media_type || 'image'}:${canonicalUrl}`;
+
+    if (!seen.has(key)) {
+      seen.set(key, parsed);
+      result.push(parsed);
+    } else {
+      const existing = seen.get(key)!;
+      if (!existing.quote && parsed.quote) {
+        existing.quote = parsed.quote;
+      }
+      if (!existing.poster_url && parsed.poster_url) {
+        existing.poster_url = parsed.poster_url;
+      }
+    }
+  }
+
+  return result;
+};
+
 const DEFAULT_HERO_SLIDES: HeroSlide[] = [
   {
-    id: 'default-hero-1',
+    id: '9528f618-d53a-4786-aa58-d53293764379',
+    image_url: 'https://i.postimg.cc/ZqGfwCkY/558287994-778838045070067-4673663165810789160-n.png',
+    quote: 'QUÁN CHÂN THÀNH CẢM ƠN SỰ ỦNG HỘ CỦA QUÝ THỰC KHÁCH TRONG 7 NĂM QUA Ạ !!!',
+    media_type: 'image',
+    media_url: 'https://i.postimg.cc/ZqGfwCkY/558287994-778838045070067-4673663165810789160-n.png',
+    poster_url: ''
+  },
+  {
+    id: 'a59e48c7-d605-4138-9c33-ad8b5e6b87eb',
     image_url: 'https://images.unsplash.com/photo-1599354607459-81c8b0d90bf5?q=80&w=1167&auto=format&fit=crop&ixlib=rb-4.1.0',
     quote: 'Út Trinh: Gói trọn phong vị quê hương.',
     media_type: 'image',
@@ -233,7 +296,7 @@ const DEFAULT_HERO_SLIDES: HeroSlide[] = [
     poster_url: ''
   },
   {
-    id: 'default-hero-2',
+    id: '791a0c5d-8847-459f-a724-447018017507',
     image_url: 'https://plus.unsplash.com/premium_photo-1669687063580-81339d767897?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0',
     quote: 'Cơm nhà không chỉ để no lòng, mà để sưởi ấm những tâm hồn sau một ngày dài bận rộn',
     media_type: 'image',
@@ -241,11 +304,35 @@ const DEFAULT_HERO_SLIDES: HeroSlide[] = [
     poster_url: ''
   },
   {
-    id: 'default-hero-3',
+    id: 'cc749bf2-a112-4ecc-ab16-faf6f82dba12',
+    image_url: 'https://images.unsplash.com/photo-1645060810451-6fe59ae50602?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0',
+    quote: 'Hương vị cơm nhà tinh túy — Nơi tìm lại những giá trị nguyên bản nhất của ẩm thực Việt',
+    media_type: 'image',
+    media_url: 'https://images.unsplash.com/photo-1645060810451-6fe59ae50602?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0',
+    poster_url: ''
+  },
+  {
+    id: '6e6f4418-1baf-4400-9d6f-f7de1235ac1b',
     image_url: 'https://i.postimg.cc/FsxScNHZ/image-(27).jpg',
     quote: 'Nấu bằng cả trái tim — Mỗi món ăn là sự kết tinh của tâm huyết và nguyên liệu thượng hạng',
     media_type: 'image',
     media_url: 'https://i.postimg.cc/FsxScNHZ/image-(27).jpg',
+    poster_url: ''
+  },
+  {
+    id: 'f8133c25-58b4-4823-b4e3-0098d05dde5d',
+    image_url: 'https://images.unsplash.com/photo-1637806930600-37fa8892069d?q=80&w=685&auto=format&fit=crop&ixlib=rb-4.1.0',
+    quote: 'Gắn kết qua từng mâm cơm — Út Trinh Kitchen, nơi mỗi bữa ăn đều là một cuộc đoàn viên',
+    media_type: 'image',
+    media_url: 'https://images.unsplash.com/photo-1637806930600-37fa8892069d?q=80&w=685&auto=format&fit=crop&ixlib=rb-4.1.0',
+    poster_url: ''
+  },
+  {
+    id: 'c8de9c12-de7d-4ed1-bb1a-4fac1b264f30',
+    image_url: 'https://ik.imagekit.io/comphanuttrinh/mon-an/ChatGPT%20Image%2000_50_33%2013%20thg%209,%202026.png',
+    quote: 'Mở Hộp Là Thấy Ngon — Đậm đà phong vị cơm nhà chuẩn vị mẹ nấu',
+    media_type: 'image',
+    media_url: 'https://ik.imagekit.io/comphanuttrinh/mon-an/ChatGPT%20Image%2000_50_33%2013%20thg%209,%202026.png',
     poster_url: ''
   }
 ];
@@ -3236,9 +3323,13 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2.5">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-stone-400 bg-stone-100 px-3 py-2 rounded-xl">
-                    {heroSlides.length} Items ({heroSlides.filter(s => parseHeroSlide(s).media_type === 'video').length} Video, {heroSlides.filter(s => parseHeroSlide(s).media_type !== 'video').length} Ảnh)
-                  </span>
+                  <div className="flex items-center gap-2 bg-stone-100 border border-stone-200 px-3.5 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-wider text-stone-700 shadow-xs">
+                    <span className="text-stone-900 font-extrabold">{heroSlides.length} ITEMS</span>
+                    <span className="text-stone-300">|</span>
+                    <span className="text-rose-700 font-extrabold">🎥 {heroSlides.filter(s => parseHeroSlide(s).media_type === 'video').length} VIDEO</span>
+                    <span className="text-stone-300">|</span>
+                    <span className="text-amber-800 font-extrabold">🖼️ {heroSlides.filter(s => parseHeroSlide(s).media_type !== 'video').length} ẢNH</span>
+                  </div>
                   <button
                     type="button"
                     onClick={onSave}
@@ -3252,7 +3343,7 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                     onClick={() => setHeroSlides([
                       ...heroSlides,
                       {
-                        id: Date.now().toString(),
+                        id: 'hero-img-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8),
                         media_type: 'image',
                         media_url: '',
                         image_url: '',
@@ -3269,10 +3360,10 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                     onClick={() => setHeroSlides([
                       ...heroSlides,
                       {
-                        id: Date.now().toString(),
+                        id: 'hero-vid-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8),
                         media_type: 'video',
                         media_url: '',
-                        image_url: '[VIDEO]',
+                        image_url: '',
                         poster_url: '',
                         quote: ''
                       }
@@ -3381,7 +3472,7 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                               type="button"
                               onClick={() => {
                                 if (confirm(`Xóa media #${i + 1} (${isVideo ? 'Video' : 'Ảnh'})?`)) {
-                                  setHeroSlides(heroSlides.filter(s => s.id !== slide.id));
+                                  setHeroSlides(heroSlides.filter((_, idx) => idx !== i));
                                 }
                               }}
                               className="w-10 h-10 bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 rounded-xl text-xl font-black cursor-pointer flex items-center justify-center transition-all shadow-xs"
@@ -4002,7 +4093,7 @@ const App = () => {
       const { data: stats } = await supabase.from('site_stats').select('*').eq('id', 1).maybeSingle();
       
       if (dishes) setMenu(dishes);
-      if (slides) setHeroSlides(slides.map(parseHeroSlide));
+      if (slides) setHeroSlides(deduplicateHeroSlides(slides.map(parseHeroSlide)));
       if (stats) {
         if (stats.menu_image_url) setMenuImageUrl(stats.menu_image_url);
         if (stats.poll_question !== undefined || stats.poll_is_active !== undefined) {
@@ -4109,41 +4200,79 @@ const App = () => {
 
     setIsLoading(true);
     try {
-      // 1. Xóa dữ liệu cũ - Sử dụng filter rộng hơn để đảm bảo xóa sạch
+      // 1. Xóa dishes cũ
       const { error: delDishesError } = await supabase.from('dishes').delete().filter('id', 'neq', '00000000-0000-0000-0000-000000000000');
       if (delDishesError) throw new Error("Không thể xóa danh sách cũ: " + delDishesError.message);
 
-      const { error: delSlidesError } = await supabase.from('hero_slides').delete().filter('id', 'neq', '00000000-0000-0000-0000-000000000000');
-      if (delSlidesError) throw new Error("Không thể xóa banner cũ: " + delSlidesError.message);
-
-      // 2. Chuẩn bị dữ liệu sạch
+      // 2. Chuẩn bị dữ liệu sạch cho dishes
       const sanitize = (list: any[]) => list.map((item) => {
         const newItem = { ...item };
-        // Đảm bảo không gửi Id cũ để tránh xung đột
         delete newItem.id;
         delete newItem.created_at;
         return newItem;
       });
       
-      // 3. Chèn dữ liệu mới từ state hiện tại
       // Chèn Dishes
       if (menu && menu.length > 0) {
         const { error: insDishesError } = await supabase.from('dishes').insert(sanitize(menu));
         if (insDishesError) throw new Error("Lỗi khi chèn dữ liệu món ăn: " + insDishesError.message);
       }
 
-      // Chèn Slides (Sanitize bảo đảm đúng schema Supabase id, image_url, quote)
-      if (heroSlides && heroSlides.length > 0) {
-        const sanitizedSlides = heroSlides.map(slide => {
-          const parsed = parseHeroSlide(slide);
-          const serialized = serializeHeroSlide(parsed);
-          return {
-            image_url: serialized.image_url,
-            quote: serialized.quote || ''
-          };
-        });
-        const { error: insSlidesError } = await supabase.from('hero_slides').insert(sanitizedSlides);
-        if (insSlidesError) throw new Error("Lỗi khi chèn dữ liệu banner: " + insSlidesError.message);
+      // 3. Đồng bộ Hero Media: ID-based diff sync, chống nhân bản record (100% Idempotent)
+      const cleanHeroSlides = deduplicateHeroSlides(heroSlides);
+
+      // Đọc trạng thái database hiện có
+      const { data: dbSlides, error: fetchDbError } = await supabase
+        .from('hero_slides')
+        .select('id, image_url, quote, created_at');
+
+      if (fetchDbError) throw new Error("Lỗi đọc danh sách banner hiện tại: " + fetchDbError.message);
+
+      const dbList = dbSlides || [];
+      const dbIdMap = new Map(dbList.map((r: any) => [r.id, r]));
+      const targetSlideIds = new Set(cleanHeroSlides.map(s => s.id));
+
+      // Xóa đúng các record đã bị Admin chủ động xóa khỏi UI
+      const idsToDelete = dbList.filter((r: any) => !targetSlideIds.has(r.id)).map((r: any) => r.id);
+      if (idsToDelete.length > 0) {
+        const { error: delError } = await supabase.from('hero_slides').delete().in('id', idsToDelete);
+        if (delError) throw new Error("Lỗi xóa banner cũ: " + delError.message);
+      }
+
+      // Update record đã có & Insert record mới theo thứ tự chuẩn xác
+      const baseTimestamp = new Date('2026-09-27T09:13:00.000Z').getTime();
+      for (let i = 0; i < cleanHeroSlides.length; i++) {
+        const slide = cleanHeroSlides[i];
+        const orderTimestamp = new Date(baseTimestamp + i * 1000).toISOString();
+        const serialized = serializeHeroSlide(slide);
+
+        if (dbIdMap.has(slide.id)) {
+          // Record đã tồn tại trong DB -> UPDATE tại chỗ
+          const { error: updateError } = await supabase
+            .from('hero_slides')
+            .update({
+              image_url: serialized.image_url,
+              quote: serialized.quote || '',
+              created_at: orderTimestamp
+            })
+            .eq('id', slide.id);
+          if (updateError) throw new Error("Lỗi cập nhật banner: " + updateError.message);
+        } else {
+          // Record mới chưa có trong DB -> INSERT
+          const { data: inserted, error: insertError } = await supabase
+            .from('hero_slides')
+            .insert([{
+              image_url: serialized.image_url,
+              quote: serialized.quote || '',
+              created_at: orderTimestamp
+            }])
+            .select()
+            .single();
+          if (insertError) throw new Error("Lỗi thêm mới banner: " + insertError.message);
+          if (inserted) {
+            slide.id = inserted.id;
+          }
+        }
       }
 
       alert("🎉 ĐỒNG BỘ THÀNH CÔNG! Dữ liệu đã được cập nhật mới nhất."); 
