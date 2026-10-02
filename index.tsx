@@ -969,23 +969,19 @@ const HeroCinematicVideo = ({
   poster,
   isActive,
   isSingleMedia,
-  onEnded,
-  aspectMode = 'auto'
+  onEnded
 }: {
   src: string;
   poster?: string;
   isActive: boolean;
   isSingleMedia: boolean;
   onEnded: () => void;
-  aspectMode?: HeroAspectMode;
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
   const ytPlayerRef = useRef<any>(null);
   const ytContainerRef = useRef<HTMLDivElement>(null);
   const [errorSrc, setErrorSrc] = useState<string | null>(null);
-  const [detectedSrc, setDetectedSrc] = useState<string | null>(null);
-  const [detectedAspect, setDetectedAspect] = useState<'landscape' | 'portrait' | null>(null);
   const hasTriggeredNextRef = useRef(false);
   const startupTimerRef = useRef<NodeJS.Timeout | null>(null);
   const watchdogTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -1000,31 +996,10 @@ const HeroCinematicVideo = ({
   const isHls = useMemo(() => isHlsUrl(deliverySrc), [deliverySrc]);
   const isYoutube = useMemo(() => isYouTubeUrl(deliverySrc), [deliverySrc]);
   const youtubeId = useMemo(() => getYouTubeId(deliverySrc), [deliverySrc]);
-
-  // QUYẾT ĐỊNH FRAMING THEO ĐÚNG TIÊU CHUẨN ĐỘC LẬP VỚI PROVIDER:
-  // 1. aspectMode === 'landscape' (16:9 NGANG) => LUÔN LUÔN LANDSCAPE FULL-BLEED (kể cả Shorts, bỏ qua mọi thứ)
-  // 2. aspectMode === 'portrait' (9:16 DỌC)   => LUÔN LUÔN PORTRAIT STAGE
-  // 3. aspectMode === 'auto' (TỰ ĐỘNG):
-  //    - YouTube: chỉ /shorts/ mới là portrait, tất cả link youtube còn lại là landscape
-  //    - MP4 / WebM / Bunny HLS: chỉ khi metadata videoHeight > videoWidth mới là portrait
-  //    - Mặc định an toàn: LUÔN LÀ LANDSCAPE FULL-BLEED
-  const isEffectivePortrait = useMemo(() => {
-    if (aspectMode === 'landscape') return false;
-    if (aspectMode === 'portrait') return true;
-
-    // Mode AUTO:
-    if (isYoutube) {
-      const lower = deliverySrc.toLowerCase();
-      return lower.includes('/shorts/');
-    }
-
-    if (detectedSrc === deliverySrc && detectedAspect !== null) {
-      return detectedAspect === 'portrait';
-    }
-
-    // Fallback an toàn: LANDSCAPE full-width cinematic
-    return false;
-  }, [aspectMode, isYoutube, deliverySrc, detectedSrc, detectedAspect]);
+  const isShorts = useMemo(() => {
+    const clean = (deliverySrc || '').toLowerCase();
+    return clean.includes('/shorts/') || clean.includes('#portrait') || clean.includes('#9:16') || clean.includes('#vertical');
+  }, [deliverySrc]);
 
   const isHlsSupportedInBrowser = useMemo(() => {
     if (typeof document === 'undefined') return true;
@@ -1458,110 +1433,41 @@ const HeroCinematicVideo = ({
     );
   }
 
-  // Render YouTube Provider
+  // Render YouTube Provider (Cinematic Full-bleed Cover)
   if (isYoutube && youtubeId) {
     return (
       <div className="relative w-full h-full overflow-hidden bg-stone-950 flex items-center justify-center">
-        {/* Layer 1 — Background: Cinematic Blur Stage cho Portrait / Shorts trên Desktop (>= 1024px) */}
-        {isEffectivePortrait && (
-          <div className="hidden lg:block absolute inset-0 overflow-hidden pointer-events-none -z-10">
-            <img
-              src={cleanPoster || `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`}
-              onError={(e) => {
-                (e.currentTarget as HTMLImageElement).src = `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`;
-              }}
-              alt="YouTube Blur Background"
-              className="w-full h-full object-cover object-center scale-115 filter blur-[36px] opacity-60"
-              loading="eager"
-            />
-            {/* Vignette overlay */}
-            <div
-              className="absolute inset-0"
-              style={{
-                background: 'radial-gradient(circle at center, rgba(12,10,9,0.2) 0%, rgba(12,10,9,0.85) 100%)'
-              }}
-            />
-          </div>
-        )}
-
-        {/* Fallback poster ngầm để không bị flash đen khi iframe đang load */}
         {cleanPoster ? (
           <img
             src={cleanPoster}
             alt="Poster Fallback"
-            className="absolute inset-0 w-full h-full object-cover object-center -z-20 pointer-events-none"
+            className="absolute inset-0 w-full h-full object-cover object-center -z-10 pointer-events-none"
             loading="eager"
           />
         ) : (
           <img
             src={`https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`}
             alt="YouTube Fallback"
-            className="absolute inset-0 w-full h-full object-cover object-center -z-20 pointer-events-none opacity-40 blur-sm scale-105"
+            className="absolute inset-0 w-full h-full object-cover object-center -z-10 pointer-events-none opacity-40 blur-sm scale-105"
             loading="eager"
           />
         )}
-
-        {/* Layer 2 — Foreground: YouTube Player Container (Desktop 9:16 crisp stage hoặc Mobile full-bleed cover) */}
-        <div
-          ref={ytContainerRef}
-          className={isEffectivePortrait ? "yt-hero-portrait-stage" : "yt-hero-container"}
-        />
+        <div ref={ytContainerRef} className={`yt-hero-container ${isShorts ? 'is-shorts' : ''}`} />
       </div>
     );
   }
 
-  // Render Native HLS / hls.js / ImageKit MP4 / WebM Provider
+  // Render Native HLS / hls.js / ImageKit MP4 / WebM Provider (Cinematic Full-bleed Cover)
   return (
-    <div className="relative w-full h-full overflow-hidden bg-stone-950 flex items-center justify-center">
-      {/* Layer 1 — Background: Cinematic Blur Stage cho Portrait trên Desktop (>= 1024px) */}
-      {isEffectivePortrait && (
-        <div className="hidden lg:block absolute inset-0 overflow-hidden pointer-events-none -z-10">
-          {cleanPoster ? (
-            <img
-              src={cleanPoster}
-              alt="Hero Blur Background"
-              className="w-full h-full object-cover object-center scale-115 filter blur-[36px] opacity-60"
-              loading="eager"
-            />
-          ) : isHls ? (
-            <img
-              src={DEFAULT_HERO_POSTER}
-              alt="Hero Ambient Background"
-              className="w-full h-full object-cover object-center scale-115 filter blur-[36px] opacity-40"
-              loading="eager"
-            />
-          ) : (
-            <video
-              src={deliverySrc}
-              muted
-              autoPlay
-              loop
-              playsInline
-              className="w-full h-full object-cover object-center scale-115 filter blur-[36px] opacity-50"
-              aria-hidden="true"
-            />
-          )}
-          {/* Vignette overlay */}
-          <div
-            className="absolute inset-0"
-            style={{
-              background: 'radial-gradient(circle at center, rgba(12,10,9,0.2) 0%, rgba(12,10,9,0.85) 100%)'
-            }}
-          />
-        </div>
-      )}
-
-      {/* Background poster ngăn ngừa chớp trắng / đen khi video đang load nếu có poster thủ công */}
+    <div className="relative w-full h-full overflow-hidden bg-stone-950">
       {cleanPoster && (
         <img
           src={cleanPoster}
           alt="Poster Fallback"
-          className="absolute inset-0 w-full h-full object-cover object-center -z-20 pointer-events-none"
+          className="absolute inset-0 w-full h-full object-cover object-center -z-10 pointer-events-none"
           loading="eager"
         />
       )}
-
-      {/* Layer 2 — Foreground: Video Player */}
       <video
         ref={videoRef}
         poster={cleanPoster}
@@ -1571,94 +1477,35 @@ const HeroCinematicVideo = ({
         playsInline
         preload={isActive ? 'metadata' : 'none'}
         onEnded={handleNext}
-        onLoadedMetadata={(e) => {
-          const v = e.currentTarget;
-          setDetectedSrc(deliverySrc);
-          if (v.videoWidth && v.videoHeight && v.videoHeight > v.videoWidth) {
-            setDetectedAspect('portrait');
-          } else {
-            setDetectedAspect('landscape');
-          }
-        }}
         onError={() => {
           if (isActive) {
             setHasError(true);
           }
         }}
-        className={
-          isEffectivePortrait
-            ? "w-full h-full object-cover object-center pointer-events-none lg:h-[94%] lg:max-h-[840px] lg:aspect-[9/16] lg:w-auto lg:object-contain lg:rounded-2xl lg:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9),0_0_50px_rgba(0,0,0,0.6)] lg:border lg:border-white/10"
-            : "w-full h-full object-cover object-center pointer-events-none"
-        }
+        className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none"
       />
     </div>
   );
 };
 
-// Component hiển thị Image Hero Cinematic trên Trang chủ (Hỗ trợ Blur Background cho ảnh dọc trên Desktop)
+// Component hiển thị Image Hero Cinematic trên Trang chủ (Full-bleed Cover)
 const HeroCinematicImage = ({
   src,
-  alt,
-  aspectMode = 'auto'
+  alt
 }: {
   src: string;
   alt: string;
-  aspectMode?: HeroAspectMode;
 }) => {
-  const [detectedImgSrc, setDetectedImgSrc] = useState<string | null>(null);
-  const [detectedImgAspect, setDetectedImgAspect] = useState<'landscape' | 'portrait' | null>(null);
-
-  const isEffectivePortrait = useMemo(() => {
-    if (aspectMode === 'landscape') return false;
-    if (aspectMode === 'portrait') return true;
-    if (detectedImgSrc === src && detectedImgAspect !== null) {
-      return detectedImgAspect === 'portrait';
-    }
-    return false;
-  }, [aspectMode, src, detectedImgSrc, detectedImgAspect]);
-
   return (
-    <div className="relative w-full h-full overflow-hidden bg-stone-950 flex items-center justify-center">
-      {/* Layer 1 — Background: Chỉ render khi PORTRAIT trên Desktop (>= 1024px) */}
-      {isEffectivePortrait && (
-        <div className="hidden lg:block absolute inset-0 overflow-hidden pointer-events-none -z-10">
-          <img
-            src={src || DEFAULT_HERO_POSTER}
-            alt=""
-            className="w-full h-full object-cover object-center scale-115 filter blur-[36px] opacity-60"
-            aria-hidden="true"
-          />
-          <div
-            className="absolute inset-0"
-            style={{
-              background: 'radial-gradient(circle at center, rgba(12,10,9,0.2) 0%, rgba(12,10,9,0.85) 100%)'
-            }}
-          />
-        </div>
-      )}
-      <img
-        src={src || DEFAULT_HERO_POSTER}
-        alt={alt}
-        onLoad={(e) => {
-          const img = e.currentTarget;
-          setDetectedImgSrc(src);
-          if (img.naturalHeight && img.naturalWidth && img.naturalHeight > img.naturalWidth) {
-            setDetectedImgAspect('portrait');
-          } else {
-            setDetectedImgAspect('landscape');
-          }
-        }}
-        onError={(e) => {
-          (e.currentTarget as HTMLImageElement).src = DEFAULT_HERO_POSTER;
-        }}
-        className={
-          isEffectivePortrait
-            ? "w-full h-full object-cover object-center lg:h-[94%] lg:max-h-[840px] lg:aspect-[9/16] lg:w-auto lg:object-contain lg:rounded-2xl lg:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9),0_0_50px_rgba(0,0,0,0.6)] lg:border lg:border-white/10"
-            : "w-full h-full object-cover object-center"
-        }
-        loading="eager"
-      />
-    </div>
+    <img
+      src={src || DEFAULT_HERO_POSTER}
+      alt={alt}
+      onError={(e) => {
+        (e.currentTarget as HTMLImageElement).src = DEFAULT_HERO_POSTER;
+      }}
+      className="absolute inset-0 w-full h-full object-cover object-center"
+      loading="eager"
+    />
   );
 };
 
@@ -2694,12 +2541,11 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
         </div>
       )}
 
-      {/* Cinematic Hero Media (Hỗ trợ Image & Video xen kẽ, Responsive Framing Mobile & Immersive Desktop Stage) */}
+      {/* Cinematic Hero Media (Hỗ trợ Image & Video xen kẽ, Full-bleed Cinematic Background Desktop & Mobile) */}
       <header className="hero-cinematic-header relative w-full h-[85vh] min-h-[520px] md:h-[clamp(560px,62vh,700px)] lg:h-[clamp(700px,78vh,900px)] lg:min-h-[700px] lg:max-h-[900px] flex items-center justify-center overflow-hidden bg-stone-950">
         {displayHeroSlides.map((slide: HeroSlide, index: number) => {
           const isCurrent = index === currentSlide;
           const isVideo = slide.media_type === 'video';
-          const slideAspectMode = slide.aspect_mode || slide.aspect_ratio || 'auto';
 
           return (
             <div
@@ -2715,13 +2561,11 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
                   isActive={isCurrent}
                   isSingleMedia={displayHeroSlides.length === 1}
                   onEnded={nextHeroSlide}
-                  aspectMode={slideAspectMode}
                 />
               ) : (
                 <HeroCinematicImage
                   src={slide.media_url || slide.image_url}
                   alt={slide.quote || 'Cơm Phần Út Trinh'}
-                  aspectMode={slideAspectMode}
                 />
               )}
               {/* Lớp phủ cinematic bảo đảm tương phản chữ nhưng không làm tối hoặc biến đổi màu thức ăn */}
@@ -2739,26 +2583,16 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
                   <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
                   <span>
                     {isYouTubeUrl(activeHeroSlide.media_url || activeHeroSlide.image_url)
-                      ? (activeHeroSlide.aspect_mode === 'portrait' || (activeHeroSlide.aspect_mode !== 'landscape' && (activeHeroSlide.media_url || activeHeroSlide.image_url || '').toLowerCase().includes('/shorts/'))
-                          ? '▶️ YOUTUBE SHORTS (9:16)'
-                          : '▶️ YOUTUBE VIDEO (16:9)')
+                      ? '▶️ YOUTUBE VIDEO'
                       : isHlsUrl(activeHeroSlide.media_url || activeHeroSlide.image_url)
-                      ? (activeHeroSlide.aspect_mode === 'portrait'
-                          ? '⚡ BUNNY HLS (9:16)'
-                          : '⚡ BUNNY HLS VIDEO')
-                      : (activeHeroSlide.aspect_mode === 'portrait'
-                          ? '🎥 CINEMATIC PORTRAIT (9:16)'
-                          : '🎥 CINEMATIC VIDEO')}
+                      ? '⚡ BUNNY HLS VIDEO'
+                      : '🎥 CINEMATIC VIDEO'}
                   </span>
                 </>
               ) : (
                 <>
                   <span className="w-2 h-2 rounded-full bg-amber-400" />
-                  <span>
-                    {activeHeroSlide.aspect_mode === 'portrait'
-                      ? '🖼️ HIGH-RES PORTRAIT (9:16)'
-                      : '🖼️ HIGH-RES IMAGE'}
-                  </span>
+                  <span>🖼️ HIGH-RES IMAGE</span>
                 </>
               )}
               <span className="text-white/40">|</span>
@@ -4238,14 +4072,6 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                       if (updates.media_type !== undefined) updated.media_type = updates.media_type;
                       if (updates.media_url !== undefined) updated.media_url = updates.media_url;
                       if (updates.poster_url !== undefined) updated.poster_url = updates.poster_url;
-                      if (updates.aspect_mode !== undefined) {
-                        updated.aspect_mode = updates.aspect_mode;
-                        updated.aspect_ratio = updates.aspect_mode;
-                      }
-                      if (updates.aspect_ratio !== undefined) {
-                        updated.aspect_mode = updates.aspect_ratio;
-                        updated.aspect_ratio = updates.aspect_ratio;
-                      }
                       if (updates.quote !== undefined) updated.quote = updates.quote;
 
                       const serialized = serializeHeroSlide(updated);
@@ -4263,9 +4089,9 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                             : 'bg-stone-50/50 border-stone-200 shadow-xs'
                         }`}
                       >
-                        {/* Top bar của Card: Số thứ tự + Media Type Toggle + Aspect Ratio Toggle + Reorder/Delete */}
+                        {/* Top bar của Card: Số thứ tự + Media Type Toggle + Reorder/Delete */}
                         <div className="flex flex-wrap items-center justify-between gap-3 mb-6 pb-4 border-b border-stone-200/60">
-                          <div className="flex flex-wrap items-center gap-3">
+                          <div className="flex items-center gap-3">
                             <span className="w-8 h-8 rounded-full bg-stone-800 text-white font-black text-xs flex items-center justify-center">
                               #{i + 1}
                             </span>
@@ -4292,46 +4118,6 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                                 }`}
                               >
                                 🎥 VIDEO
-                              </button>
-                            </div>
-
-                            {/* Segmented Control chọn Định dạng Khung hình */}
-                            <div className="inline-flex p-1 bg-stone-200/70 rounded-2xl gap-1">
-                              <button
-                                type="button"
-                                onClick={() => updateCurrentSlide({ aspect_mode: 'auto' })}
-                                className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
-                                  !parsed.aspect_mode || parsed.aspect_mode === 'auto'
-                                    ? 'bg-stone-800 text-white shadow-sm'
-                                    : 'text-stone-600 hover:text-stone-900'
-                                }`}
-                                title="Tự động nhận diện (video 16:9 full-bleed cover, chỉ video dọc mới bật Blur Background trên Desktop)"
-                              >
-                                ⚙️ TỰ ĐỘNG
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => updateCurrentSlide({ aspect_mode: 'landscape' })}
-                                className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
-                                  parsed.aspect_mode === 'landscape'
-                                    ? 'bg-amber-800 text-white shadow-sm'
-                                    : 'text-stone-600 hover:text-stone-900'
-                                }`}
-                                title="Bắt buộc khung ngang 16:9 Full-bleed cover toàn Hero stage (kể cả YouTube Shorts)"
-                              >
-                                🖥️ 16:9 NGANG
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => updateCurrentSlide({ aspect_mode: 'portrait' })}
-                                className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
-                                  parsed.aspect_mode === 'portrait'
-                                    ? 'bg-rose-700 text-white shadow-sm'
-                                    : 'text-stone-600 hover:text-stone-900'
-                                }`}
-                                title="Bắt buộc khung dọc 9:16 (Shorts/Reels) ở giữa với Blur Background Stage trên Desktop"
-                              >
-                                📱 9:16 DỌC / SHORTS
                               </button>
                             </div>
                           </div>

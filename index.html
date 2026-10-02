@@ -88,7 +88,7 @@
             }
         }
 
-        /* YouTube Hero Landscape Full-bleed cover styling */
+        /* YouTube Hero Cinematic Full-bleed Cover Styling (Desktop & Mobile) */
         .yt-hero-container {
             position: absolute;
             inset: 0;
@@ -100,6 +100,7 @@
             justify-content: center;
             pointer-events: none;
         }
+        /* Landscape 16:9 Cover Geometry */
         .yt-hero-container iframe {
             width: 177.78vh !important;
             min-width: 100% !important;
@@ -112,58 +113,25 @@
             border: none !important;
             pointer-events: none !important;
         }
-
-        /* YouTube Hero Portrait / Shorts: Mobile remains full-bleed cover; Desktop gets crisp 9:16 stage */
-        @media (max-width: 1023px) {
-            .yt-hero-portrait-stage {
-                position: absolute;
-                inset: 0;
-                width: 100%;
-                height: 100%;
-                overflow: hidden;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                pointer-events: none;
-            }
-            .yt-hero-portrait-stage iframe {
-                width: 177.78vh !important;
-                min-width: 100% !important;
-                height: 56.25vw !important;
-                min-height: 100% !important;
-                position: absolute !important;
-                top: 50% !important;
-                left: 50% !important;
-                transform: translate(-50%, -50%) scale(1.05) !important;
-                border: none !important;
-                pointer-events: none !important;
-            }
+        /* Vertical / Shorts 9:16 Cover Geometry (Full-bleed cover without pillarboxes) */
+        .yt-hero-container.is-shorts iframe {
+            width: 100vw !important;
+            min-width: 100% !important;
+            height: 177.78vw !important;
+            min-height: 100% !important;
+            position: absolute !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) scale(1.05) !important;
+            border: none !important;
+            pointer-events: none !important;
         }
-        @media (min-width: 1024px) {
-            .yt-hero-portrait-stage {
-                position: relative;
-                z-index: 10;
-                height: 94%;
-                max-height: 840px;
-                aspect-ratio: 9 / 16;
-                width: auto;
-                border-radius: 1.25rem;
-                overflow: hidden;
-                box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.9), 0 0 50px rgba(0, 0, 0, 0.6);
-                border: 1px solid rgba(255, 255, 255, 0.12);
-                pointer-events: none;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-            .yt-hero-portrait-stage iframe {
-                width: 100% !important;
-                height: 100% !important;
-                position: absolute !important;
-                inset: 0 !important;
-                transform: scale(1.04) !important;
-                border: none !important;
-                pointer-events: none !important;
+        @media (max-width: 767px) {
+            .yt-hero-container.is-shorts iframe {
+                width: calc(85vh * 9 / 16) !important;
+                min-width: 100% !important;
+                height: 85vh !important;
+                min-height: 100% !important;
             }
         }
     </style>
