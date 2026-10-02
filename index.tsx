@@ -223,11 +223,66 @@ const serializeHeroSlide = (slide: HeroSlide): { id?: string; image_url: string;
   };
 };
 
+/**
+ * Helper chuyển đổi Video URL ImageKit sang chế độ Original Delivery (orig-true)
+ * tại thời điểm render (Homepage & ACP Preview) để ngăn ImageKit tự động
+ * optimize / transcode video trên fly, giúp hạn chế phát sinh VPU không cần thiết.
+ * 
+ * - Bảo đảm IDEMPOTENT: gọi nhiều lần vẫn trả về URL chuẩn
+ * - Giữ nguyên query parameters (ví dụ: ?updatedAt=...)
+ * - Giữ nguyên tuyệt đối URL non-ImageKit
+ * - KHÔNG áp dụng cho ảnh
+ */
+const getHeroVideoDeliveryUrl = (url: string | null | undefined): string => {
+  if (!url || typeof url !== 'string') return '';
+  const trimmed = url.trim();
+  if (!trimmed) return '';
+
+  try {
+    const parsed = new URL(trimmed);
+    const host = parsed.hostname.toLowerCase();
+
+    // Chỉ áp dụng cho domain ImageKit (ik.imagekit.io hoặc imagekit.io)
+    if (!host.includes('imagekit.io')) {
+      return trimmed;
+    }
+
+    // Nếu đã có orig-true thì giữ nguyên (Idempotent 100%)
+    if (parsed.pathname.includes('orig-true') || parsed.search.includes('orig-true')) {
+      return trimmed;
+    }
+
+    // Cấu trúc URL ImageKit tiêu chuẩn:
+    // https://ik.imagekit.io/<imagekit_id>/<asset_path>
+    const parts = parsed.pathname.split('/').filter(Boolean);
+    if (parts.length >= 2) {
+      const imageKitId = parts[0];
+      const restPath = parts.slice(1).join('/');
+      parsed.pathname = `/${imageKitId}/tr:orig-true/${restPath}`;
+      return parsed.toString();
+    } else {
+      parsed.searchParams.set('tr', 'orig-true');
+      return parsed.toString();
+    }
+  } catch {
+    // Fallback an toàn nếu URL không parse được bằng URL constructor
+    if (trimmed.includes('ik.imagekit.io') && !trimmed.includes('orig-true')) {
+      const match = trimmed.match(/^(https?:\/\/ik\.imagekit\.io\/[^/?#]+)(\/.*)$/);
+      if (match) {
+        return `${match[1]}/tr:orig-true${match[2]}`;
+      }
+    }
+    return trimmed;
+  }
+};
+
 const getCanonicalMediaUrl = (url: string | null | undefined): string => {
   if (!url) return '';
   let clean = url.trim().replace(/^\[VIDEO\]|^video:/i, '');
   if (clean.includes('#poster=')) clean = clean.split('#poster=')[0];
   if (clean.includes('::poster::')) clean = clean.split('::poster::')[0];
+  // Bóc tách tr:orig-true nếu có để canonical identity luôn khớp với URL Admin gốc
+  clean = clean.replace(/\/tr:orig-true(?=\/|$)/i, '').replace(/([?&])tr=orig-true(&|$)/i, '$1');
   try {
     const parsed = new URL(clean);
     const searchParams = new URLSearchParams(parsed.search);
@@ -236,6 +291,7 @@ const getCanonicalMediaUrl = (url: string | null | undefined): string => {
     searchParams.delete('_t');
     searchParams.delete('t');
     searchParams.delete('v');
+    searchParams.delete('tr');
     const newQuery = searchParams.toString();
     parsed.search = newQuery ? `?${newQuery}` : '';
     parsed.hash = '';
@@ -823,11 +879,12 @@ const HeroCinematicVideo = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   const [hasError, setHasError] = useState(false);
   const cleanPoster = poster && poster.trim() ? poster.trim() : undefined;
+  const deliverySrc = getHeroVideoDeliveryUrl(src);
 
   // Xử lý play/pause/reset khi slide thay đổi active state
   useEffect(() => {
     const video = videoRef.current;
-    if (!video || hasError || !src) return;
+    if (!video || hasError || !deliverySrc) return;
 
     if (isActive) {
       try {
@@ -849,13 +906,13 @@ const HeroCinematicVideo = ({
         // ignore
       }
     }
-  }, [isActive, hasError, src]);
+  }, [isActive, hasError, deliverySrc]);
 
   // Xử lý tạm dừng khi ẩn tab trình duyệt và tiếp tục khi mở lại
   useEffect(() => {
     const handleVisibilityChange = () => {
       const video = videoRef.current;
-      if (!video || !isActive || hasError || !src) return;
+      if (!video || !isActive || hasError || !deliverySrc) return;
       if (document.hidden) {
         try {
           video.pause();
@@ -878,17 +935,17 @@ const HeroCinematicVideo = ({
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [isActive, hasError, src]);
+  }, [isActive, hasError, deliverySrc]);
 
   // Fallback timer: nếu video bị lỗi hoặc thiếu URL, tự động chuyển sau 6.5s để không bị kẹt carousel
   useEffect(() => {
-    if ((hasError || !src) && isActive && !isSingleMedia) {
+    if ((hasError || !deliverySrc) && isActive && !isSingleMedia) {
       const errorTimer = setTimeout(() => {
         onEnded();
       }, 6500);
       return () => clearTimeout(errorTimer);
     }
-  }, [hasError, src, isActive, isSingleMedia, onEnded]);
+  }, [hasError, deliverySrc, isActive, isSingleMedia, onEnded]);
 
   const handleEnded = () => {
     // Nếu chỉ có 1 media thì loop liên tục, không gọi nextSlide
@@ -896,7 +953,7 @@ const HeroCinematicVideo = ({
     onEnded();
   };
 
-  if (hasError || !src) {
+  if (hasError || !deliverySrc) {
     if (cleanPoster) {
       return (
         <img
@@ -936,7 +993,7 @@ const HeroCinematicVideo = ({
       )}
       <video
         ref={videoRef}
-        src={src}
+        src={deliverySrc}
         poster={cleanPoster}
         autoPlay
         muted
@@ -1907,7 +1964,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
             >
               {isVideo ? (
                 <HeroCinematicVideo
-                  src={slide.media_url || slide.image_url}
+                  src={getHeroVideoDeliveryUrl(slide.media_url || slide.image_url)}
                   poster={slide.poster_url?.trim() ? slide.poster_url.trim() : undefined}
                   isActive={isCurrent}
                   isSingleMedia={displayHeroSlides.length === 1}
@@ -3509,8 +3566,7 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                               parsed.media_url ? (
                                 <video
                                   key={parsed.media_url}
-                                  src={parsed.media_url}
-                                  poster={parsed.poster_url?.trim() ? parsed.poster_url.trim() : undefined}
+                                  src={getHeroVideoDeliveryUrl(parsed.media_url)}
                                   controls
                                   muted
                                   playsInline
@@ -3549,38 +3605,18 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                           {/* Inputs Fields */}
                           <div className="flex-1 w-full space-y-4">
                             {isVideo ? (
-                              <>
-                                <div className="space-y-1.5">
-                                  <label className="text-[10px] font-black uppercase text-rose-800 tracking-wider flex items-center gap-1.5">
-                                    <span>🎥</span>
-                                    <span>ĐƯỜNG DẪN VIDEO (URL MP4 / WEBM)</span>
-                                  </label>
-                                  <input
-                                    value={parsed.media_url}
-                                    onChange={e => updateCurrentSlide({ media_url: e.target.value })}
-                                    className="w-full p-3.5 bg-white border border-stone-200 rounded-2xl text-xs font-mono text-stone-800 focus:outline-none focus:border-rose-600 shadow-inner"
-                                    placeholder="https://... Link file video .mp4, .webm"
-                                  />
-                                </div>
-                                <div className="space-y-1.5">
-                                  <label className="text-[10px] font-black uppercase text-stone-600 tracking-wider flex items-center justify-between">
-                                    <span className="flex items-center gap-1.5">
-                                      <span>🖼️</span>
-                                      <span>POSTER / FALLBACK IMAGE URL (TÙY CHỌN)</span>
-                                    </span>
-                                    <span className="text-[9px] font-bold text-stone-400 lowercase italic">(optional)</span>
-                                  </label>
-                                  <input
-                                    value={parsed.poster_url || ''}
-                                    onChange={e => updateCurrentSlide({ poster_url: e.target.value })}
-                                    className="w-full p-3.5 bg-white border border-stone-200 rounded-2xl text-xs font-mono text-stone-800 focus:outline-none focus:border-amber-700 shadow-inner"
-                                    placeholder="https://... Link ảnh poster (để trống nếu không muốn dùng poster riêng)"
-                                  />
-                                  <p className="text-[10px] text-stone-400 italic">
-                                    Để trống nếu không muốn sử dụng poster riêng. Video sẽ tự động hiển thị khung hình đầu tiên.
-                                  </p>
-                                </div>
-                              </>
+                              <div className="space-y-1.5">
+                                <label className="text-[10px] font-black uppercase text-rose-800 tracking-wider flex items-center gap-1.5">
+                                  <span>🎥</span>
+                                  <span>ĐƯỜNG DẪN VIDEO (URL MP4 / WEBM)</span>
+                                </label>
+                                <input
+                                  value={parsed.media_url}
+                                  onChange={e => updateCurrentSlide({ media_url: e.target.value })}
+                                  className="w-full p-3.5 bg-white border border-stone-200 rounded-2xl text-xs font-mono text-stone-800 focus:outline-none focus:border-rose-600 shadow-inner"
+                                  placeholder="https://... Link file video .mp4, .webm"
+                                />
+                              </div>
                             ) : (
                               <div className="space-y-1.5">
                                 <label className="text-[10px] font-black uppercase text-amber-900 tracking-wider flex items-center gap-1.5">
