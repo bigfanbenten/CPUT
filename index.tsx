@@ -158,6 +158,8 @@ export function getDishCalories(dish: Dish): string {
   }
 }
 
+export type HeroAspectMode = 'auto' | 'landscape' | 'portrait';
+
 interface HeroSlide {
   id: string;
   image_url: string;
@@ -165,7 +167,8 @@ interface HeroSlide {
   media_type?: 'image' | 'video';
   media_url?: string;
   poster_url?: string;
-  aspect_ratio?: 'auto' | 'landscape' | 'portrait';
+  aspect_mode?: HeroAspectMode;
+  aspect_ratio?: HeroAspectMode;
 }
 
 const DEFAULT_HERO_POSTER = 'https://images.unsplash.com/photo-1599354607459-81c8b0d90bf5?q=80&w=1167&auto=format&fit=crop&ixlib=rb-4.1.0';
@@ -193,27 +196,12 @@ const isVideoExtension = (url: string | null | undefined): boolean => {
   return clean.endsWith('.mp4') || clean.endsWith('.webm') || clean.endsWith('.ogg') || clean.endsWith('.mov') || clean.endsWith('.m4v') || clean.endsWith('.m3u8');
 };
 
-/**
- * Kiểm tra xem media có phải định dạng dọc (Portrait / 9:16 Shorts) hay không:
- * - Dựa trên cấu hình explicit 'portrait' hoặc 'landscape'
- * - Hoặc nhận diện tự động từ URL chứa /shorts/, #portrait, #vertical, #9:16
- */
-const isPortraitMedia = (url: string | null | undefined, explicitAspect?: string): boolean => {
-  if (explicitAspect === 'portrait') return true;
-  if (explicitAspect === 'landscape') return false;
-  if (!url || typeof url !== 'string') return false;
-  const lower = url.toLowerCase();
-  if (lower.includes('/shorts/')) return true;
-  if (lower.includes('#portrait') || lower.includes('#vertical') || lower.includes('#9:16') || lower.includes('::portrait')) return true;
-  return false;
-};
-
 const parseHeroSlide = (slide: HeroSlide): HeroSlide => {
   const rawUrl = slide.image_url || '';
   let media_type: 'image' | 'video' = 'image';
   let media_url = rawUrl;
   let poster_url = slide.poster_url || '';
-  let aspect_ratio: 'auto' | 'landscape' | 'portrait' = slide.aspect_ratio || 'auto';
+  let aspect_mode: HeroAspectMode = slide.aspect_mode || slide.aspect_ratio || 'auto';
 
   if (rawUrl.startsWith('[VIDEO]') || rawUrl.startsWith('video:')) {
     media_type = 'video';
@@ -224,10 +212,11 @@ const parseHeroSlide = (slide: HeroSlide): HeroSlide => {
     media_type = 'video';
   }
 
-  if (media_url.includes('#portrait') || rawUrl.includes('#portrait') || media_url.includes('#vertical') || media_url.includes('#9:16')) {
-    aspect_ratio = 'portrait';
-  } else if (media_url.includes('#landscape') || rawUrl.includes('#landscape')) {
-    aspect_ratio = 'landscape';
+  // Nhận diện hashtag định dạng trong URL (nếu có lưu từ trước)
+  if (media_url.includes('#landscape') || rawUrl.includes('#landscape')) {
+    aspect_mode = 'landscape';
+  } else if (media_url.includes('#portrait') || rawUrl.includes('#portrait') || media_url.includes('#vertical') || media_url.includes('#9:16')) {
+    aspect_mode = 'portrait';
   }
 
   if (media_url.includes('#poster=')) {
@@ -241,14 +230,15 @@ const parseHeroSlide = (slide: HeroSlide): HeroSlide => {
   }
 
   // Loại bỏ các hashtag định dạng khỏi media_url để không ảnh hưởng đến trình phát
-  media_url = media_url.replace(/#(portrait|landscape|vertical|9:16)/gi, '');
+  media_url = media_url.replace(/#(landscape|portrait|vertical|9:16)/gi, '');
 
   return {
     ...slide,
     media_type,
     media_url: media_url.trim(),
     poster_url: poster_url.trim(),
-    aspect_ratio,
+    aspect_mode,
+    aspect_ratio: aspect_mode,
     quote: slide.quote || ''
   };
 };
@@ -257,7 +247,7 @@ const serializeHeroSlide = (slide: HeroSlide): { id?: string; image_url: string;
   const type = slide.media_type || (isVideoExtension(slide.media_url || slide.image_url) ? 'video' : 'image');
   let finalUrl = (slide.media_url !== undefined ? slide.media_url : slide.image_url) || '';
   finalUrl = finalUrl.trim();
-  finalUrl = finalUrl.replace(/#(portrait|landscape|vertical|9:16)/gi, '');
+  finalUrl = finalUrl.replace(/#(landscape|portrait|vertical|9:16)/gi, '');
 
   if (type === 'video') {
     if (!isVideoExtension(finalUrl) && !finalUrl.startsWith('[VIDEO]')) {
@@ -265,10 +255,11 @@ const serializeHeroSlide = (slide: HeroSlide): { id?: string; image_url: string;
     }
   }
 
-  if (slide.aspect_ratio === 'portrait') {
-    finalUrl = `${finalUrl}#portrait`;
-  } else if (slide.aspect_ratio === 'landscape') {
+  const mode = slide.aspect_mode || slide.aspect_ratio || 'auto';
+  if (mode === 'landscape') {
     finalUrl = `${finalUrl}#landscape`;
+  } else if (mode === 'portrait') {
+    finalUrl = `${finalUrl}#portrait`;
   }
 
   if (type === 'video' && slide.poster_url && slide.poster_url.trim()) {
@@ -979,14 +970,14 @@ const HeroCinematicVideo = ({
   isActive,
   isSingleMedia,
   onEnded,
-  isPortrait
+  aspectMode = 'auto'
 }: {
   src: string;
   poster?: string;
   isActive: boolean;
   isSingleMedia: boolean;
   onEnded: () => void;
-  isPortrait?: boolean;
+  aspectMode?: HeroAspectMode;
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
@@ -994,7 +985,7 @@ const HeroCinematicVideo = ({
   const ytContainerRef = useRef<HTMLDivElement>(null);
   const [errorSrc, setErrorSrc] = useState<string | null>(null);
   const [detectedSrc, setDetectedSrc] = useState<string | null>(null);
-  const [isAutoDetectedPortrait, setIsAutoDetectedPortrait] = useState<boolean>(false);
+  const [detectedAspect, setDetectedAspect] = useState<'landscape' | 'portrait' | null>(null);
   const hasTriggeredNextRef = useRef(false);
   const startupTimerRef = useRef<NodeJS.Timeout | null>(null);
   const watchdogTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -1010,14 +1001,30 @@ const HeroCinematicVideo = ({
   const isYoutube = useMemo(() => isYouTubeUrl(deliverySrc), [deliverySrc]);
   const youtubeId = useMemo(() => getYouTubeId(deliverySrc), [deliverySrc]);
 
-  const isShorts = useMemo(() => {
-    if (!deliverySrc) return false;
-    const lower = deliverySrc.toLowerCase();
-    return lower.includes('/shorts/') || lower.includes('#portrait') || lower.includes('#vertical') || lower.includes('#9:16');
-  }, [deliverySrc]);
+  // QUYẾT ĐỊNH FRAMING THEO ĐÚNG TIÊU CHUẨN ĐỘC LẬP VỚI PROVIDER:
+  // 1. aspectMode === 'landscape' (16:9 NGANG) => LUÔN LUÔN LANDSCAPE FULL-BLEED (kể cả Shorts, bỏ qua mọi thứ)
+  // 2. aspectMode === 'portrait' (9:16 DỌC)   => LUÔN LUÔN PORTRAIT STAGE
+  // 3. aspectMode === 'auto' (TỰ ĐỘNG):
+  //    - YouTube: chỉ /shorts/ mới là portrait, tất cả link youtube còn lại là landscape
+  //    - MP4 / WebM / Bunny HLS: chỉ khi metadata videoHeight > videoWidth mới là portrait
+  //    - Mặc định an toàn: LUÔN LÀ LANDSCAPE FULL-BLEED
+  const isEffectivePortrait = useMemo(() => {
+    if (aspectMode === 'landscape') return false;
+    if (aspectMode === 'portrait') return true;
 
-  const currentAutoDetected = detectedSrc === deliverySrc ? isAutoDetectedPortrait : false;
-  const isEffectivePortrait = Boolean(isPortrait || isShorts || currentAutoDetected);
+    // Mode AUTO:
+    if (isYoutube) {
+      const lower = deliverySrc.toLowerCase();
+      return lower.includes('/shorts/');
+    }
+
+    if (detectedSrc === deliverySrc && detectedAspect !== null) {
+      return detectedAspect === 'portrait';
+    }
+
+    // Fallback an toàn: LANDSCAPE full-width cinematic
+    return false;
+  }, [aspectMode, isYoutube, deliverySrc, detectedSrc, detectedAspect]);
 
   const isHlsSupportedInBrowser = useMemo(() => {
     if (typeof document === 'undefined') return true;
@@ -1568,9 +1575,9 @@ const HeroCinematicVideo = ({
           const v = e.currentTarget;
           setDetectedSrc(deliverySrc);
           if (v.videoWidth && v.videoHeight && v.videoHeight > v.videoWidth) {
-            setIsAutoDetectedPortrait(true);
+            setDetectedAspect('portrait');
           } else {
-            setIsAutoDetectedPortrait(false);
+            setDetectedAspect('landscape');
           }
         }}
         onError={() => {
@@ -1592,21 +1599,27 @@ const HeroCinematicVideo = ({
 const HeroCinematicImage = ({
   src,
   alt,
-  isPortrait
+  aspectMode = 'auto'
 }: {
   src: string;
   alt: string;
-  isPortrait?: boolean;
+  aspectMode?: HeroAspectMode;
 }) => {
   const [detectedImgSrc, setDetectedImgSrc] = useState<string | null>(null);
-  const [isAutoDetectedPortrait, setIsAutoDetectedPortrait] = useState<boolean>(false);
+  const [detectedImgAspect, setDetectedImgAspect] = useState<'landscape' | 'portrait' | null>(null);
 
-  const currentAutoDetected = detectedImgSrc === src ? isAutoDetectedPortrait : false;
-  const isEffectivePortrait = Boolean(isPortrait || currentAutoDetected);
+  const isEffectivePortrait = useMemo(() => {
+    if (aspectMode === 'landscape') return false;
+    if (aspectMode === 'portrait') return true;
+    if (detectedImgSrc === src && detectedImgAspect !== null) {
+      return detectedImgAspect === 'portrait';
+    }
+    return false;
+  }, [aspectMode, src, detectedImgSrc, detectedImgAspect]);
 
   return (
     <div className="relative w-full h-full overflow-hidden bg-stone-950 flex items-center justify-center">
-      {/* Layer 1 — Background: Cinematic Blur Stage cho Ảnh dọc trên Desktop (>= 1024px) */}
+      {/* Layer 1 — Background: Chỉ render khi PORTRAIT trên Desktop (>= 1024px) */}
       {isEffectivePortrait && (
         <div className="hidden lg:block absolute inset-0 overflow-hidden pointer-events-none -z-10">
           <img
@@ -1630,9 +1643,9 @@ const HeroCinematicImage = ({
           const img = e.currentTarget;
           setDetectedImgSrc(src);
           if (img.naturalHeight && img.naturalWidth && img.naturalHeight > img.naturalWidth) {
-            setIsAutoDetectedPortrait(true);
+            setDetectedImgAspect('portrait');
           } else {
-            setIsAutoDetectedPortrait(false);
+            setDetectedImgAspect('landscape');
           }
         }}
         onError={(e) => {
@@ -2686,7 +2699,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
         {displayHeroSlides.map((slide: HeroSlide, index: number) => {
           const isCurrent = index === currentSlide;
           const isVideo = slide.media_type === 'video';
-          const isPortrait = isPortraitMedia(slide.media_url || slide.image_url, slide.aspect_ratio);
+          const slideAspectMode = slide.aspect_mode || slide.aspect_ratio || 'auto';
 
           return (
             <div
@@ -2702,13 +2715,13 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
                   isActive={isCurrent}
                   isSingleMedia={displayHeroSlides.length === 1}
                   onEnded={nextHeroSlide}
-                  isPortrait={isPortrait}
+                  aspectMode={slideAspectMode}
                 />
               ) : (
                 <HeroCinematicImage
                   src={slide.media_url || slide.image_url}
                   alt={slide.quote || 'Cơm Phần Út Trinh'}
-                  isPortrait={isPortrait}
+                  aspectMode={slideAspectMode}
                 />
               )}
               {/* Lớp phủ cinematic bảo đảm tương phản chữ nhưng không làm tối hoặc biến đổi màu thức ăn */}
@@ -2726,12 +2739,14 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
                   <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
                   <span>
                     {isYouTubeUrl(activeHeroSlide.media_url || activeHeroSlide.image_url)
-                      ? (isPortraitMedia(activeHeroSlide.media_url || activeHeroSlide.image_url, activeHeroSlide.aspect_ratio)
+                      ? (activeHeroSlide.aspect_mode === 'portrait' || (activeHeroSlide.aspect_mode !== 'landscape' && (activeHeroSlide.media_url || activeHeroSlide.image_url || '').toLowerCase().includes('/shorts/'))
                           ? '▶️ YOUTUBE SHORTS (9:16)'
-                          : '▶️ YOUTUBE VIDEO')
+                          : '▶️ YOUTUBE VIDEO (16:9)')
                       : isHlsUrl(activeHeroSlide.media_url || activeHeroSlide.image_url)
-                      ? '⚡ BUNNY HLS VIDEO'
-                      : (isPortraitMedia(activeHeroSlide.media_url || activeHeroSlide.image_url, activeHeroSlide.aspect_ratio)
+                      ? (activeHeroSlide.aspect_mode === 'portrait'
+                          ? '⚡ BUNNY HLS (9:16)'
+                          : '⚡ BUNNY HLS VIDEO')
+                      : (activeHeroSlide.aspect_mode === 'portrait'
                           ? '🎥 CINEMATIC PORTRAIT (9:16)'
                           : '🎥 CINEMATIC VIDEO')}
                   </span>
@@ -2740,7 +2755,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
                 <>
                   <span className="w-2 h-2 rounded-full bg-amber-400" />
                   <span>
-                    {isPortraitMedia(activeHeroSlide.media_url || activeHeroSlide.image_url, activeHeroSlide.aspect_ratio)
+                    {activeHeroSlide.aspect_mode === 'portrait'
                       ? '🖼️ HIGH-RES PORTRAIT (9:16)'
                       : '🖼️ HIGH-RES IMAGE'}
                   </span>
@@ -4223,7 +4238,14 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                       if (updates.media_type !== undefined) updated.media_type = updates.media_type;
                       if (updates.media_url !== undefined) updated.media_url = updates.media_url;
                       if (updates.poster_url !== undefined) updated.poster_url = updates.poster_url;
-                      if (updates.aspect_ratio !== undefined) updated.aspect_ratio = updates.aspect_ratio;
+                      if (updates.aspect_mode !== undefined) {
+                        updated.aspect_mode = updates.aspect_mode;
+                        updated.aspect_ratio = updates.aspect_mode;
+                      }
+                      if (updates.aspect_ratio !== undefined) {
+                        updated.aspect_mode = updates.aspect_ratio;
+                        updated.aspect_ratio = updates.aspect_ratio;
+                      }
                       if (updates.quote !== undefined) updated.quote = updates.quote;
 
                       const serialized = serializeHeroSlide(updated);
@@ -4277,37 +4299,37 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                             <div className="inline-flex p-1 bg-stone-200/70 rounded-2xl gap-1">
                               <button
                                 type="button"
-                                onClick={() => updateCurrentSlide({ aspect_ratio: 'auto' })}
+                                onClick={() => updateCurrentSlide({ aspect_mode: 'auto' })}
                                 className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
-                                  !parsed.aspect_ratio || parsed.aspect_ratio === 'auto'
+                                  !parsed.aspect_mode || parsed.aspect_mode === 'auto'
                                     ? 'bg-stone-800 text-white shadow-sm'
                                     : 'text-stone-600 hover:text-stone-900'
                                 }`}
-                                title="Tự động nhận diện (Shorts / video dọc sẽ tự bật Blur Background trên Desktop)"
+                                title="Tự động nhận diện (video 16:9 full-bleed cover, chỉ video dọc mới bật Blur Background trên Desktop)"
                               >
                                 ⚙️ TỰ ĐỘNG
                               </button>
                               <button
                                 type="button"
-                                onClick={() => updateCurrentSlide({ aspect_ratio: 'landscape' })}
+                                onClick={() => updateCurrentSlide({ aspect_mode: 'landscape' })}
                                 className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
-                                  parsed.aspect_ratio === 'landscape'
+                                  parsed.aspect_mode === 'landscape'
                                     ? 'bg-amber-800 text-white shadow-sm'
                                     : 'text-stone-600 hover:text-stone-900'
                                 }`}
-                                title="Cố định khung ngang 16:9 full-bleed cover"
+                                title="Bắt buộc khung ngang 16:9 Full-bleed cover toàn Hero stage (kể cả YouTube Shorts)"
                               >
                                 🖥️ 16:9 NGANG
                               </button>
                               <button
                                 type="button"
-                                onClick={() => updateCurrentSlide({ aspect_ratio: 'portrait' })}
+                                onClick={() => updateCurrentSlide({ aspect_mode: 'portrait' })}
                                 className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
-                                  parsed.aspect_ratio === 'portrait'
+                                  parsed.aspect_mode === 'portrait'
                                     ? 'bg-rose-700 text-white shadow-sm'
                                     : 'text-stone-600 hover:text-stone-900'
                                 }`}
-                                title="Cố định khung dọc 9:16 (Shorts) với Blur Background Stage trên Desktop"
+                                title="Bắt buộc khung dọc 9:16 (Shorts/Reels) ở giữa với Blur Background Stage trên Desktop"
                               >
                                 📱 9:16 DỌC / SHORTS
                               </button>
