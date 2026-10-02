@@ -66,10 +66,15 @@ interface VotePoll {
 }
 
 const getYouTubeId = (url: string | null | undefined): string | null => {
-  if (!url) return null;
-  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-  const match = url.match(regExp);
-  return (match && match[2].length === 11) ? match[2] : null;
+  if (!url || typeof url !== 'string') return null;
+  const trimmed = url.trim();
+  const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|shorts\/|watch\?v=|&v=)([^#&?]*).*/i;
+  const match = trimmed.match(regExp);
+  return (match && match[2] && match[2].length === 11) ? match[2] : null;
+};
+
+const isYouTubeUrl = (url: string | null | undefined): boolean => {
+  return Boolean(getYouTubeId(url));
 };
 
 enum Category {
@@ -182,6 +187,7 @@ const isHlsUrl = (url: string | null | undefined): boolean => {
 const isVideoExtension = (url: string | null | undefined): boolean => {
   if (!url) return false;
   if (isHlsUrl(url)) return true;
+  if (isYouTubeUrl(url)) return true;
   const clean = url.split('#')[0].split('?')[0].toLowerCase();
   return clean.endsWith('.mp4') || clean.endsWith('.webm') || clean.endsWith('.ogg') || clean.endsWith('.mov') || clean.endsWith('.m4v') || clean.endsWith('.m3u8');
 };
@@ -303,6 +309,10 @@ const getCanonicalMediaUrl = (url: string | null | undefined): string => {
   let clean = url.trim().replace(/^\[VIDEO\]|^video:/i, '');
   if (clean.includes('#poster=')) clean = clean.split('#poster=')[0];
   if (clean.includes('::poster::')) clean = clean.split('::poster::')[0];
+  const ytId = getYouTubeId(clean);
+  if (ytId) {
+    return `youtube:${ytId}`;
+  }
   // Bóc tách tr:orig-true nếu có để canonical identity luôn khớp với URL Admin gốc
   clean = clean.replace(/\/tr:orig-true(?=\/|$)/i, '').replace(/([?&])tr=orig-true(&|$)/i, '$1');
   try {
@@ -884,7 +894,7 @@ const ThemeSwitcher = ({ currentTheme, onThemeChange }: any) => {
   );
 };
 
-// Component hiển thị Video Hero Cinematic trên Trang chủ (Hỗ trợ MP4, WEBM và Bunny HLS .m3u8)
+// Component hiển thị Video Hero Cinematic trên Trang chủ (Hỗ trợ MP4, WEBM, Bunny HLS .m3u8 và YouTube)
 const HeroCinematicVideo = ({
   src,
   poster,
@@ -900,21 +910,48 @@ const HeroCinematicVideo = ({
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
+  const youtubeIframeRef = useRef<HTMLIFrameElement>(null);
   const [errorSrc, setErrorSrc] = useState<string | null>(null);
   const hasTriggeredNextRef = useRef(false);
   const cleanPoster = poster && poster.trim() ? poster.trim() : undefined;
   const deliverySrc = useMemo(() => getHeroVideoDeliveryUrl(src), [src]);
   const isHls = useMemo(() => isHlsUrl(deliverySrc), [deliverySrc]);
+  const isYoutube = useMemo(() => isYouTubeUrl(deliverySrc), [deliverySrc]);
+  const youtubeId = useMemo(() => getYouTubeId(deliverySrc), [deliverySrc]);
+
   const isHlsSupportedInBrowser = useMemo(() => {
     if (typeof document === 'undefined') return true;
     const v = document.createElement('video');
     const canNative = v.canPlayType('application/vnd.apple.mpegurl');
     return Boolean(canNative === 'probably' || canNative === 'maybe' || Hls.isSupported());
   }, []);
-  const hasError = Boolean(!deliverySrc || (isHls && !isHlsSupportedInBrowser) || (errorSrc && errorSrc === deliverySrc));
+
+  const hasError = Boolean(
+    !deliverySrc ||
+    (isYoutube && !youtubeId) ||
+    (isHls && !isHlsSupportedInBrowser) ||
+    (errorSrc && errorSrc === deliverySrc)
+  );
 
   const handleNext = useCallback(() => {
     if (isSingleMedia) {
+      if (isYoutube) {
+        if (youtubeIframeRef.current?.contentWindow) {
+          try {
+            youtubeIframeRef.current.contentWindow.postMessage(
+              JSON.stringify({ event: 'command', func: 'seekTo', args: [0, true] }),
+              '*'
+            );
+            youtubeIframeRef.current.contentWindow.postMessage(
+              JSON.stringify({ event: 'command', func: 'playVideo', args: [] }),
+              '*'
+            );
+          } catch {
+            // ignore
+          }
+        }
+        return;
+      }
       if (videoRef.current) {
         videoRef.current.currentTime = 0;
         const playPromise = videoRef.current.play();
@@ -925,10 +962,75 @@ const HeroCinematicVideo = ({
     if (hasTriggeredNextRef.current) return;
     hasTriggeredNextRef.current = true;
     onEnded();
-  }, [isSingleMedia, onEnded]);
+  }, [isSingleMedia, isYoutube, onEnded]);
+
+  // Quản lý trạng thái và lifecycle của YouTube iframe theo active slide
+  useEffect(() => {
+    if (!isYoutube) return;
+
+    if (isActive) {
+      hasTriggeredNextRef.current = false;
+      if (youtubeIframeRef.current?.contentWindow) {
+        try {
+          youtubeIframeRef.current.contentWindow.postMessage(
+            JSON.stringify({ event: 'command', func: 'playVideo', args: [] }),
+            '*'
+          );
+        } catch {
+          // ignore
+        }
+      }
+    } else {
+      if (youtubeIframeRef.current?.contentWindow) {
+        try {
+          youtubeIframeRef.current.contentWindow.postMessage(
+            JSON.stringify({ event: 'command', func: 'pauseVideo', args: [] }),
+            '*'
+          );
+        } catch {
+          // ignore
+        }
+      }
+    }
+  }, [isActive, isYoutube]);
+
+  // Lắng nghe sự kiện kết thúc video từ YouTube postMessage (Chỉ nhận từ chính iframe này)
+  useEffect(() => {
+    if (!isYoutube || !isActive) return;
+
+    const handleMessage = (event: MessageEvent) => {
+      if (!youtubeIframeRef.current || event.source !== youtubeIframeRef.current.contentWindow) {
+        return;
+      }
+
+      try {
+        const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+        if (!data) return;
+
+        const isEnded =
+          (data.event === 'infoDelivery' && data.info && data.info.playerState === 0) ||
+          (data.event === 'onStateChange' && data.info === 0);
+
+        if (isEnded) {
+          handleNext();
+        }
+
+        if (data.event === 'onError') {
+          setErrorSrc(deliverySrc);
+        }
+      } catch {
+        // ignore
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [isYoutube, isActive, handleNext, deliverySrc]);
 
   // Xử lý HLS & MP4 playback theo active state (Tối ưu Mobile First & Tiết kiệm Bandwidth)
   useEffect(() => {
+    if (isYoutube) return; // YouTube xử lý độc lập
+
     const video = videoRef.current;
     if (!video) return;
 
@@ -963,9 +1065,7 @@ const HeroCinematicVideo = ({
         video.currentTime = 0;
         const playPromise = video.play();
         if (playPromise !== undefined) {
-          playPromise.catch(() => {
-            // graceful fallback if browser blocks autoplay
-          });
+          playPromise.catch(() => {});
         }
       } else if (Hls.isSupported()) {
         // hls.js (Android Chrome, Desktop Chrome, Firefox, Edge)
@@ -1047,13 +1147,30 @@ const HeroCinematicVideo = ({
         hlsRef.current = null;
       }
     };
-  }, [isActive, deliverySrc, isHls]);
+  }, [isActive, deliverySrc, isHls, isYoutube]);
 
   // Xử lý tạm dừng khi ẩn tab trình duyệt và tiếp tục khi mở lại
   useEffect(() => {
     const handleVisibilityChange = () => {
+      if (!isActive) return;
+
+      if (isYoutube) {
+        if (youtubeIframeRef.current?.contentWindow) {
+          try {
+            const cmd = document.hidden ? 'pauseVideo' : 'playVideo';
+            youtubeIframeRef.current.contentWindow.postMessage(
+              JSON.stringify({ event: 'command', func: cmd, args: [] }),
+              '*'
+            );
+          } catch {
+            // ignore
+          }
+        }
+        return;
+      }
+
       const video = videoRef.current;
-      if (!video || !isActive || hasError || !deliverySrc) return;
+      if (!video || hasError || !deliverySrc) return;
       if (document.hidden) {
         try {
           video.pause();
@@ -1076,7 +1193,7 @@ const HeroCinematicVideo = ({
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [isActive, hasError, deliverySrc]);
+  }, [isActive, hasError, deliverySrc, isYoutube]);
 
   // Fallback timer: nếu video bị lỗi hoặc thiếu URL, tự động chuyển sau 6.5s để không bị kẹt carousel
   useEffect(() => {
@@ -1094,7 +1211,7 @@ const HeroCinematicVideo = ({
         <img
           src={cleanPoster}
           alt="Hero Media Fallback"
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover object-center"
           loading="eager"
         />
       );
@@ -1115,6 +1232,52 @@ const HeroCinematicVideo = ({
     );
   }
 
+  // Render YouTube Provider
+  if (isYoutube && youtubeId) {
+    const embedOrigin = typeof window !== 'undefined' ? window.location.origin : '';
+    return (
+      <div className="relative w-full h-full overflow-hidden bg-stone-950 flex items-center justify-center">
+        {cleanPoster ? (
+          <img
+            src={cleanPoster}
+            alt="Poster Fallback"
+            className="absolute inset-0 w-full h-full object-cover object-center -z-10 pointer-events-none"
+            loading="eager"
+          />
+        ) : (
+          <img
+            src={`https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`}
+            alt="YouTube Fallback"
+            className="absolute inset-0 w-full h-full object-cover object-center -z-10 pointer-events-none opacity-40 blur-sm scale-105"
+            loading="eager"
+          />
+        )}
+        {isActive && (
+          <div className="absolute inset-0 w-full h-full overflow-hidden flex items-center justify-center pointer-events-none">
+            <iframe
+              ref={youtubeIframeRef}
+              src={`https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=1&mute=1&controls=0&rel=0&playsinline=1&enablejsapi=1&modestbranding=1&showinfo=0&iv_load_policy=3&disablekb=1&fs=0${isSingleMedia ? `&loop=1&playlist=${youtubeId}` : ''}${embedOrigin ? `&origin=${encodeURIComponent(embedOrigin)}` : ''}`}
+              title="Hero Cinematic YouTube"
+              allow="autoplay; encrypted-media; picture-in-picture"
+              className="border-0 pointer-events-none"
+              style={{
+                width: '177.78vh',
+                minWidth: '100%',
+                height: '56.25vw',
+                minHeight: '100%',
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)'
+              }}
+            />
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Render Native HLS / hls.js / ImageKit MP4 / WebM Provider
   return (
     <div className="relative w-full h-full overflow-hidden bg-stone-950">
       {/* Background poster ngăn ngừa chớp trắng / đen khi video đang load nếu có poster thủ công */}
@@ -1122,7 +1285,7 @@ const HeroCinematicVideo = ({
         <img
           src={cleanPoster}
           alt="Poster Fallback"
-          className="absolute inset-0 w-full h-full object-cover -z-10 pointer-events-none"
+          className="absolute inset-0 w-full h-full object-cover object-center -z-10 pointer-events-none"
           loading="eager"
         />
       )}
@@ -1140,7 +1303,7 @@ const HeroCinematicVideo = ({
             setHasError(true);
           }
         }}
-        className="w-full h-full object-cover pointer-events-none"
+        className="w-full h-full object-cover object-center pointer-events-none"
       />
     </div>
   );
@@ -1161,22 +1324,25 @@ const HeroCinematicImage = ({
       onError={(e) => {
         (e.currentTarget as HTMLImageElement).src = DEFAULT_HERO_POSTER;
       }}
-      className="w-full h-full object-cover"
+      className="w-full h-full object-cover object-center"
       loading="eager"
     />
   );
 };
 
-// Component xem trước Video trong ACP: Hỗ trợ cả MP4, WEBM và Bunny HLS .m3u8, tiết kiệm bandwidth (autoStartLoad: false)
+// Component xem trước Video trong ACP: Hỗ trợ cả MP4, WEBM, Bunny HLS .m3u8 và YouTube
 const AdminHeroVideoPreview = ({ url }: { url: string }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
   const [errorSrc, setErrorSrc] = useState<string | null>(null);
   const deliverySrc = useMemo(() => getHeroVideoDeliveryUrl(url), [url]);
   const isHls = useMemo(() => isHlsUrl(deliverySrc), [deliverySrc]);
+  const ytId = useMemo(() => getYouTubeId(deliverySrc), [deliverySrc]);
   const hasError = Boolean(!deliverySrc || (errorSrc && errorSrc === deliverySrc));
 
   useEffect(() => {
+    if (ytId) return; // YouTube xử lý qua iframe
+
     const video = videoRef.current;
     if (!video || !deliverySrc) return;
 
@@ -1230,13 +1396,26 @@ const AdminHeroVideoPreview = ({ url }: { url: string }) => {
         hlsRef.current = null;
       }
     };
-  }, [deliverySrc, isHls]);
+  }, [deliverySrc, isHls, ytId]);
 
   if (!deliverySrc) {
     return (
       <div className="text-center p-4 text-stone-400">
         <span className="text-2xl block mb-1">🎥</span>
         <span className="text-[11px] font-bold">Chưa có URL Video</span>
+      </div>
+    );
+  }
+
+  if (ytId) {
+    return (
+      <div className="w-full h-full relative rounded-2xl overflow-hidden bg-black flex items-center justify-center">
+        <iframe
+          src={`https://www.youtube-nocookie.com/embed/${ytId}?controls=1&rel=0&playsinline=1`}
+          title="Admin YouTube Preview"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          className="w-full h-full border-0"
+        />
       </div>
     );
   }
@@ -1258,7 +1437,7 @@ const AdminHeroVideoPreview = ({ url }: { url: string }) => {
       playsInline
       preload="metadata"
       onError={() => setHasError(true)}
-      className="w-full h-full object-cover"
+      className="w-full h-full object-cover object-center"
     />
   );
 };
@@ -2183,8 +2362,8 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
         </div>
       )}
 
-      {/* Cinematic Hero Media (Hỗ trợ Image & Video xen kẽ) */}
-      <header className="relative h-[85vh] md:h-[95vh] flex items-center justify-center overflow-hidden bg-stone-950">
+      {/* Cinematic Hero Media (Hỗ trợ Image & Video xen kẽ, Responsive Framing Mobile & Desktop) */}
+      <header className="hero-cinematic-header relative w-full h-[85vh] min-h-[520px] md:h-[clamp(560px,62vh,700px)] lg:h-[clamp(620px,68vh,820px)] flex items-center justify-center overflow-hidden bg-stone-950">
         {displayHeroSlides.map((slide: HeroSlide, index: number) => {
           const isCurrent = index === currentSlide;
           const isVideo = slide.media_type === 'video';
@@ -2218,12 +2397,18 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
 
         {/* Badge nhận diện loại Media và Số thứ tự Slide */}
         {activeHeroSlide && (
-          <div className="absolute top-28 md:top-32 right-6 md:right-10 z-30 pointer-events-none">
+          <div className="absolute top-28 md:top-36 right-4 md:right-8 lg:right-10 z-30 pointer-events-none">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-stone-900/60 backdrop-blur-md border border-white/15 text-white text-[10px] font-black tracking-widest uppercase shadow-lg">
               {activeHeroSlide.media_type === 'video' ? (
                 <>
                   <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
-                  <span>🎥 CINEMATIC VIDEO</span>
+                  <span>
+                    {isYouTubeUrl(activeHeroSlide.media_url || activeHeroSlide.image_url)
+                      ? '▶️ YOUTUBE VIDEO'
+                      : isHlsUrl(activeHeroSlide.media_url || activeHeroSlide.image_url)
+                      ? '⚡ BUNNY HLS VIDEO'
+                      : '🎥 CINEMATIC VIDEO'}
+                  </span>
                 </>
               ) : (
                 <>
@@ -2260,21 +2445,21 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
         )}
 
         {/* Nội dung trung tâm của Hero */}
-        <div className="relative z-20 text-center px-6 max-w-5xl pt-24">
-          <span className={`${themeData.accent} text-[10px] md:text-xs font-black uppercase tracking-[0.6em] mb-6 block animate-pulse`}>
+        <div className="relative z-20 text-center px-4 md:px-6 max-w-5xl pt-28 md:pt-36 lg:pt-32">
+          <span className={`${themeData.accent} text-[10px] md:text-xs font-black uppercase tracking-[0.6em] mb-4 md:mb-6 block animate-pulse`}>
             Tinh hoa ẩm thực Việt
           </span>
-          <h1 className="text-white text-5xl md:text-[130px] font-black tracking-tighter leading-none mb-8 drop-shadow-2xl">
+          <h1 className="text-white text-4xl sm:text-6xl md:text-8xl lg:text-[115px] font-black tracking-tighter leading-none mb-6 md:mb-8 drop-shadow-2xl">
             ÚT TRINH<br/><span className={`${themeData.accent} italic`}>KITCHEN</span>
           </h1>
-          <p className="text-white/90 text-lg md:text-3xl font-light italic leading-relaxed min-h-[3rem] transition-all duration-700">
+          <p className="text-white/90 text-base sm:text-xl md:text-2xl lg:text-3xl font-light italic leading-relaxed min-h-[3rem] transition-all duration-700 max-w-3xl mx-auto drop-shadow-md">
             "{activeHeroSlide?.quote || 'Nơi lưu giữ hương vị cơm nhà truyền thống'}"
           </p>
         </div>
 
         {/* Thanh Indicator hiển thị tiến trình và cho phép chuyển slide nhanh */}
         {displayHeroSlides.length > 1 && (
-          <div className="absolute bottom-8 left-0 right-0 z-30 flex justify-center items-center gap-2 px-4">
+          <div className="absolute bottom-6 md:bottom-8 left-0 right-0 z-30 flex justify-center items-center gap-2 px-4">
             {displayHeroSlides.map((s, idx) => {
               const isCurrent = idx === currentSlide;
               const isVid = s.media_type === 'video';
@@ -3827,13 +4012,13 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                               <div className="space-y-1.5">
                                 <label className="text-[10px] font-black uppercase text-rose-800 tracking-wider flex items-center gap-1.5">
                                   <span>🎥</span>
-                                  <span>ĐƯỜNG DẪN VIDEO (MP4 / WEBM / Bunny HLS .m3u8)</span>
+                                  <span>ĐƯỜNG DẪN VIDEO (MP4 / WEBM / Bunny HLS .m3u8 / YouTube)</span>
                                 </label>
                                 <input
                                   value={parsed.media_url}
                                   onChange={e => updateCurrentSlide({ media_url: e.target.value })}
                                   className="w-full p-3.5 bg-white border border-stone-200 rounded-2xl text-xs font-mono text-stone-800 focus:outline-none focus:border-rose-600 shadow-inner"
-                                  placeholder="https://... Dán link MP4, WEBM hoặc Bunny HLS playlist.m3u8"
+                                  placeholder="https://... Dán link MP4, WEBM, Bunny HLS (.m3u8) hoặc YouTube (youtube.com / youtu.be)"
                                 />
                               </div>
                             ) : (

@@ -68,6 +68,25 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         html { scroll-behavior: smooth; }
+
+        /* Responsive Cinematic Hero Framing: Mobile-first, Tablet intermediate, Desktop expanded framing */
+        .hero-cinematic-header {
+            height: 85vh;
+            min-height: 520px;
+        }
+        @media (min-width: 768px) {
+            .hero-cinematic-header {
+                height: clamp(560px, 62vh, 700px);
+                min-height: 560px;
+            }
+        }
+        @media (min-width: 1024px) {
+            .hero-cinematic-header {
+                height: clamp(620px, 68vh, 820px);
+                min-height: 620px;
+                max-height: 820px;
+            }
+        }
     </style>
 <script type="importmap">
 {
