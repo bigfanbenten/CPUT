@@ -51,6 +51,7 @@ import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import ReactDOM from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
 import { ChevronRight, ChevronDown, ChevronUp, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, MessageSquare, CheckCircle2, Facebook, Mail, Youtube, Users, Vote, Music, VolumeX, Play, Pause, BarChart2, Check, X, RefreshCw, Shuffle, ExternalLink } from 'lucide-react';
+import Hls from 'hls.js';
 
 // --- CẤU HÌNH CỐ ĐỊNH ---
 const DEFAULT_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co';
@@ -163,10 +164,26 @@ interface HeroSlide {
 
 const DEFAULT_HERO_POSTER = 'https://images.unsplash.com/photo-1599354607459-81c8b0d90bf5?q=80&w=1167&auto=format&fit=crop&ixlib=rb-4.1.0';
 
+/**
+ * Kiểm tra xem URL có phải là luồng HLS (.m3u8) hay không.
+ * Xử lý an toàn cả trường hợp URL có query params (ví dụ: playlist.m3u8?token=...) hoặc hash.
+ */
+const isHlsUrl = (url: string | null | undefined): boolean => {
+  if (!url || typeof url !== 'string') return false;
+  try {
+    const parsed = new URL(url.trim());
+    return parsed.pathname.toLowerCase().endsWith('.m3u8');
+  } catch {
+    const clean = url.trim().split('#')[0].split('?')[0].toLowerCase();
+    return clean.endsWith('.m3u8');
+  }
+};
+
 const isVideoExtension = (url: string | null | undefined): boolean => {
   if (!url) return false;
+  if (isHlsUrl(url)) return true;
   const clean = url.split('#')[0].split('?')[0].toLowerCase();
-  return clean.endsWith('.mp4') || clean.endsWith('.webm') || clean.endsWith('.ogg') || clean.endsWith('.mov') || clean.endsWith('.m4v');
+  return clean.endsWith('.mp4') || clean.endsWith('.webm') || clean.endsWith('.ogg') || clean.endsWith('.mov') || clean.endsWith('.m4v') || clean.endsWith('.m3u8');
 };
 
 const parseHeroSlide = (slide: HeroSlide): HeroSlide => {
@@ -237,6 +254,11 @@ const getHeroVideoDeliveryUrl = (url: string | null | undefined): string => {
   if (!url || typeof url !== 'string') return '';
   const trimmed = url.trim();
   if (!trimmed) return '';
+
+  // Bunny Stream hoặc HLS playlist (.m3u8): giữ nguyên tuyệt đối, không thêm tr:orig-true
+  if (isHlsUrl(trimmed)) {
+    return trimmed;
+  }
 
   try {
     const parsed = new URL(trimmed);
@@ -862,7 +884,7 @@ const ThemeSwitcher = ({ currentTheme, onThemeChange }: any) => {
   );
 };
 
-// Component hiển thị Video Hero Cinematic trên Trang chủ
+// Component hiển thị Video Hero Cinematic trên Trang chủ (Hỗ trợ MP4, WEBM và Bunny HLS .m3u8)
 const HeroCinematicVideo = ({
   src,
   poster,
@@ -877,36 +899,155 @@ const HeroCinematicVideo = ({
   onEnded: () => void;
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [hasError, setHasError] = useState(false);
+  const hlsRef = useRef<Hls | null>(null);
+  const [errorSrc, setErrorSrc] = useState<string | null>(null);
+  const hasTriggeredNextRef = useRef(false);
   const cleanPoster = poster && poster.trim() ? poster.trim() : undefined;
-  const deliverySrc = getHeroVideoDeliveryUrl(src);
+  const deliverySrc = useMemo(() => getHeroVideoDeliveryUrl(src), [src]);
+  const isHls = useMemo(() => isHlsUrl(deliverySrc), [deliverySrc]);
+  const isHlsSupportedInBrowser = useMemo(() => {
+    if (typeof document === 'undefined') return true;
+    const v = document.createElement('video');
+    const canNative = v.canPlayType('application/vnd.apple.mpegurl');
+    return Boolean(canNative === 'probably' || canNative === 'maybe' || Hls.isSupported());
+  }, []);
+  const hasError = Boolean(!deliverySrc || (isHls && !isHlsSupportedInBrowser) || (errorSrc && errorSrc === deliverySrc));
 
-  // Xử lý play/pause/reset khi slide thay đổi active state
+  const handleNext = useCallback(() => {
+    if (isSingleMedia) {
+      if (videoRef.current) {
+        videoRef.current.currentTime = 0;
+        const playPromise = videoRef.current.play();
+        if (playPromise !== undefined) playPromise.catch(() => {});
+      }
+      return;
+    }
+    if (hasTriggeredNextRef.current) return;
+    hasTriggeredNextRef.current = true;
+    onEnded();
+  }, [isSingleMedia, onEnded]);
+
+  // Xử lý HLS & MP4 playback theo active state (Tối ưu Mobile First & Tiết kiệm Bandwidth)
   useEffect(() => {
     const video = videoRef.current;
-    if (!video || hasError || !deliverySrc) return;
+    if (!video) return;
 
-    if (isActive) {
-      try {
-        video.currentTime = 0;
-        const playPromise = video.play();
-        if (playPromise !== undefined) {
-          playPromise.catch(() => {
-            // graceful fallback without console spam
-          });
-        }
-      } catch {
-        // ignore
+    if (!isActive) {
+      // Inactive: Dừng và giải phóng tài nguyên HLS ngay để tiết kiệm triệt để băng thông
+      if (hlsRef.current) {
+        hlsRef.current.stopLoad();
+        hlsRef.current.destroy();
+        hlsRef.current = null;
       }
-    } else {
       try {
         video.pause();
         video.currentTime = 0;
       } catch {
         // ignore
       }
+      return;
     }
-  }, [isActive, hasError, deliverySrc]);
+
+    // Active: bắt đầu nạp và phát video
+    hasTriggeredNextRef.current = false;
+
+    if (!deliverySrc) {
+      return;
+    }
+
+    if (isHls) {
+      const canPlayNative = video.canPlayType('application/vnd.apple.mpegurl');
+      if (canPlayNative === 'probably' || canPlayNative === 'maybe') {
+        // Native HLS (iOS Safari / iPadOS / macOS Safari)
+        video.src = deliverySrc;
+        video.currentTime = 0;
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {
+            // graceful fallback if browser blocks autoplay
+          });
+        }
+      } else if (Hls.isSupported()) {
+        // hls.js (Android Chrome, Desktop Chrome, Firefox, Edge)
+        if (hlsRef.current) {
+          hlsRef.current.destroy();
+          hlsRef.current = null;
+        }
+
+        const hls = new Hls({
+          enableWorker: true,
+          lowLatencyMode: false,
+          backBufferLength: 0,
+          maxBufferLength: 10,
+          maxMaxBufferLength: 20,
+          maxBufferSize: 10 * 1000 * 1000,
+          autoStartLoad: true
+        });
+        hlsRef.current = hls;
+
+        hls.loadSource(deliverySrc);
+        hls.attachMedia(video);
+
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          if (isActive) {
+            video.currentTime = 0;
+            const playPromise = video.play();
+            if (playPromise !== undefined) {
+              playPromise.catch(() => {});
+            }
+          }
+        });
+
+        hls.on(Hls.Events.ERROR, (_event, data) => {
+          if (data.fatal) {
+            switch (data.type) {
+              case Hls.ErrorTypes.NETWORK_ERROR:
+                try {
+                  hls.startLoad();
+                } catch {
+                  setErrorSrc(deliverySrc);
+                }
+                break;
+              case Hls.ErrorTypes.MEDIA_ERROR:
+                try {
+                  hls.recoverMediaError();
+                } catch {
+                  setErrorSrc(deliverySrc);
+                }
+                break;
+              default:
+                hls.destroy();
+                hlsRef.current = null;
+                setErrorSrc(deliverySrc);
+                break;
+            }
+          }
+        });
+      }
+    } else {
+      // Direct MP4 / WebM
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
+      }
+      if (video.src !== deliverySrc) {
+        video.src = deliverySrc;
+      }
+      video.currentTime = 0;
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {});
+      }
+    }
+
+    return () => {
+      if (hlsRef.current) {
+        hlsRef.current.stopLoad();
+        hlsRef.current.destroy();
+        hlsRef.current = null;
+      }
+    };
+  }, [isActive, deliverySrc, isHls]);
 
   // Xử lý tạm dừng khi ẩn tab trình duyệt và tiếp tục khi mở lại
   useEffect(() => {
@@ -941,17 +1082,11 @@ const HeroCinematicVideo = ({
   useEffect(() => {
     if ((hasError || !deliverySrc) && isActive && !isSingleMedia) {
       const errorTimer = setTimeout(() => {
-        onEnded();
+        handleNext();
       }, 6500);
       return () => clearTimeout(errorTimer);
     }
-  }, [hasError, deliverySrc, isActive, isSingleMedia, onEnded]);
-
-  const handleEnded = () => {
-    // Nếu chỉ có 1 media thì loop liên tục, không gọi nextSlide
-    if (isSingleMedia) return;
-    onEnded();
-  };
+  }, [hasError, deliverySrc, isActive, isSingleMedia, handleNext]);
 
   if (hasError || !deliverySrc) {
     if (cleanPoster) {
@@ -993,15 +1128,18 @@ const HeroCinematicVideo = ({
       )}
       <video
         ref={videoRef}
-        src={deliverySrc}
         poster={cleanPoster}
         autoPlay
         muted
         loop={isSingleMedia}
         playsInline
-        preload="metadata"
-        onEnded={handleEnded}
-        onError={() => setHasError(true)}
+        preload={isActive ? 'metadata' : 'none'}
+        onEnded={handleNext}
+        onError={() => {
+          if (isActive) {
+            setHasError(true);
+          }
+        }}
         className="w-full h-full object-cover pointer-events-none"
       />
     </div>
@@ -1025,6 +1163,102 @@ const HeroCinematicImage = ({
       }}
       className="w-full h-full object-cover"
       loading="eager"
+    />
+  );
+};
+
+// Component xem trước Video trong ACP: Hỗ trợ cả MP4, WEBM và Bunny HLS .m3u8, tiết kiệm bandwidth (autoStartLoad: false)
+const AdminHeroVideoPreview = ({ url }: { url: string }) => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const hlsRef = useRef<Hls | null>(null);
+  const [errorSrc, setErrorSrc] = useState<string | null>(null);
+  const deliverySrc = useMemo(() => getHeroVideoDeliveryUrl(url), [url]);
+  const isHls = useMemo(() => isHlsUrl(deliverySrc), [deliverySrc]);
+  const hasError = Boolean(!deliverySrc || (errorSrc && errorSrc === deliverySrc));
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !deliverySrc) return;
+
+    if (isHls) {
+      const canPlayNative = video.canPlayType('application/vnd.apple.mpegurl');
+      if (canPlayNative === 'probably' || canPlayNative === 'maybe') {
+        video.src = deliverySrc;
+      } else if (Hls.isSupported()) {
+        if (hlsRef.current) {
+          hlsRef.current.destroy();
+          hlsRef.current = null;
+        }
+        // autoStartLoad: false -> KHÔNG tải playlist hay segments trong ACP preview cho đến khi Admin chủ động bấm Play
+        const hls = new Hls({
+          enableWorker: true,
+          lowLatencyMode: false,
+          autoStartLoad: false
+        });
+        hlsRef.current = hls;
+        hls.loadSource(deliverySrc);
+        hls.attachMedia(video);
+
+        const onPlay = () => {
+          hls.startLoad();
+        };
+        video.addEventListener('play', onPlay);
+
+        hls.on(Hls.Events.ERROR, (_event, data) => {
+          if (data.fatal) {
+            hls.destroy();
+            hlsRef.current = null;
+            setErrorSrc(deliverySrc);
+          }
+        });
+
+        return () => {
+          video.removeEventListener('play', onPlay);
+          if (hlsRef.current) {
+            hlsRef.current.destroy();
+            hlsRef.current = null;
+          }
+        };
+      }
+    } else {
+      video.src = deliverySrc;
+    }
+
+    return () => {
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
+      }
+    };
+  }, [deliverySrc, isHls]);
+
+  if (!deliverySrc) {
+    return (
+      <div className="text-center p-4 text-stone-400">
+        <span className="text-2xl block mb-1">🎥</span>
+        <span className="text-[11px] font-bold">Chưa có URL Video</span>
+      </div>
+    );
+  }
+
+  if (hasError) {
+    return (
+      <div className="text-center p-4 text-rose-400">
+        <span className="text-2xl block mb-1">⚠️</span>
+        <span className="text-[11px] font-bold">Không thể phát định dạng này</span>
+      </div>
+    );
+  }
+
+  return (
+    <video
+      ref={videoRef}
+      controls
+      muted
+      playsInline
+      preload="metadata"
+      onError={() => setHasError(true)}
+      className="w-full h-full object-cover"
     />
   );
 };
@@ -3563,22 +3797,7 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                           {/* Live Preview Area */}
                           <div className="w-full lg:w-80 aspect-video rounded-2xl overflow-hidden bg-stone-900 border-2 border-stone-300 relative group flex items-center justify-center shrink-0 shadow-inner">
                             {isVideo ? (
-                              parsed.media_url ? (
-                                <video
-                                  key={parsed.media_url}
-                                  src={getHeroVideoDeliveryUrl(parsed.media_url)}
-                                  controls
-                                  muted
-                                  playsInline
-                                  preload="metadata"
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <div className="text-center p-4 text-stone-400">
-                                  <span className="text-2xl block mb-1">🎥</span>
-                                  <span className="text-[11px] font-bold">Chưa có URL Video</span>
-                                </div>
-                              )
+                              <AdminHeroVideoPreview url={parsed.media_url} />
                             ) : (
                               parsed.media_url || parsed.image_url ? (
                                 <img
@@ -3608,13 +3827,13 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                               <div className="space-y-1.5">
                                 <label className="text-[10px] font-black uppercase text-rose-800 tracking-wider flex items-center gap-1.5">
                                   <span>🎥</span>
-                                  <span>ĐƯỜNG DẪN VIDEO (URL MP4 / WEBM)</span>
+                                  <span>ĐƯỜNG DẪN VIDEO (MP4 / WEBM / Bunny HLS .m3u8)</span>
                                 </label>
                                 <input
                                   value={parsed.media_url}
                                   onChange={e => updateCurrentSlide({ media_url: e.target.value })}
                                   className="w-full p-3.5 bg-white border border-stone-200 rounded-2xl text-xs font-mono text-stone-800 focus:outline-none focus:border-rose-600 shadow-inner"
-                                  placeholder="https://... Link file video .mp4, .webm"
+                                  placeholder="https://... Dán link MP4, WEBM hoặc Bunny HLS playlist.m3u8"
                                 />
                               </div>
                             ) : (
