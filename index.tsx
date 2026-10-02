@@ -1645,6 +1645,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
   const [showPollModal, setShowPollModal] = useState(false);
   const [votedChoice, setVotedChoice] = useState<string | null>(() => localStorage.getItem(VOTED_KEY));
   const [isPlayingMusic, setIsPlayingMusic] = useState(false);
+  const [hasUserStartedMusic, setHasUserStartedMusic] = useState(false);
   const [isLoadingTrack, setIsLoadingTrack] = useState(false);
   const [customTrackUrl, setCustomTrackUrl] = useState<string>('');
   const [randomBannerMessage, setRandomBannerMessage] = useState<string>('');
@@ -1737,12 +1738,17 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
   // Performance tracking refs to prevent duplicate loadVideoById commands and message listener churn
   const currentLoadedVideoIdRef = useRef<string | null>(null);
   const isPlayingMusicRef = useRef<boolean>(isPlayingMusic);
+  const hasUserStartedMusicRef = useRef<boolean>(false);
   const youtubeIdRef = useRef<string | null>(youtubeId);
   const isYoutubeReadyRef = useRef<boolean>(false);
 
   useEffect(() => {
     isPlayingMusicRef.current = isPlayingMusic;
   }, [isPlayingMusic]);
+
+  useEffect(() => {
+    hasUserStartedMusicRef.current = hasUserStartedMusic;
+  }, [hasUserStartedMusic]);
 
   useEffect(() => {
     youtubeIdRef.current = youtubeId;
@@ -1775,6 +1781,9 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
   }, []);
 
   const handleSkipToNextValidTrack = useCallback((failedId?: string) => {
+    // CRITICAL GUARD: Never auto-advance or play if user hasn't explicitly started music
+    if (!hasUserStartedMusicRef.current) return;
+
     if (failedId) {
       setFailedTrackIds(prev => {
         const nextSet = new Set(prev);
@@ -1839,6 +1848,18 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
     const handleMessage = (event: MessageEvent) => {
       try {
         if (!event.data) return;
+
+        // CRITICAL ISOLATION: Only accept messages from the background music player's own hidden iframe!
+        // Prevents any crosstalk with Hero YouTube video player.
+        if (!youtubeIframeRef.current || event.source !== youtubeIframeRef.current.contentWindow) {
+          return;
+        }
+
+        // CRITICAL GUARD: Never auto-start or resume playback if user hasn't explicitly clicked Play/Start!
+        if (!hasUserStartedMusicRef.current) {
+          return;
+        }
+
         let data = event.data;
         if (typeof data === 'string') {
           try { data = JSON.parse(data); } catch { return; }
@@ -1861,7 +1882,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
         }
         if (data && data.event === 'onReady') {
           isYoutubeReadyRef.current = true;
-          if (youtubeIdRef.current && isPlayingMusicRef.current) {
+          if (youtubeIdRef.current && isPlayingMusicRef.current && hasUserStartedMusicRef.current) {
             currentLoadedVideoIdRef.current = youtubeIdRef.current;
             sendYoutubeCommand('loadVideoById', [youtubeIdRef.current, 0]);
             sendYoutubeCommand('playVideo');
@@ -1895,6 +1916,18 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
 
   // Audio Playback Sync Effect - Direct Audio MP3 vs YouTube Iframe
   useEffect(() => {
+    // CRITICAL: If user has never clicked play, ALWAYS enforce paused/muted state on background music
+    if (!hasUserStartedMusic) {
+      if (audioRef.current) {
+        try { audioRef.current.pause(); } catch { /* ignore */ }
+      }
+      if (youtubeId) {
+        sendYoutubeCommand('pauseVideo');
+      }
+      stopAmbientSynth();
+      return;
+    }
+
     if (isPlayingMusic && activeMusicUrl && !youtubeId) {
       if (audioRef.current) {
         if (audioRef.current.src !== activeMusicUrl) {
@@ -1925,7 +1958,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
       }
       stopAmbientSynth();
     }
-  }, [isPlayingMusic, activeMusicUrl, stopAmbientSynth, youtubeId, sendYoutubeCommand]);
+  }, [hasUserStartedMusic, isPlayingMusic, activeMusicUrl, stopAmbientSynth, youtubeId, sendYoutubeCommand]);
 
   const togglePlayMusic = useCallback(() => {
     if (!activeMusicUrl) return;
@@ -1940,6 +1973,8 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
       setIsPlayingMusic(false);
       setIsLoadingTrack(false);
     } else {
+      setHasUserStartedMusic(true);
+      hasUserStartedMusicRef.current = true;
       stopAmbientSynth();
       setIsLoadingTrack(true);
       setIsPlayingMusic(true);
@@ -1962,6 +1997,8 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
   }, [activeMusicUrl, isPlayingMusic, sendYoutubeCommand, stopAmbientSynth, youtubeId]);
 
   const handlePickRandomTrack = useCallback((targetGenreKey?: string) => {
+    setHasUserStartedMusic(true);
+    hasUserStartedMusicRef.current = true;
     stopAmbientSynth();
     const effectiveGenre = (!targetGenreKey || targetGenreKey === 'all') 
       ? (selectedGenreFilter === 'all' ? 'vpop' : selectedGenreFilter) 
@@ -1996,6 +2033,8 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
   }, [stopAmbientSynth, selectedGenreFilter, sendYoutubeCommand]);
 
   const handleSelectPlaylistTrack = useCallback((trackUrl: string) => {
+    setHasUserStartedMusic(true);
+    hasUserStartedMusicRef.current = true;
     const targetYtId = getYouTubeId(trackUrl);
     stopAmbientSynth();
 
@@ -3031,20 +3070,36 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
       {/* Floating Poll & Music Button */}
       <div className="fixed bottom-6 left-6 z-[90] flex items-center gap-2">
         <button
-          onClick={() => setShowPollModal(true)}
+          onClick={() => {
+            if (!isPlayingMusic) {
+              setHasUserStartedMusic(true);
+              hasUserStartedMusicRef.current = true;
+              togglePlayMusic();
+            } else {
+              setShowPollModal(true);
+            }
+          }}
           className="flex items-center gap-2 bg-gradient-to-r from-amber-800 to-amber-950 text-white px-4 py-3 rounded-full shadow-2xl hover:scale-105 transition-all border-2 border-white/30 text-xs font-black uppercase tracking-wider group cursor-pointer"
         >
           <div className={`p-1.5 rounded-full ${isPlayingMusic ? 'bg-emerald-500 animate-spin' : 'bg-amber-600'}`}>
             <Music size={14} className="text-white" />
           </div>
           <span>{isPlayingMusic ? 'ĐANG PHÁT NHẠC' : 'NHẠC NỀN & PLAYLIST'}</span>
-          <span className="bg-emerald-500 text-[9px] px-2 py-0.5 rounded-full text-white font-bold ml-1 uppercase shadow-sm">BẮT ĐẦU</span>
+          <span className="bg-emerald-500 text-[9px] px-2 py-0.5 rounded-full text-white font-bold ml-1 uppercase shadow-sm">
+            {isPlayingMusic ? 'MỞ PLAYLIST' : 'BẮT ĐẦU'}
+          </span>
         </button>
         {activeMusicUrl && (
           <button
-            onClick={togglePlayMusic}
+            onClick={() => {
+              if (!isPlayingMusic) {
+                setHasUserStartedMusic(true);
+                hasUserStartedMusicRef.current = true;
+              }
+              togglePlayMusic();
+            }}
             className={`w-11 h-11 rounded-full flex items-center justify-center text-white shadow-xl transition-transform hover:scale-110 border-2 border-white/30 cursor-pointer ${isPlayingMusic ? 'bg-emerald-600 animate-pulse' : 'bg-stone-800'}`}
-            title={isPlayingMusic ? 'Tạm dừng nhạc' : 'Phát nhạc'}
+            title={isPlayingMusic ? 'Tạm dừng nhạc' : 'Phát nhạc (Bắt đầu)'}
           >
             {isPlayingMusic ? <Pause size={18} /> : <Play size={18} className="ml-0.5" />}
           </button>
@@ -3475,18 +3530,23 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
       {/* Hidden HTML5 Audio Element for direct stream MP3 playback */}
       <audio
         ref={audioRef}
-        src={!youtubeId ? activeMusicUrl : undefined}
+        src={hasUserStartedMusic && !youtubeId ? activeMusicUrl : undefined}
         loop={false}
+        preload="none"
         onEnded={() => {
-          handleSkipToNextValidTrack();
+          if (hasUserStartedMusicRef.current) {
+            handleSkipToNextValidTrack();
+          }
         }}
         onError={(e) => {
           console.warn("[Music Debug] Direct audio load notice:", e);
           setIsLoadingTrack(false);
         }}
         onPlaying={() => {
-          setIsLoadingTrack(false);
-          setIsPlayingMusic(true);
+          if (hasUserStartedMusicRef.current) {
+            setIsLoadingTrack(false);
+            setIsPlayingMusic(true);
+          }
         }}
         onPause={() => {
           setIsPlayingMusic(false);
