@@ -894,6 +894,49 @@ const ThemeSwitcher = ({ currentTheme, onThemeChange }: any) => {
   );
 };
 
+// Singleton Loader cho YouTube IFrame Player API chính thức (Chỉ tải 1 lần cho toàn website)
+let youtubeIframeApiPromise: Promise<void> | null = null;
+
+const loadYouTubeIframeApi = (): Promise<void> => {
+  if (typeof window === 'undefined') return Promise.resolve();
+  if ((window as any).YT && (window as any).YT.Player) {
+    return Promise.resolve();
+  }
+  if (youtubeIframeApiPromise) {
+    return youtubeIframeApiPromise;
+  }
+
+  youtubeIframeApiPromise = new Promise((resolve) => {
+    if ((window as any).YT && (window as any).YT.Player) {
+      resolve();
+      return;
+    }
+
+    const prevOnReady = (window as any).onYouTubeIframeAPIReady;
+    (window as any).onYouTubeIframeAPIReady = () => {
+      if (typeof prevOnReady === 'function') {
+        try { prevOnReady(); } catch { /* ignore */ }
+      }
+      resolve();
+    };
+
+    const existingScript = document.querySelector('script[src*="youtube.com/iframe_api"]');
+    if (!existingScript) {
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      tag.async = true;
+      const firstScriptTag = document.getElementsByTagName('script')[0];
+      if (firstScriptTag && firstScriptTag.parentNode) {
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+      } else {
+        document.head.appendChild(tag);
+      }
+    }
+  });
+
+  return youtubeIframeApiPromise;
+};
+
 // Component hiển thị Video Hero Cinematic trên Trang chủ (Hỗ trợ MP4, WEBM, Bunny HLS .m3u8 và YouTube)
 const HeroCinematicVideo = ({
   src,
@@ -910,9 +953,18 @@ const HeroCinematicVideo = ({
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
-  const youtubeIframeRef = useRef<HTMLIFrameElement>(null);
+  const ytPlayerRef = useRef<any>(null);
+  const ytContainerRef = useRef<HTMLDivElement>(null);
   const [errorSrc, setErrorSrc] = useState<string | null>(null);
   const hasTriggeredNextRef = useRef(false);
+  const startupTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const watchdogTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const isActiveRef = useRef(isActive);
+
+  useEffect(() => {
+    isActiveRef.current = isActive;
+  }, [isActive]);
+
   const cleanPoster = poster && poster.trim() ? poster.trim() : undefined;
   const deliverySrc = useMemo(() => getHeroVideoDeliveryUrl(src), [src]);
   const isHls = useMemo(() => isHlsUrl(deliverySrc), [deliverySrc]);
@@ -933,22 +985,28 @@ const HeroCinematicVideo = ({
     (errorSrc && errorSrc === deliverySrc)
   );
 
+  const triggerNextExactlyOnce = useCallback(() => {
+    if (hasTriggeredNextRef.current) return;
+    hasTriggeredNextRef.current = true;
+    if (startupTimerRef.current) {
+      clearTimeout(startupTimerRef.current);
+      startupTimerRef.current = null;
+    }
+    if (watchdogTimerRef.current) {
+      clearTimeout(watchdogTimerRef.current);
+      watchdogTimerRef.current = null;
+    }
+    onEnded();
+  }, [onEnded]);
+
   const handleNext = useCallback(() => {
     if (isSingleMedia) {
-      if (isYoutube) {
-        if (youtubeIframeRef.current?.contentWindow) {
-          try {
-            youtubeIframeRef.current.contentWindow.postMessage(
-              JSON.stringify({ event: 'command', func: 'seekTo', args: [0, true] }),
-              '*'
-            );
-            youtubeIframeRef.current.contentWindow.postMessage(
-              JSON.stringify({ event: 'command', func: 'playVideo', args: [] }),
-              '*'
-            );
-          } catch {
-            // ignore
-          }
+      if (isYoutube && ytPlayerRef.current) {
+        try {
+          ytPlayerRef.current.seekTo(0, true);
+          ytPlayerRef.current.playVideo();
+        } catch {
+          // ignore
         }
         return;
       }
@@ -959,73 +1017,185 @@ const HeroCinematicVideo = ({
       }
       return;
     }
-    if (hasTriggeredNextRef.current) return;
-    hasTriggeredNextRef.current = true;
-    onEnded();
-  }, [isSingleMedia, isYoutube, onEnded]);
+    triggerNextExactlyOnce();
+  }, [isSingleMedia, isYoutube, triggerNextExactlyOnce]);
 
-  // Quản lý trạng thái và lifecycle của YouTube iframe theo active slide
+  // Lifecycle quản lý YouTube IFrame Player API chính thức (new YT.Player với onStateChange)
   useEffect(() => {
-    if (!isYoutube) return;
+    if (!isYoutube || !youtubeId) return;
 
-    if (isActive) {
-      hasTriggeredNextRef.current = false;
-      if (youtubeIframeRef.current?.contentWindow) {
+    if (!isActive) {
+      // Inactive: dừng phát và hủy player
+      if (startupTimerRef.current) {
+        clearTimeout(startupTimerRef.current);
+        startupTimerRef.current = null;
+      }
+      if (watchdogTimerRef.current) {
+        clearTimeout(watchdogTimerRef.current);
+        watchdogTimerRef.current = null;
+      }
+      if (ytPlayerRef.current) {
         try {
-          youtubeIframeRef.current.contentWindow.postMessage(
-            JSON.stringify({ event: 'command', func: 'playVideo', args: [] }),
-            '*'
-          );
+          ytPlayerRef.current.pauseVideo();
+          ytPlayerRef.current.destroy();
         } catch {
           // ignore
         }
+        ytPlayerRef.current = null;
       }
-    } else {
-      if (youtubeIframeRef.current?.contentWindow) {
-        try {
-          youtubeIframeRef.current.contentWindow.postMessage(
-            JSON.stringify({ event: 'command', func: 'pauseVideo', args: [] }),
-            '*'
-          );
-        } catch {
-          // ignore
-        }
-      }
+      return;
     }
-  }, [isActive, isYoutube]);
 
-  // Lắng nghe sự kiện kết thúc video từ YouTube postMessage (Chỉ nhận từ chính iframe này)
-  useEffect(() => {
-    if (!isYoutube || !isActive) return;
+    // Active: khởi tạo lượt phát mới
+    hasTriggeredNextRef.current = false;
+    let isCancelled = false;
+    const container = ytContainerRef.current;
 
-    const handleMessage = (event: MessageEvent) => {
-      if (!youtubeIframeRef.current || event.source !== youtubeIframeRef.current.contentWindow) {
+    // Startup fallback: nếu sau 7.5s video chưa PLAYING (lỗi kết nối, mạng yếu), chuyển slide an toàn
+    startupTimerRef.current = setTimeout(() => {
+      if (!isCancelled && isActiveRef.current && !isSingleMedia) {
+        console.warn('[YouTube Hero] Startup timeout, advancing slide safely');
+        triggerNextExactlyOnce();
+      }
+    }, 7500);
+
+    loadYouTubeIframeApi().then(() => {
+      if (isCancelled || !isActiveRef.current || !container) return;
+
+      // Hủy player cũ nếu còn
+      if (ytPlayerRef.current) {
+        try { ytPlayerRef.current.destroy(); } catch { /* ignore */ }
+        ytPlayerRef.current = null;
+      }
+
+      // Tạo placeholder element mới bên trong container để YT.Player mount vào
+      const mountNode = document.createElement('div');
+      mountNode.className = 'w-full h-full';
+      container.innerHTML = '';
+      container.appendChild(mountNode);
+
+      const YT = (window as any).YT;
+      if (!YT || !YT.Player) {
+        setErrorSrc(deliverySrc);
         return;
       }
 
       try {
-        const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
-        if (!data) return;
+        const player = new YT.Player(mountNode, {
+          videoId: youtubeId,
+          width: '100%',
+          height: '100%',
+          playerVars: {
+            autoplay: 1,
+            mute: 1,
+            controls: 0,
+            rel: 0,
+            playsinline: 1,
+            enablejsapi: 1,
+            modestbranding: 1,
+            showinfo: 0,
+            iv_load_policy: 3,
+            disablekb: 1,
+            fs: 0,
+            loop: isSingleMedia ? 1 : 0,
+            playlist: isSingleMedia ? youtubeId : undefined,
+            origin: typeof window !== 'undefined' ? window.location.origin : undefined
+          },
+          events: {
+            onReady: (event: any) => {
+              if (isCancelled || !isActiveRef.current) {
+                try { event.target.destroy(); } catch { /* ignore */ }
+                return;
+              }
+              try {
+                event.target.mute();
+                event.target.playVideo();
+              } catch (e) {
+                console.warn('[YouTube Hero] Autoplay notice:', e);
+              }
+            },
+            onStateChange: (event: any) => {
+              if (isCancelled) return;
+              const state = event.data;
 
-        const isEnded =
-          (data.event === 'infoDelivery' && data.info && data.info.playerState === 0) ||
-          (data.event === 'onStateChange' && data.info === 0);
+              // Video PLAYING:
+              if (state === YT.PlayerState.PLAYING) {
+                // HỦY BỎ startup fallback timer ngay lập tức
+                if (startupTimerRef.current) {
+                  clearTimeout(startupTimerRef.current);
+                  startupTimerRef.current = null;
+                }
 
-        if (isEnded) {
-          handleNext();
+                // Thiết lập watchdog timer dự phòng theo DURATION THỰC TẾ
+                try {
+                  const duration = event.target.getDuration();
+                  if (duration && duration > 0 && !isSingleMedia) {
+                    if (watchdogTimerRef.current) clearTimeout(watchdogTimerRef.current);
+                    watchdogTimerRef.current = setTimeout(() => {
+                      if (!isCancelled && isActiveRef.current) {
+                        triggerNextExactlyOnce();
+                      }
+                    }, Math.ceil((duration + 3) * 1000));
+                  }
+                } catch {
+                  // ignore
+                }
+              }
+
+              // Video KẾT THÚC (ENDED):
+              if (state === YT.PlayerState.ENDED) {
+                if (isSingleMedia) {
+                  try {
+                    event.target.seekTo(0, true);
+                    event.target.playVideo();
+                  } catch {
+                    // ignore
+                  }
+                } else {
+                  triggerNextExactlyOnce();
+                }
+              }
+            },
+            onError: (err: any) => {
+              console.warn('[YouTube Hero] Player error:', err);
+              if (!isCancelled) {
+                triggerNextExactlyOnce();
+              }
+            }
+          }
+        });
+
+        ytPlayerRef.current = player;
+      } catch (err) {
+        console.warn('[YouTube Hero] Create player failed:', err);
+        setErrorSrc(deliverySrc);
+      }
+    });
+
+    return () => {
+      isCancelled = true;
+      if (startupTimerRef.current) {
+        clearTimeout(startupTimerRef.current);
+        startupTimerRef.current = null;
+      }
+      if (watchdogTimerRef.current) {
+        clearTimeout(watchdogTimerRef.current);
+        watchdogTimerRef.current = null;
+      }
+      if (ytPlayerRef.current) {
+        try {
+          ytPlayerRef.current.pauseVideo();
+          ytPlayerRef.current.destroy();
+        } catch {
+          // ignore
         }
-
-        if (data.event === 'onError') {
-          setErrorSrc(deliverySrc);
-        }
-      } catch {
-        // ignore
+        ytPlayerRef.current = null;
+      }
+      if (container) {
+        container.innerHTML = '';
       }
     };
-
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, [isYoutube, isActive, handleNext, deliverySrc]);
+  }, [isActive, isYoutube, youtubeId, isSingleMedia, deliverySrc, triggerNextExactlyOnce]);
 
   // Xử lý HLS & MP4 playback theo active state (Tối ưu Mobile First & Tiết kiệm Bandwidth)
   useEffect(() => {
@@ -1155,13 +1325,13 @@ const HeroCinematicVideo = ({
       if (!isActive) return;
 
       if (isYoutube) {
-        if (youtubeIframeRef.current?.contentWindow) {
+        if (ytPlayerRef.current) {
           try {
-            const cmd = document.hidden ? 'pauseVideo' : 'playVideo';
-            youtubeIframeRef.current.contentWindow.postMessage(
-              JSON.stringify({ event: 'command', func: cmd, args: [] }),
-              '*'
-            );
+            if (document.hidden) {
+              ytPlayerRef.current.pauseVideo();
+            } else {
+              ytPlayerRef.current.playVideo();
+            }
           } catch {
             // ignore
           }
@@ -1195,15 +1365,16 @@ const HeroCinematicVideo = ({
     };
   }, [isActive, hasError, deliverySrc, isYoutube]);
 
-  // Fallback timer: nếu video bị lỗi hoặc thiếu URL, tự động chuyển sau 6.5s để không bị kẹt carousel
+  // Fallback timer: nếu video HLS/MP4 bị lỗi hoặc thiếu URL, tự động chuyển sau 6.5s để không bị kẹt carousel
   useEffect(() => {
+    if (isYoutube) return; // YouTube có watchdog riêng theo duration và startup fallback riêng
     if ((hasError || !deliverySrc) && isActive && !isSingleMedia) {
       const errorTimer = setTimeout(() => {
         handleNext();
       }, 6500);
       return () => clearTimeout(errorTimer);
     }
-  }, [hasError, deliverySrc, isActive, isSingleMedia, handleNext]);
+  }, [hasError, deliverySrc, isActive, isSingleMedia, handleNext, isYoutube]);
 
   if (hasError || !deliverySrc) {
     if (cleanPoster) {
@@ -1234,7 +1405,6 @@ const HeroCinematicVideo = ({
 
   // Render YouTube Provider
   if (isYoutube && youtubeId) {
-    const embedOrigin = typeof window !== 'undefined' ? window.location.origin : '';
     return (
       <div className="relative w-full h-full overflow-hidden bg-stone-950 flex items-center justify-center">
         {cleanPoster ? (
@@ -1252,27 +1422,7 @@ const HeroCinematicVideo = ({
             loading="eager"
           />
         )}
-        {isActive && (
-          <div className="absolute inset-0 w-full h-full overflow-hidden flex items-center justify-center pointer-events-none">
-            <iframe
-              ref={youtubeIframeRef}
-              src={`https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=1&mute=1&controls=0&rel=0&playsinline=1&enablejsapi=1&modestbranding=1&showinfo=0&iv_load_policy=3&disablekb=1&fs=0${isSingleMedia ? `&loop=1&playlist=${youtubeId}` : ''}${embedOrigin ? `&origin=${encodeURIComponent(embedOrigin)}` : ''}`}
-              title="Hero Cinematic YouTube"
-              allow="autoplay; encrypted-media; picture-in-picture"
-              className="border-0 pointer-events-none"
-              style={{
-                width: '177.78vh',
-                minWidth: '100%',
-                height: '56.25vw',
-                minHeight: '100%',
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)'
-              }}
-            />
-          </div>
-        )}
+        <div ref={ytContainerRef} className="yt-hero-container" />
       </div>
     );
   }
