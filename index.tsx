@@ -1172,24 +1172,17 @@ const HeroCinematicVideo = ({
                 return;
               }
               try {
-                // Đảm bảo mute để video autoplay mượt mà
+                // Đảm bảo mute để video autoplay mượt mà không bị trình duyệt chặn
                 if (typeof event.target.isMuted === 'function') {
                   if (!event.target.isMuted()) event.target.mute();
                 } else {
                   event.target.mute();
                 }
 
-                // IDEMPOTENT: Chỉ phát lệnh playVideo() nếu video chưa ở trạng thái PLAYING hoặc BUFFERING.
-                // Tránh gọi playVideo() dư thừa khi video đã đang phát tự động (autoplay: 1),
-                // vì trên mobile lệnh này kích hoạt giao diện điều khiển tương tác (icon Pause ⏸ hiện 2 giây).
-                const YTGlobal = (window as any).YT;
-                const currentState = typeof event.target.getPlayerState === 'function'
-                  ? event.target.getPlayerState()
-                  : -1;
-
-                if (currentState !== YTGlobal?.PlayerState?.PLAYING && currentState !== YTGlobal?.PlayerState?.BUFFERING) {
-                  event.target.playVideo();
-                }
+                // KHÔNG gọi event.target.playVideo() tại onReady!
+                // PlayerVars đã cấu hình autoplay: 1, mute: 1, playsinline: 1 cho phép YouTube tự phát mượt mà.
+                // Việc gửi lệnh playVideo() qua JS API kích hoạt feedback indicator OSD của YouTube,
+                // làm hiện icon Pause ⏸ phóng to ở chính giữa video trong 2 giây.
               } catch (e) {
                 console.warn('[YouTube Hero] Autoplay notice:', e);
               }
