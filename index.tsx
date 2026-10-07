@@ -1011,10 +1011,20 @@ const HeroCinematicVideo = ({
   const startupTimerRef = useRef<NodeJS.Timeout | null>(null);
   const watchdogTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isActiveRef = useRef(isActive);
+  const onEndedRef = useRef(onEnded);
+  const isSingleMediaRef = useRef(isSingleMedia);
 
   useEffect(() => {
     isActiveRef.current = isActive;
   }, [isActive]);
+
+  useEffect(() => {
+    onEndedRef.current = onEnded;
+  }, [onEnded]);
+
+  useEffect(() => {
+    isSingleMediaRef.current = isSingleMedia;
+  }, [isSingleMedia]);
 
   const cleanPoster = poster && poster.trim() ? poster.trim() : undefined;
   const deliverySrc = useMemo(() => getHeroVideoDeliveryUrl(src), [src]);
@@ -1051,11 +1061,11 @@ const HeroCinematicVideo = ({
       clearTimeout(watchdogTimerRef.current);
       watchdogTimerRef.current = null;
     }
-    onEnded();
-  }, [onEnded]);
+    onEndedRef.current();
+  }, []);
 
   const handleNext = useCallback(() => {
-    if (isSingleMedia) {
+    if (isSingleMediaRef.current) {
       if (isYoutube && ytPlayerRef.current) {
         try {
           ytPlayerRef.current.seekTo(0, true);
@@ -1073,7 +1083,7 @@ const HeroCinematicVideo = ({
       return;
     }
     triggerNextExactlyOnce();
-  }, [isSingleMedia, isYoutube, triggerNextExactlyOnce]);
+  }, [isYoutube, triggerNextExactlyOnce]);
 
   // Lifecycle quản lý YouTube IFrame Player API chính thức (new YT.Player với onStateChange)
   useEffect(() => {
@@ -1091,7 +1101,6 @@ const HeroCinematicVideo = ({
       }
       if (ytPlayerRef.current) {
         try {
-          ytPlayerRef.current.pauseVideo();
           ytPlayerRef.current.destroy();
         } catch {
           // ignore
@@ -1108,7 +1117,7 @@ const HeroCinematicVideo = ({
 
     // Startup fallback: nếu sau 7.5s video chưa PLAYING (lỗi kết nối, mạng yếu), chuyển slide an toàn
     startupTimerRef.current = setTimeout(() => {
-      if (!isCancelled && isActiveRef.current && !isSingleMedia) {
+      if (!isCancelled && isActiveRef.current && !isSingleMediaRef.current) {
         console.warn('[YouTube Hero] Startup timeout, advancing slide safely');
         triggerNextExactlyOnce();
       }
@@ -1152,8 +1161,8 @@ const HeroCinematicVideo = ({
             iv_load_policy: 3,
             disablekb: 1,
             fs: 0,
-            loop: isSingleMedia ? 1 : 0,
-            playlist: isSingleMedia ? youtubeId : undefined,
+            loop: isSingleMediaRef.current ? 1 : 0,
+            playlist: isSingleMediaRef.current ? youtubeId : undefined,
             origin: typeof window !== 'undefined' ? window.location.origin : undefined
           },
           events: {
@@ -1163,8 +1172,24 @@ const HeroCinematicVideo = ({
                 return;
               }
               try {
-                event.target.mute();
-                event.target.playVideo();
+                // Đảm bảo mute để video autoplay mượt mà
+                if (typeof event.target.isMuted === 'function') {
+                  if (!event.target.isMuted()) event.target.mute();
+                } else {
+                  event.target.mute();
+                }
+
+                // IDEMPOTENT: Chỉ phát lệnh playVideo() nếu video chưa ở trạng thái PLAYING hoặc BUFFERING.
+                // Tránh gọi playVideo() dư thừa khi video đã đang phát tự động (autoplay: 1),
+                // vì trên mobile lệnh này kích hoạt giao diện điều khiển tương tác (icon Pause ⏸ hiện 2 giây).
+                const YTGlobal = (window as any).YT;
+                const currentState = typeof event.target.getPlayerState === 'function'
+                  ? event.target.getPlayerState()
+                  : -1;
+
+                if (currentState !== YTGlobal?.PlayerState?.PLAYING && currentState !== YTGlobal?.PlayerState?.BUFFERING) {
+                  event.target.playVideo();
+                }
               } catch (e) {
                 console.warn('[YouTube Hero] Autoplay notice:', e);
               }
@@ -1184,7 +1209,7 @@ const HeroCinematicVideo = ({
                 // Thiết lập watchdog timer dự phòng theo DURATION THỰC TẾ
                 try {
                   const duration = event.target.getDuration();
-                  if (duration && duration > 0 && !isSingleMedia) {
+                  if (duration && duration > 0 && !isSingleMediaRef.current) {
                     if (watchdogTimerRef.current) clearTimeout(watchdogTimerRef.current);
                     watchdogTimerRef.current = setTimeout(() => {
                       if (!isCancelled && isActiveRef.current) {
@@ -1199,7 +1224,7 @@ const HeroCinematicVideo = ({
 
               // Video KẾT THÚC (ENDED):
               if (state === YT.PlayerState.ENDED) {
-                if (isSingleMedia) {
+                if (isSingleMediaRef.current) {
                   try {
                     event.target.seekTo(0, true);
                     event.target.playVideo();
@@ -1239,7 +1264,6 @@ const HeroCinematicVideo = ({
       }
       if (ytPlayerRef.current) {
         try {
-          ytPlayerRef.current.pauseVideo();
           ytPlayerRef.current.destroy();
         } catch {
           // ignore
@@ -1250,7 +1274,7 @@ const HeroCinematicVideo = ({
         container.innerHTML = '';
       }
     };
-  }, [isActive, isYoutube, youtubeId, isSingleMedia, deliverySrc, triggerNextExactlyOnce]);
+  }, [isActive, isYoutube, youtubeId, deliverySrc, triggerNextExactlyOnce]);
 
   // Xử lý HLS & MP4 playback theo active state (Tối ưu Mobile First & Tiết kiệm Bandwidth)
   useEffect(() => {
@@ -1382,10 +1406,19 @@ const HeroCinematicVideo = ({
       if (isYoutube) {
         if (ytPlayerRef.current) {
           try {
+            const YTGlobal = (window as any).YT;
+            const currentState = typeof ytPlayerRef.current.getPlayerState === 'function'
+              ? ytPlayerRef.current.getPlayerState()
+              : -1;
+
             if (document.hidden) {
-              ytPlayerRef.current.pauseVideo();
+              if (currentState === YTGlobal?.PlayerState?.PLAYING) {
+                ytPlayerRef.current.pauseVideo();
+              }
             } else {
-              ytPlayerRef.current.playVideo();
+              if (currentState !== YTGlobal?.PlayerState?.PLAYING && currentState !== YTGlobal?.PlayerState?.BUFFERING) {
+                ytPlayerRef.current.playVideo();
+              }
             }
           } catch {
             // ignore

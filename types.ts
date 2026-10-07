@@ -27,3 +27,10 @@ export interface VisitorStats {
   total_visitors: number;
   updated_at: string;
 }
+
+export interface DailyVisitorStat {
+  date: string;
+  visitor_count: number;
+  created_at?: string;
+  updated_at?: string;
+}
