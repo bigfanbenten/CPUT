@@ -1007,18 +1007,7 @@ const HeroCinematicVideo = ({
   const ytPlayerRef = useRef<any>(null);
   const ytContainerRef = useRef<HTMLDivElement>(null);
   const [errorSrc, setErrorSrc] = useState<string | null>(null);
-  const [prevIsActive, setPrevIsActive] = useState(isActive);
-  const [isYtMaskActive, setIsYtMaskActive] = useState(true);
-  const ytMaskTimerRef = useRef<NodeJS.Timeout | null>(null);
   const hasTriggeredNextRef = useRef(false);
-
-  // Mẫu chuẩn React: Cập nhật state mặt nạ đồng bộ trong render khi isActive chuyển đổi sang true
-  if (prevIsActive !== isActive) {
-    setPrevIsActive(isActive);
-    if (isActive) {
-      setIsYtMaskActive(true);
-    }
-  }
   const startupTimerRef = useRef<NodeJS.Timeout | null>(null);
   const watchdogTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isActiveRef = useRef(isActive);
@@ -1102,10 +1091,6 @@ const HeroCinematicVideo = ({
 
     if (!isActive) {
       // Inactive: dừng phát và hủy player
-      if (ytMaskTimerRef.current) {
-        clearTimeout(ytMaskTimerRef.current);
-        ytMaskTimerRef.current = null;
-      }
       if (startupTimerRef.current) {
         clearTimeout(startupTimerRef.current);
         startupTimerRef.current = null;
@@ -1126,20 +1111,9 @@ const HeroCinematicVideo = ({
     }
 
     // Active: khởi tạo lượt phát mới
-    if (ytMaskTimerRef.current) {
-      clearTimeout(ytMaskTimerRef.current);
-      ytMaskTimerRef.current = null;
-    }
     hasTriggeredNextRef.current = false;
     let isCancelled = false;
     const container = ytContainerRef.current;
-
-    // Mặt nạ Poster khởi động: Che phủ giao diện tải và icon ⏸ của YouTube trong ~2100ms tổng cộng từ khi khởi động
-    ytMaskTimerRef.current = setTimeout(() => {
-      if (!isCancelled) {
-        setIsYtMaskActive(false);
-      }
-    }, 2100);
 
     // Startup fallback: nếu sau 7.5s video chưa PLAYING (lỗi kết nối, mạng yếu), chuyển slide an toàn
     startupTimerRef.current = setTimeout(() => {
@@ -1273,10 +1247,6 @@ const HeroCinematicVideo = ({
 
     return () => {
       isCancelled = true;
-      if (ytMaskTimerRef.current) {
-        clearTimeout(ytMaskTimerRef.current);
-        ytMaskTimerRef.current = null;
-      }
       if (startupTimerRef.current) {
         clearTimeout(startupTimerRef.current);
         startupTimerRef.current = null;
@@ -1516,30 +1486,24 @@ const HeroCinematicVideo = ({
 
   // Render YouTube Provider (Cinematic Full-bleed Cover)
   if (isYoutube && youtubeId) {
-    const posterSrc = cleanPoster || `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`;
     return (
       <div className="relative w-full h-full overflow-hidden bg-stone-950 flex items-center justify-center">
-        {/* YouTube IFrame Container - Luôn phát ngầm ngay từ đầu */}
-        <div ref={ytContainerRef} className={`yt-hero-container ${isShorts ? 'is-shorts' : ''}`} />
-
-        {/* Lớp mặt nạ Poster khởi động (Startup Mask) che giao diện tải và icon ⏸ của YouTube trong ~2.1s đầu */}
-        <div
-          className={`absolute inset-0 w-full h-full pointer-events-none transition-opacity duration-500 ease-out z-10 ${
-            isYtMaskActive ? 'opacity-100' : 'opacity-0'
-          }`}
-        >
+        {cleanPoster ? (
           <img
-            src={posterSrc}
-            alt="Hero Media Poster"
-            onError={(e) => {
-              if (e.currentTarget.src !== `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`) {
-                e.currentTarget.src = `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`;
-              }
-            }}
-            className="w-full h-full object-cover object-center pointer-events-none"
+            src={cleanPoster}
+            alt="Poster Fallback"
+            className="absolute inset-0 w-full h-full object-cover object-center -z-10 pointer-events-none"
             loading="eager"
           />
-        </div>
+        ) : (
+          <img
+            src={`https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`}
+            alt="YouTube Fallback"
+            className="absolute inset-0 w-full h-full object-cover object-center -z-10 pointer-events-none opacity-40 blur-sm scale-105"
+            loading="eager"
+          />
+        )}
+        <div ref={ytContainerRef} className={`yt-hero-container ${isShorts ? 'is-shorts' : ''}`} />
       </div>
     );
   }
