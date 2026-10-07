@@ -50,7 +50,7 @@
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
-import { ChevronRight, ChevronDown, ChevronUp, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, MessageSquare, CheckCircle2, Facebook, Mail, Youtube, Users, Vote, Music, VolumeX, Play, Pause, BarChart2, Check, X, RefreshCw, Shuffle, ExternalLink } from 'lucide-react';
+import { ChevronRight, ChevronDown, ChevronUp, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, MessageSquare, CheckCircle2, Facebook, Mail, Youtube, Users, Vote, Music, VolumeX, Play, Pause, BarChart2, Check, X, RefreshCw, Shuffle, ExternalLink, Trophy } from 'lucide-react';
 import Hls from 'hls.js';
 
 // --- CẤU HÌNH CỐ ĐỊNH ---
@@ -3660,6 +3660,11 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
     isToday: boolean;
   }>>([]);
   const [isLoading7Days, setIsLoading7Days] = useState(false);
+  const [allTimeRecord, setAllTimeRecord] = useState<{
+    count: number;
+    date: string;
+    formattedDate: string;
+  } | null>(null);
 
   const [localPoll, setLocalPoll] = useState<VotePoll>(pollData || {
     is_active: true,
@@ -3789,6 +3794,50 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
       }));
 
       setRecent7DaysStats(combined);
+
+      // Tải kỷ lục ngày cao nhất mọi thời đại (All-time visitor record)
+      let highestCount = 0;
+      let highestDateStr = '';
+
+      try {
+        const { data: recordData, error: recordError } = await supabase
+          .from('daily_visitor_stats')
+          .select('date, visitor_count')
+          .order('visitor_count', { ascending: false })
+          .order('date', { ascending: false })
+          .limit(1);
+
+        if (!recordError && recordData && recordData.length > 0 && Number(recordData[0].visitor_count) > 0) {
+          highestCount = Number(recordData[0].visitor_count);
+          highestDateStr = recordData[0].date || '';
+        }
+      } catch (recErr) {
+        console.warn("Lỗi tải kỷ lục lượt truy cập:", recErr);
+      }
+
+      // So sánh thêm với 7 ngày gần nhất để đảm bảo phản ánh ngay lượt truy cập hôm nay
+      for (const day of combined) {
+        if (day.count > highestCount) {
+          highestCount = day.count;
+          highestDateStr = day.dateKey;
+        }
+      }
+
+      if (highestCount > 0 && highestDateStr) {
+        const parts = highestDateStr.split('-');
+        const formattedDate = parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : highestDateStr;
+        setAllTimeRecord({
+          count: highestCount,
+          date: highestDateStr,
+          formattedDate
+        });
+      } else {
+        setAllTimeRecord({
+          count: 0,
+          date: '',
+          formattedDate: 'Chưa ghi nhận'
+        });
+      }
     } catch (err) {
       console.error("Lỗi tải thống kê 7 ngày:", err);
     } finally {
@@ -4636,8 +4685,8 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                   </button>
                 </div>
 
-                {/* 3 Thẻ chỉ số tổng quan */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {/* 4 Thẻ chỉ số tổng quan */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div className="bg-white p-5 rounded-2xl border border-stone-100 shadow-sm">
                     <span className="text-[9px] font-black uppercase tracking-widest text-stone-400 block mb-1">
                       Hôm nay ({recent7DaysStats.find(d => d.isToday)?.displayDate || '--'})
@@ -4667,6 +4716,22 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                       <span className="text-xs font-bold text-stone-400 ml-1.5 font-normal">lượt / ngày</span>
                     </div>
                   </div>
+
+                  <div className="bg-white p-5 rounded-2xl border border-stone-100 shadow-sm">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-stone-400 block">
+                        Kỷ lục truy cập
+                      </span>
+                      <Trophy size={14} className="text-amber-600" />
+                    </div>
+                    <div className="text-3xl font-black text-amber-800 tabular-nums">
+                      {allTimeRecord?.count || 0}
+                      <span className="text-xs font-bold text-stone-400 ml-1.5 font-normal">lượt</span>
+                    </div>
+                    <span className="text-[10px] font-bold text-stone-500 block mt-1">
+                      Ngày: {allTimeRecord?.formattedDate || 'Chưa ghi nhận'}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Biểu đồ cột 7 ngày */}
@@ -4676,6 +4741,25 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                       const maxVal = Math.max(...recent7DaysStats.map(d => d.count), 1);
                       const percent = Math.min(100, Math.round((day.count / maxVal) * 100));
                       const barHeight = day.count === 0 ? '8px' : `${Math.max(percent, 12)}%`;
+
+                      // Exact traffic thresholds:
+                      // 0–9 visitors: BLACK
+                      // 10–49 visitors: GRAY
+                      // 50–99 visitors: BLUE
+                      // 100–199 visitors: GREEN
+                      // 200+ visitors: RED
+                      let barColor = 'bg-black';
+                      if (day.count <= 9) {
+                        barColor = 'bg-black';
+                      } else if (day.count <= 49) {
+                        barColor = 'bg-gray-500';
+                      } else if (day.count <= 99) {
+                        barColor = 'bg-blue-600';
+                      } else if (day.count <= 199) {
+                        barColor = 'bg-green-600';
+                      } else {
+                        barColor = 'bg-red-600';
+                      }
 
                       return (
                         <div key={day.dateKey} className="flex-1 flex flex-col items-center h-full justify-end group">
@@ -4690,13 +4774,7 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                           <div className="w-full max-w-[48px] h-full flex items-end">
                             <div
                               style={{ height: barHeight }}
-                              className={`w-full rounded-t-xl transition-all duration-500 relative ${
-                                day.isToday
-                                  ? 'bg-gradient-to-t from-amber-700 to-amber-500 shadow-md shadow-amber-200'
-                                  : day.count > 0
-                                  ? 'bg-gradient-to-t from-stone-400 to-stone-300 group-hover:from-amber-600 group-hover:to-amber-400'
-                                  : 'bg-stone-200'
-                              }`}
+                              className={`w-full rounded-t-xl transition-all duration-500 relative ${barColor}`}
                             />
                           </div>
 
@@ -4718,17 +4796,7 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
 
                   {/* Chú thích & Ghi chú kỹ thuật */}
                   <div className="border-t border-stone-100 pt-3 flex flex-col sm:flex-row items-center justify-between text-[10px] text-stone-400 gap-2">
-                    <div className="flex items-center gap-4">
-                      <span className="flex items-center gap-1.5 font-bold text-amber-800">
-                        <span className="w-2.5 h-2.5 rounded-full bg-gradient-to-t from-amber-700 to-amber-500 inline-block" />
-                        Hôm nay
-                      </span>
-                      <span className="flex items-center gap-1.5 font-bold text-stone-500">
-                        <span className="w-2.5 h-2.5 rounded-full bg-stone-300 inline-block" />
-                        Các ngày trước
-                      </span>
-                    </div>
-                    <p className="italic text-center sm:text-right">
+                    <p className="italic text-center sm:text-right w-full">
                       * Dữ liệu theo ngày bắt đầu ghi nhận từ ngày triển khai tính năng (ngày chưa có khách hiển thị 0). Tổng lượt truy cập tích lũy ({totalViews}) được bảo lưu nguyên vẹn.
                     </p>
                   </div>

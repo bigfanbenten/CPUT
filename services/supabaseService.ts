@@ -165,5 +165,33 @@ export const supabaseService = {
       console.warn('Exception calling increment_daily_visitor RPC:', err);
       return false;
     }
+  },
+
+  async getAllTimeVisitorRecord(): Promise<{ count: number; date: string } | null> {
+    try {
+      const { data, error } = await supabase
+        .from('daily_visitor_stats')
+        .select('date, visitor_count')
+        .order('visitor_count', { ascending: false })
+        .order('date', { ascending: false })
+        .limit(1);
+
+      if (error) {
+        console.warn('Error fetching all-time visitor record:', error.message);
+        return null;
+      }
+
+      if (data && data.length > 0 && data[0].visitor_count > 0) {
+        return {
+          count: Number(data[0].visitor_count),
+          date: data[0].date
+        };
+      }
+      return null;
+    } catch (err) {
+      console.warn('Exception in getAllTimeVisitorRecord:', err);
+      return null;
+    }
   }
 };
+
