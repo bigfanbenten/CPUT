@@ -188,10 +188,35 @@ const isHlsUrl = (url: string | null | undefined): boolean => {
   }
 };
 
+/**
+ * Kiểm tra xem URL có phải là video direct MP4 từ Cloudinary hay không:
+ * - Host: res.cloudinary.com
+ * - Đường dẫn: /video/upload/
+ * - Đuôi file: .mp4
+ */
+const isCloudinaryUrl = (url: string | null | undefined): boolean => {
+  if (!url || typeof url !== 'string') return false;
+  const clean = url.trim().toLowerCase();
+  if (!clean.includes('res.cloudinary.com')) return false;
+  if (!clean.includes('/video/upload/')) return false;
+  const pathWithoutQuery = clean.split('?')[0].split('#')[0];
+  return pathWithoutQuery.endsWith('.mp4');
+};
+
+/**
+ * Kiểm tra xem URL có phải là video direct từ ImageKit hay không:
+ */
+const isImageKitVideoUrl = (url: string | null | undefined): boolean => {
+  if (!url || typeof url !== 'string') return false;
+  const clean = url.trim().toLowerCase();
+  return (clean.includes('ik.imagekit.io') || clean.includes('imagekit.io')) && (clean.includes('.mp4') || clean.includes('.webm'));
+};
+
 const isVideoExtension = (url: string | null | undefined): boolean => {
   if (!url) return false;
   if (isHlsUrl(url)) return true;
   if (isYouTubeUrl(url)) return true;
+  if (isCloudinaryUrl(url)) return true;
   const clean = url.split('#')[0].split('?')[0].toLowerCase();
   return clean.endsWith('.mp4') || clean.endsWith('.webm') || clean.endsWith('.ogg') || clean.endsWith('.mov') || clean.endsWith('.m4v') || clean.endsWith('.m3u8');
 };
@@ -2268,6 +2293,13 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
           // Use upsert to ensure the row exists and is updated
           await supabase.from('site_stats').upsert({ id: 1, total_views: currentViews });
           localStorage.setItem(SESSION_VISIT_KEY, now.toString());
+
+          // Atomic increment via RPC (date is determined by DB in Asia/Ho_Chi_Minh)
+          try {
+            await supabase.rpc('increment_daily_visitor');
+          } catch (rpcErr) {
+            console.warn("Lỗi gọi RPC increment_daily_visitor:", rpcErr);
+          }
         }
         
         setTotalViews(currentViews);
@@ -2625,6 +2657,10 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
                       ? '▶️ YOUTUBE VIDEO'
                       : isHlsUrl(activeHeroSlide.media_url || activeHeroSlide.image_url)
                       ? '⚡ BUNNY HLS VIDEO'
+                      : isCloudinaryUrl(activeHeroSlide.media_url || activeHeroSlide.image_url)
+                      ? '☁️ CLOUDINARY VIDEO'
+                      : isImageKitVideoUrl(activeHeroSlide.media_url || activeHeroSlide.image_url)
+                      ? '🎬 IMAGEKIT VIDEO'
                       : '🎥 CINEMATIC VIDEO'}
                   </span>
                 </>
@@ -3583,6 +3619,14 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
   const [totalViews, setTotalViews] = useState<number>(0);
   const [localMenuImageUrl, setLocalMenuImageUrl] = useState<string>(menuImageUrl || '');
   const [isUpdatingStats, setIsUpdatingStats] = useState(false);
+  const [recent7DaysStats, setRecent7DaysStats] = useState<Array<{
+    dateKey: string;
+    displayDate: string;
+    dayLabel: string;
+    count: number;
+    isToday: boolean;
+  }>>([]);
+  const [isLoading7Days, setIsLoading7Days] = useState(false);
 
   const [localPoll, setLocalPoll] = useState<VotePoll>(pollData || {
     is_active: true,
@@ -3660,6 +3704,65 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
     if (data) setGuestbookItems(data);
   }, [supabase]);
 
+  const fetch7DayStats = useCallback(async () => {
+    setIsLoading7Days(true);
+    try {
+      const daysList: Array<{
+        dateKey: string;
+        displayDate: string;
+        dayLabel: string;
+        count: number;
+        isToday: boolean;
+      }> = [];
+
+      const now = new Date();
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+        const dateKey = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' }).format(d);
+        const displayDate = new Intl.DateTimeFormat('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', day: '2-digit', month: '2-digit' }).format(d);
+        const weekdayStr = new Intl.DateTimeFormat('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', weekday: 'short' }).format(d);
+        daysList.push({
+          dateKey,
+          displayDate,
+          dayLabel: i === 0 ? 'Hôm nay' : weekdayStr,
+          count: 0,
+          isToday: i === 0
+        });
+      }
+
+      const dateKeys = daysList.map(item => item.dateKey);
+      const dbMap: Record<string, number> = {};
+
+      try {
+        const { data, error } = await supabase
+          .from('daily_visitor_stats')
+          .select('date, visitor_count')
+          .in('date', dateKeys);
+
+        if (!error && data && Array.isArray(data)) {
+          data.forEach((row: any) => {
+            if (row?.date) {
+              dbMap[row.date] = Number(row.visitor_count || 0);
+            }
+          });
+        }
+      } catch (e) {
+        console.warn("Lỗi tải daily_visitor_stats từ Supabase:", e);
+      }
+
+      const combined = daysList.map(day => ({
+        ...day,
+        count: dbMap[day.dateKey] || 0
+      }));
+
+      setRecent7DaysStats(combined);
+    } catch (err) {
+      console.error("Lỗi tải thống kê 7 ngày:", err);
+    } finally {
+      setIsLoading7Days(false);
+    }
+  }, [supabase]);
+
   useEffect(() => {
     if (activeTab === 'quick') {
       fetchQuickMenu();
@@ -3669,8 +3772,9 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
     }
     if (activeTab === 'stats') {
       fetchStats();
+      fetch7DayStats();
     }
-  }, [activeTab, fetchQuickMenu, fetchGuestbook, fetchStats]);
+  }, [activeTab, fetchQuickMenu, fetchGuestbook, fetchStats, fetch7DayStats]);
 
   const approveGuestbook = async (id: string) => {
     const { error } = await supabase.from('guestbook').update({ is_approved: true }).eq('id', id);
@@ -4130,7 +4234,12 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                         ...updates
                       };
                       if (updates.media_type !== undefined) updated.media_type = updates.media_type;
-                      if (updates.media_url !== undefined) updated.media_url = updates.media_url;
+                      if (updates.media_url !== undefined) {
+                        updated.media_url = updates.media_url;
+                        if (isVideoExtension(updates.media_url)) {
+                          updated.media_type = 'video';
+                        }
+                      }
                       if (updates.poster_url !== undefined) updated.poster_url = updates.poster_url;
                       if (updates.quote !== undefined) updated.quote = updates.quote;
 
@@ -4241,7 +4350,17 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                             )}
                             {/* Badge góc preview */}
                             <div className="absolute top-2 left-2 bg-stone-950/80 backdrop-blur-xs text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-md border border-white/10 pointer-events-none">
-                              {isVideo ? '🎥 VIDEO PREVIEW' : '🖼️ IMAGE PREVIEW'}
+                              {isVideo ? (
+                                isYouTubeUrl(parsed.media_url)
+                                  ? '▶️ YOUTUBE PREVIEW'
+                                  : isHlsUrl(parsed.media_url)
+                                  ? '⚡ BUNNY HLS PREVIEW'
+                                  : isCloudinaryUrl(parsed.media_url)
+                                  ? '☁️ CLOUDINARY MP4'
+                                  : isImageKitVideoUrl(parsed.media_url)
+                                  ? '🎬 IMAGEKIT MP4'
+                                  : '🎥 VIDEO PREVIEW'
+                              ) : '🖼️ IMAGE PREVIEW'}
                             </div>
                           </div>
 
@@ -4249,16 +4368,37 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                           <div className="flex-1 w-full space-y-4">
                             {isVideo ? (
                               <div className="space-y-1.5">
-                                <label className="text-[10px] font-black uppercase text-rose-800 tracking-wider flex items-center gap-1.5">
-                                  <span>🎥</span>
-                                  <span>ĐƯỜNG DẪN VIDEO (MP4 / WEBM / Bunny HLS .m3u8 / YouTube)</span>
-                                </label>
+                                <div className="flex flex-wrap items-center justify-between gap-1">
+                                  <label className="text-[10px] font-black uppercase text-rose-800 tracking-wider flex items-center gap-1.5">
+                                    <span>🎥</span>
+                                    <span>ĐƯỜNG DẪN VIDEO (Cloudinary / ImageKit / Bunny HLS / YouTube)</span>
+                                  </label>
+                                  {parsed.media_url && (
+                                    <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-md bg-stone-800 text-white shadow-xs">
+                                      {isYouTubeUrl(parsed.media_url)
+                                        ? '▶️ YOUTUBE'
+                                        : isHlsUrl(parsed.media_url)
+                                        ? '⚡ BUNNY HLS'
+                                        : isCloudinaryUrl(parsed.media_url)
+                                        ? '☁️ CLOUDINARY MP4'
+                                        : isImageKitVideoUrl(parsed.media_url)
+                                        ? '🎬 IMAGEKIT MP4'
+                                        : '🎥 DIRECT MP4'}
+                                    </span>
+                                  )}
+                                </div>
                                 <input
                                   value={parsed.media_url}
                                   onChange={e => updateCurrentSlide({ media_url: e.target.value })}
                                   className="w-full p-3.5 bg-white border border-stone-200 rounded-2xl text-xs font-mono text-stone-800 focus:outline-none focus:border-rose-600 shadow-inner"
-                                  placeholder="https://... Dán link MP4, WEBM, Bunny HLS (.m3u8) hoặc YouTube (youtube.com / youtu.be)"
+                                  placeholder="https://... Dán link MP4 (Cloudinary, ImageKit), Bunny HLS (.m3u8) hoặc YouTube"
                                 />
+                                {isCloudinaryUrl(parsed.media_url) && (
+                                  <p className="text-[10px] text-emerald-700 font-bold flex items-center gap-1">
+                                    <span>✓</span>
+                                    <span>Đã nhận diện: Cloudinary Direct MP4 (Phát chuẩn HTML5 Native Video)</span>
+                                  </p>
+                                )}
                               </div>
                             ) : (
                               <div className="space-y-1.5">
@@ -4427,6 +4567,136 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                     )}
                     <p className="text-[9px] text-stone-400 italic">
                       * Mẹo: Tại Postimage, bạn hãy chọn link tên là <span className="font-bold text-amber-800">"Mã trực tiếp" (Direct Link)</span> để ảnh hiện lên đúng nhé!
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* BẢNG THỐNG KÊ LƯỢT TRUY CẬP 7 NGÀY GẦN NHẤT */}
+              <div className="bg-stone-50 p-8 rounded-[40px] border border-stone-100 space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-200/60 pb-5">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-amber-800 shadow-sm border border-stone-100">
+                      <BarChart2 size={28} />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-amber-800 bg-amber-100/70 px-2.5 py-0.5 rounded-full">
+                          Thống kê thực tế
+                        </span>
+                        <span className="text-[10px] font-bold text-stone-400">7 ngày gần nhất</span>
+                      </div>
+                      <h3 className="text-xl font-black uppercase text-stone-900 mt-1">
+                        LƯU LƯỢNG KHÁCH TRUY CẬP HẰNG NGÀY
+                      </h3>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={fetch7DayStats}
+                    disabled={isLoading7Days}
+                    className="inline-flex items-center gap-2 self-start sm:self-auto px-4 py-2.5 bg-white border border-stone-200 rounded-xl text-[10px] font-black uppercase tracking-wider text-stone-600 hover:text-amber-800 hover:border-amber-200 transition-all shadow-sm active:scale-95 disabled:opacity-50"
+                  >
+                    <RefreshCw size={14} className={isLoading7Days ? "animate-spin text-amber-800" : ""} />
+                    {isLoading7Days ? "Đang tải..." : "Làm mới dữ liệu"}
+                  </button>
+                </div>
+
+                {/* 3 Thẻ chỉ số tổng quan */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="bg-white p-5 rounded-2xl border border-stone-100 shadow-sm">
+                    <span className="text-[9px] font-black uppercase tracking-widest text-stone-400 block mb-1">
+                      Hôm nay ({recent7DaysStats.find(d => d.isToday)?.displayDate || '--'})
+                    </span>
+                    <div className="text-3xl font-black text-amber-800 tabular-nums">
+                      {recent7DaysStats.find(d => d.isToday)?.count || 0}
+                      <span className="text-xs font-bold text-stone-400 ml-1.5 font-normal">lượt</span>
+                    </div>
+                  </div>
+
+                  <div className="bg-white p-5 rounded-2xl border border-stone-100 shadow-sm">
+                    <span className="text-[9px] font-black uppercase tracking-widest text-stone-400 block mb-1">
+                      Tổng 7 ngày qua
+                    </span>
+                    <div className="text-3xl font-black text-stone-900 tabular-nums">
+                      {recent7DaysStats.reduce((sum, d) => sum + d.count, 0)}
+                      <span className="text-xs font-bold text-stone-400 ml-1.5 font-normal">lượt</span>
+                    </div>
+                  </div>
+
+                  <div className="bg-white p-5 rounded-2xl border border-stone-100 shadow-sm">
+                    <span className="text-[9px] font-black uppercase tracking-widest text-stone-400 block mb-1">
+                      Trung bình / ngày
+                    </span>
+                    <div className="text-3xl font-black text-stone-900 tabular-nums">
+                      {Number((recent7DaysStats.reduce((sum, d) => sum + d.count, 0) / 7).toFixed(1))}
+                      <span className="text-xs font-bold text-stone-400 ml-1.5 font-normal">lượt / ngày</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Biểu đồ cột 7 ngày */}
+                <div className="bg-white p-6 rounded-3xl border border-stone-100 shadow-sm space-y-4">
+                  <div className="h-56 flex items-end justify-between gap-2 sm:gap-4 pt-6 px-1 sm:px-4">
+                    {recent7DaysStats.map((day) => {
+                      const maxVal = Math.max(...recent7DaysStats.map(d => d.count), 1);
+                      const percent = Math.min(100, Math.round((day.count / maxVal) * 100));
+                      const barHeight = day.count === 0 ? '8px' : `${Math.max(percent, 12)}%`;
+
+                      return (
+                        <div key={day.dateKey} className="flex-1 flex flex-col items-center h-full justify-end group">
+                          {/* Giá trị trên đỉnh cột */}
+                          <span className={`text-[11px] font-black tabular-nums mb-2 transition-transform duration-200 group-hover:scale-110 ${
+                            day.isToday ? 'text-amber-800 font-extrabold' : 'text-stone-600'
+                          }`}>
+                            {day.count}
+                          </span>
+
+                          {/* Cột biểu đồ */}
+                          <div className="w-full max-w-[48px] h-full flex items-end">
+                            <div
+                              style={{ height: barHeight }}
+                              className={`w-full rounded-t-xl transition-all duration-500 relative ${
+                                day.isToday
+                                  ? 'bg-gradient-to-t from-amber-700 to-amber-500 shadow-md shadow-amber-200'
+                                  : day.count > 0
+                                  ? 'bg-gradient-to-t from-stone-400 to-stone-300 group-hover:from-amber-600 group-hover:to-amber-400'
+                                  : 'bg-stone-200'
+                              }`}
+                            />
+                          </div>
+
+                          {/* Nhãn ngày bên dưới cột */}
+                          <div className="mt-3 text-center">
+                            <span className={`block text-[10px] font-black uppercase ${
+                              day.isToday ? 'text-amber-800' : 'text-stone-700'
+                            }`}>
+                              {day.dayLabel}
+                            </span>
+                            <span className="block text-[9px] font-bold text-stone-400 mt-0.5">
+                              {day.displayDate}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Chú thích & Ghi chú kỹ thuật */}
+                  <div className="border-t border-stone-100 pt-3 flex flex-col sm:flex-row items-center justify-between text-[10px] text-stone-400 gap-2">
+                    <div className="flex items-center gap-4">
+                      <span className="flex items-center gap-1.5 font-bold text-amber-800">
+                        <span className="w-2.5 h-2.5 rounded-full bg-gradient-to-t from-amber-700 to-amber-500 inline-block" />
+                        Hôm nay
+                      </span>
+                      <span className="flex items-center gap-1.5 font-bold text-stone-500">
+                        <span className="w-2.5 h-2.5 rounded-full bg-stone-300 inline-block" />
+                        Các ngày trước
+                      </span>
+                    </div>
+                    <p className="italic text-center sm:text-right">
+                      * Dữ liệu theo ngày bắt đầu ghi nhận từ ngày triển khai tính năng (ngày chưa có khách hiển thị 0). Tổng lượt truy cập tích lũy ({totalViews}) được bảo lưu nguyên vẹn.
                     </p>
                   </div>
                 </div>

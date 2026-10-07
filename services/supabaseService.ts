@@ -1,5 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
-import { Notification, Dish, Category } from '../types';
+import { Notification, Dish, Category, VisitorStats, DailyVisitorStat } from '../types';
+
+export type { DailyVisitorStat };
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
@@ -121,5 +123,47 @@ export const supabaseService = {
       return false;
     }
     return true;
+  },
+
+  // Daily Visitor Stats (7-Day Analytics)
+  async getDailyVisitorStats(dateKeys: string[]): Promise<Record<string, number>> {
+    try {
+      const { data, error } = await supabase
+        .from('daily_visitor_stats')
+        .select('date, visitor_count')
+        .in('date', dateKeys);
+
+      if (error) {
+        console.warn('Error fetching daily visitor stats:', error.message);
+        return {};
+      }
+
+      const result: Record<string, number> = {};
+      if (Array.isArray(data)) {
+        data.forEach((row: any) => {
+          if (row?.date) {
+            result[row.date] = Number(row.visitor_count || 0);
+          }
+        });
+      }
+      return result;
+    } catch (err) {
+      console.warn('Error in getDailyVisitorStats:', err);
+      return {};
+    }
+  },
+
+  async recordDailyVisitor(): Promise<boolean> {
+    try {
+      const { error } = await supabase.rpc('increment_daily_visitor');
+      if (error) {
+        console.warn('Error calling increment_daily_visitor RPC:', error.message);
+        return false;
+      }
+      return true;
+    } catch (err) {
+      console.warn('Exception calling increment_daily_visitor RPC:', err);
+      return false;
+    }
   }
 };
