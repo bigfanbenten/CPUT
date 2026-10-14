@@ -268,6 +268,44 @@ const parseHeroSlide = (slide: HeroSlide): HeroSlide => {
   };
 };
 
+export type HeroProviderType = 'cloudinary' | 'imagekit' | 'bunny' | 'youtube' | 'other';
+
+/**
+ * Nhận diện nhà cung cấp lưu trữ / phân phối của Hero Media:
+ * - Phân tích hostname qua new URL() với ranh giới domain chuẩn xác (hostname === domain || hostname.endsWith('.' + domain))
+ * - Ngăn chặn nhận diện sai hostname giả mạo
+ * - Không phân loại tất cả .m3u8 là Bunny nếu hostname không thuộc Bunny
+ * - URL không hợp lệ hoặc không xác định được trả về 'other'
+ */
+const detectHeroMediaProvider = (slide: HeroSlide): HeroProviderType => {
+  const parsed = parseHeroSlide(slide);
+  const rawUrl = (parsed.media_url || parsed.image_url || '').trim();
+  if (!rawUrl) return 'other';
+
+  try {
+    const urlObj = new URL(rawUrl);
+    const hostname = urlObj.hostname.toLowerCase();
+
+    const matchesDomain = (domain: string) => hostname === domain || hostname.endsWith('.' + domain);
+
+    if (matchesDomain('youtube.com') || matchesDomain('youtu.be') || matchesDomain('youtube-nocookie.com')) {
+      return 'youtube';
+    }
+    if (matchesDomain('b-cdn.net') || matchesDomain('bunnycdn.com') || matchesDomain('mediadelivery.net')) {
+      return 'bunny';
+    }
+    if (matchesDomain('cloudinary.com')) {
+      return 'cloudinary';
+    }
+    if (matchesDomain('imagekit.io')) {
+      return 'imagekit';
+    }
+    return 'other';
+  } catch {
+    return 'other';
+  }
+};
+
 const serializeHeroSlide = (slide: HeroSlide): { id?: string; image_url: string; quote: string } => {
   const type = slide.media_type || (isVideoExtension(slide.media_url || slide.image_url) ? 'video' : 'image');
   let finalUrl = (slide.media_url !== undefined ? slide.media_url : slide.image_url) || '';
@@ -1007,7 +1045,18 @@ const HeroCinematicVideo = ({
   const ytPlayerRef = useRef<any>(null);
   const ytContainerRef = useRef<HTMLDivElement>(null);
   const [errorSrc, setErrorSrc] = useState<string | null>(null);
+  const [prevIsActive, setPrevIsActive] = useState(isActive);
+  const [isYtMaskActive, setIsYtMaskActive] = useState(true);
+  const ytMaskTimerRef = useRef<NodeJS.Timeout | null>(null);
   const hasTriggeredNextRef = useRef(false);
+
+  // Mẫu chuẩn React: Cập nhật state mặt nạ đồng bộ trong render khi isActive chuyển đổi sang true
+  if (prevIsActive !== isActive) {
+    setPrevIsActive(isActive);
+    if (isActive) {
+      setIsYtMaskActive(true);
+    }
+  }
   const startupTimerRef = useRef<NodeJS.Timeout | null>(null);
   const watchdogTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isActiveRef = useRef(isActive);
@@ -1091,6 +1140,10 @@ const HeroCinematicVideo = ({
 
     if (!isActive) {
       // Inactive: dừng phát và hủy player
+      if (ytMaskTimerRef.current) {
+        clearTimeout(ytMaskTimerRef.current);
+        ytMaskTimerRef.current = null;
+      }
       if (startupTimerRef.current) {
         clearTimeout(startupTimerRef.current);
         startupTimerRef.current = null;
@@ -1111,9 +1164,51 @@ const HeroCinematicVideo = ({
     }
 
     // Active: khởi tạo lượt phát mới
+    if (ytMaskTimerRef.current) {
+      clearTimeout(ytMaskTimerRef.current);
+      ytMaskTimerRef.current = null;
+    }
     hasTriggeredNextRef.current = false;
     let isCancelled = false;
+    let durationPollTimer: NodeJS.Timeout | null = null;
+    let shortsLoopMonitorTimer: NodeJS.Timeout | null = null;
+    let maxObservedTime = 0;
     const container = ytContainerRef.current;
+
+    const scheduleWatchdogIfAvailable = (player: any) => {
+      if (watchdogTimerRef.current || isSingleMediaRef.current) {
+        if (durationPollTimer) {
+          clearInterval(durationPollTimer);
+          durationPollTimer = null;
+        }
+        return true;
+      }
+      try {
+        const duration = typeof player?.getDuration === 'function' ? player.getDuration() : 0;
+        if (duration && duration > 0) {
+          watchdogTimerRef.current = setTimeout(() => {
+            if (!isCancelled && isActiveRef.current) {
+              triggerNextExactlyOnce();
+            }
+          }, Math.ceil((duration + 3) * 1000));
+          if (durationPollTimer) {
+            clearInterval(durationPollTimer);
+            durationPollTimer = null;
+          }
+          return true;
+        }
+      } catch {
+        // ignore
+      }
+      return false;
+    };
+
+    // Mặt nạ Poster khởi động: Che phủ giao diện tải và icon ⏸ của YouTube trong ~2100ms tổng cộng từ khi khởi động
+    ytMaskTimerRef.current = setTimeout(() => {
+      if (!isCancelled) {
+        setIsYtMaskActive(false);
+      }
+    }, 2100);
 
     // Startup fallback: nếu sau 7.5s video chưa PLAYING (lỗi kết nối, mạng yếu), chuyển slide an toàn
     startupTimerRef.current = setTimeout(() => {
@@ -1200,18 +1295,63 @@ const HeroCinematicVideo = ({
                 }
 
                 // Thiết lập watchdog timer dự phòng theo DURATION THỰC TẾ
-                try {
-                  const duration = event.target.getDuration();
-                  if (duration && duration > 0 && !isSingleMediaRef.current) {
-                    if (watchdogTimerRef.current) clearTimeout(watchdogTimerRef.current);
-                    watchdogTimerRef.current = setTimeout(() => {
-                      if (!isCancelled && isActiveRef.current) {
-                        triggerNextExactlyOnce();
+                // Chỉ lập lịch 1 lần duy nhất cho mỗi lượt slide, KHÔNG reset khi nhận sự kiện PLAYING lặp lại
+                if (!watchdogTimerRef.current && !isSingleMediaRef.current) {
+                  const scheduled = scheduleWatchdogIfAvailable(event.target);
+                  if (!scheduled && !durationPollTimer) {
+                    durationPollTimer = setInterval(() => {
+                      if (isCancelled || !isActiveRef.current) {
+                        if (durationPollTimer) {
+                          clearInterval(durationPollTimer);
+                          durationPollTimer = null;
+                        }
+                        return;
                       }
-                    }, Math.ceil((duration + 3) * 1000));
+                      scheduleWatchdogIfAvailable(event.target);
+                    }, 500);
                   }
-                } catch {
-                  // ignore
+                }
+
+                // Giám sát vòng lặp YouTube Shorts: Chỉ kích hoạt cho Shorts và khi có nhiều slide
+                // Nhận diện chuẩn xác khi video chạm gần cuối chu kỳ đầu rồi quay ngược về đầu (< 1.5s)
+                if (isShorts && !isSingleMediaRef.current && !shortsLoopMonitorTimer) {
+                  shortsLoopMonitorTimer = setInterval(() => {
+                    if (isCancelled || !isActiveRef.current || hasTriggeredNextRef.current) {
+                      if (shortsLoopMonitorTimer) {
+                        clearInterval(shortsLoopMonitorTimer);
+                        shortsLoopMonitorTimer = null;
+                      }
+                      return;
+                    }
+                    try {
+                      const p = event.target;
+                      if (typeof p?.getCurrentTime !== 'function') return;
+                      const curTime = p.getCurrentTime();
+                      const dur = typeof p?.getDuration === 'function' ? p.getDuration() : 0;
+
+                      if (typeof curTime === 'number' && !isNaN(curTime)) {
+                        if (curTime > maxObservedTime) {
+                          maxObservedTime = curTime;
+                        }
+
+                        // Điều kiện nhận diện Loop hoàn chỉnh:
+                        // 1. Phải có duration hợp lệ (> 2s)
+                        // 2. Đã quan sát được vị trí phát chạm gần hết video (ít nhất dur - 0.8s hoặc 92% thời lượng)
+                        // 3. curTime hiện tại đã quay về gần đầu (< 1.5s) và có bước nhảy lùi thực sự so với điểm cao nhất
+                        if (dur > 2 && maxObservedTime >= Math.min(dur - 0.8, dur * 0.92)) {
+                          if (curTime < 1.5 && curTime < maxObservedTime - 2.0) {
+                            if (shortsLoopMonitorTimer) {
+                              clearInterval(shortsLoopMonitorTimer);
+                              shortsLoopMonitorTimer = null;
+                            }
+                            triggerNextExactlyOnce();
+                          }
+                        }
+                      }
+                    } catch {
+                      // ignore
+                    }
+                  }, 250);
                 }
               }
 
@@ -1247,6 +1387,18 @@ const HeroCinematicVideo = ({
 
     return () => {
       isCancelled = true;
+      if (shortsLoopMonitorTimer) {
+        clearInterval(shortsLoopMonitorTimer);
+        shortsLoopMonitorTimer = null;
+      }
+      if (durationPollTimer) {
+        clearInterval(durationPollTimer);
+        durationPollTimer = null;
+      }
+      if (ytMaskTimerRef.current) {
+        clearTimeout(ytMaskTimerRef.current);
+        ytMaskTimerRef.current = null;
+      }
       if (startupTimerRef.current) {
         clearTimeout(startupTimerRef.current);
         startupTimerRef.current = null;
@@ -1267,7 +1419,7 @@ const HeroCinematicVideo = ({
         container.innerHTML = '';
       }
     };
-  }, [isActive, isYoutube, youtubeId, deliverySrc, triggerNextExactlyOnce]);
+  }, [isActive, isYoutube, youtubeId, deliverySrc, isShorts, triggerNextExactlyOnce]);
 
   // Xử lý HLS & MP4 playback theo active state (Tối ưu Mobile First & Tiết kiệm Bandwidth)
   useEffect(() => {
@@ -1486,24 +1638,30 @@ const HeroCinematicVideo = ({
 
   // Render YouTube Provider (Cinematic Full-bleed Cover)
   if (isYoutube && youtubeId) {
+    const posterSrc = cleanPoster || `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`;
     return (
       <div className="relative w-full h-full overflow-hidden bg-stone-950 flex items-center justify-center">
-        {cleanPoster ? (
-          <img
-            src={cleanPoster}
-            alt="Poster Fallback"
-            className="absolute inset-0 w-full h-full object-cover object-center -z-10 pointer-events-none"
-            loading="eager"
-          />
-        ) : (
-          <img
-            src={`https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`}
-            alt="YouTube Fallback"
-            className="absolute inset-0 w-full h-full object-cover object-center -z-10 pointer-events-none opacity-40 blur-sm scale-105"
-            loading="eager"
-          />
-        )}
+        {/* YouTube IFrame Container - Luôn phát ngầm ngay từ đầu */}
         <div ref={ytContainerRef} className={`yt-hero-container ${isShorts ? 'is-shorts' : ''}`} />
+
+        {/* Lớp mặt nạ Poster khởi động (Startup Mask) che giao diện tải và icon ⏸ của YouTube trong ~2.1s đầu */}
+        <div
+          className={`absolute inset-0 w-full h-full pointer-events-none transition-opacity duration-500 ease-out z-10 ${
+            isYtMaskActive ? 'opacity-100' : 'opacity-0'
+          }`}
+        >
+          <img
+            src={posterSrc}
+            alt="Hero Media Poster"
+            onError={(e) => {
+              if (e.currentTarget.src !== `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`) {
+                e.currentTarget.src = `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`;
+              }
+            }}
+            className="w-full h-full object-cover object-center pointer-events-none"
+            loading="eager"
+          />
+        </div>
       </div>
     );
   }
@@ -3683,6 +3841,44 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
     if (pollData) setLocalPoll(pollData);
   }, [pollData]);
 
+  // Thống kê tự động thời gian thực từ danh sách heroSlides hiện tại trong state ACP
+  const heroStats = useMemo(() => {
+    let video = 0;
+    let image = 0;
+    let cloudinary = 0;
+    let imagekit = 0;
+    let bunny = 0;
+    let youtube = 0;
+    let other = 0;
+
+    const list: HeroSlide[] = Array.isArray(heroSlides) ? heroSlides : [];
+    list.forEach((slide: HeroSlide) => {
+      const parsed = parseHeroSlide(slide);
+      if (parsed.media_type === 'video') {
+        video++;
+        const provider = detectHeroMediaProvider(slide);
+        if (provider === 'cloudinary') cloudinary++;
+        else if (provider === 'imagekit') imagekit++;
+        else if (provider === 'bunny') bunny++;
+        else if (provider === 'youtube') youtube++;
+        else other++;
+      } else {
+        image++;
+      }
+    });
+
+    return {
+      total: list.length,
+      video,
+      image,
+      cloudinary,
+      imagekit,
+      bunny,
+      youtube,
+      other,
+    };
+  }, [heroSlides]);
+
   const fetchStats = useCallback(async () => {
     const { data } = await supabase.from('site_stats').select('total_views, menu_image_url').eq('id', 1).maybeSingle();
     if (data) {
@@ -4236,11 +4432,11 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                 </div>
                 <div className="flex flex-wrap items-center gap-2.5">
                   <div className="flex items-center gap-2 bg-stone-100 border border-stone-200 px-3.5 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-wider text-stone-700 shadow-xs">
-                    <span className="text-stone-900 font-extrabold">{heroSlides.length} ITEMS</span>
+                    <span className="text-stone-900 font-extrabold">{heroStats.total} ITEMS</span>
                     <span className="text-stone-300">|</span>
-                    <span className="text-rose-700 font-extrabold">🎥 {heroSlides.filter(s => parseHeroSlide(s).media_type === 'video').length} VIDEO</span>
+                    <span className="text-rose-700 font-extrabold">🎥 {heroStats.video} VIDEO</span>
                     <span className="text-stone-300">|</span>
-                    <span className="text-amber-800 font-extrabold">🖼️ {heroSlides.filter(s => parseHeroSlide(s).media_type !== 'video').length} ẢNH</span>
+                    <span className="text-amber-800 font-extrabold">🖼️ {heroStats.image} ẢNH</span>
                   </div>
                   <button
                     type="button"
@@ -4284,6 +4480,111 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                   >
                     <span>+ THÊM VIDEO</span>
                   </button>
+                </div>
+              </div>
+
+              {/* KHU VỰC THỐNG KÊ CINEMATIC HERO MEDIA */}
+              <div className="bg-stone-50/90 rounded-[28px] border border-stone-200/90 p-5 md:p-6 shadow-xs space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-stone-200/60 pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-8 h-8 rounded-xl bg-amber-800/10 text-amber-900 font-bold flex items-center justify-center text-sm shadow-xs">
+                      📊
+                    </span>
+                    <div>
+                      <h3 className="text-xs font-black uppercase tracking-wider text-stone-900">
+                        BẢNG THỐNG KÊ PHÂN BỔ HERO MEDIA
+                      </h3>
+                      <p className="text-[10px] text-stone-500 font-medium">
+                        Phân loại định dạng & nền tảng lưu trữ (Tự động cập nhật thời gian thực)
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 self-start sm:self-auto text-[10px] font-bold text-stone-500 bg-white border border-stone-200/80 px-2.5 py-1 rounded-full shadow-2xs">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>TỰ ĐỘNG ĐỒNG BỘ THEO DỮ LIỆU</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5 sm:gap-3">
+                  {/* 1. TỔNG MEDIA */}
+                  <div className="bg-stone-900 text-white rounded-2xl p-3 sm:p-3.5 border border-stone-900 shadow-xs flex flex-col justify-between transition-all hover:scale-[1.02]">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-stone-300">TỔNG MEDIA</span>
+                      <span className="text-xs">🎬</span>
+                    </div>
+                    <div className="text-2xl sm:text-3xl font-black tracking-tight text-white">{heroStats.total}</div>
+                    <span className="text-[9px] text-stone-400 font-medium mt-0.5">Mục trình chiếu</span>
+                  </div>
+
+                  {/* 2. VIDEO */}
+                  <div className="bg-rose-50 text-rose-950 rounded-2xl p-3 sm:p-3.5 border border-rose-200/80 shadow-2xs flex flex-col justify-between transition-all hover:scale-[1.02]">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-rose-800">VIDEO</span>
+                      <span className="text-xs">🎥</span>
+                    </div>
+                    <div className="text-2xl sm:text-3xl font-black tracking-tight text-rose-700">{heroStats.video}</div>
+                    <span className="text-[9px] text-rose-600/80 font-medium mt-0.5">Đoạn phim</span>
+                  </div>
+
+                  {/* 3. ẢNH */}
+                  <div className="bg-amber-50 text-amber-950 rounded-2xl p-3 sm:p-3.5 border border-amber-200/80 shadow-2xs flex flex-col justify-between transition-all hover:scale-[1.02]">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-amber-900">ẢNH</span>
+                      <span className="text-xs">🖼️</span>
+                    </div>
+                    <div className="text-2xl sm:text-3xl font-black tracking-tight text-amber-800">{heroStats.image}</div>
+                    <span className="text-[9px] text-amber-700/80 font-medium mt-0.5">Hình ảnh tĩnh</span>
+                  </div>
+
+                  {/* 4. CLOUDINARY */}
+                  <div className="bg-sky-50 text-sky-950 rounded-2xl p-3 sm:p-3.5 border border-sky-200/80 shadow-2xs flex flex-col justify-between transition-all hover:scale-[1.02]">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-sky-800">CLOUDINARY</span>
+                      <span className="text-xs">☁️</span>
+                    </div>
+                    <div className="text-2xl sm:text-3xl font-black tracking-tight text-sky-700">{heroStats.cloudinary}</div>
+                    <span className="text-[9px] text-sky-600/80 font-medium mt-0.5">Direct MP4/CDN</span>
+                  </div>
+
+                  {/* 5. IMAGEKIT */}
+                  <div className="bg-indigo-50 text-indigo-950 rounded-2xl p-3 sm:p-3.5 border border-indigo-200/80 shadow-2xs flex flex-col justify-between transition-all hover:scale-[1.02]">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-indigo-800">IMAGEKIT</span>
+                      <span className="text-xs">🎬</span>
+                    </div>
+                    <div className="text-2xl sm:text-3xl font-black tracking-tight text-indigo-700">{heroStats.imagekit}</div>
+                    <span className="text-[9px] text-indigo-600/80 font-medium mt-0.5">Original Delivery</span>
+                  </div>
+
+                  {/* 6. BUNNY HLS */}
+                  <div className="bg-orange-50 text-orange-950 rounded-2xl p-3 sm:p-3.5 border border-orange-200/80 shadow-2xs flex flex-col justify-between transition-all hover:scale-[1.02]">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-orange-800">BUNNY HLS</span>
+                      <span className="text-xs">⚡</span>
+                    </div>
+                    <div className="text-2xl sm:text-3xl font-black tracking-tight text-orange-700">{heroStats.bunny}</div>
+                    <span className="text-[9px] text-orange-600/80 font-medium mt-0.5">Stream .m3u8</span>
+                  </div>
+
+                  {/* 7. YOUTUBE */}
+                  <div className="bg-red-50 text-red-950 rounded-2xl p-3 sm:p-3.5 border border-red-200/80 shadow-2xs flex flex-col justify-between transition-all hover:scale-[1.02]">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-red-800">YOUTUBE</span>
+                      <span className="text-xs">▶️</span>
+                    </div>
+                    <div className="text-2xl sm:text-3xl font-black tracking-tight text-red-600">{heroStats.youtube}</div>
+                    <span className="text-[9px] text-red-600/80 font-medium mt-0.5">Iframe / Shorts</span>
+                  </div>
+
+                  {/* 8. KHÁC / KHÔNG XÁC ĐỊNH */}
+                  <div className="bg-stone-100/90 text-stone-800 rounded-2xl p-3 sm:p-3.5 border border-stone-200/80 shadow-2xs flex flex-col justify-between transition-all hover:scale-[1.02]">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-stone-600">KHÁC / CHƯA RÕ</span>
+                      <span className="text-xs">🌐</span>
+                    </div>
+                    <div className="text-2xl sm:text-3xl font-black tracking-tight text-stone-700">{heroStats.other}</div>
+                    <span className="text-[9px] text-stone-500 font-medium mt-0.5">Unsplash / Khác</span>
+                  </div>
                 </div>
               </div>
 
