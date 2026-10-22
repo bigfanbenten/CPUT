@@ -3918,6 +3918,8 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
       alert('Không thể sao chép danh sách vào clipboard: ' + (err?.message || 'Vui lòng kiểm tra quyền truy cập clipboard'));
     }
   };
+
+  const [quickMenuItems, setQuickMenuItems] = useState<any[]>([]);
   const [loadingQuick, setLoadingQuick] = useState(false);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [totalViews, setTotalViews] = useState<number>(0);
