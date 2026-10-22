@@ -50,7 +50,7 @@
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
-import { ChevronRight, ChevronDown, ChevronUp, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, MessageSquare, CheckCircle2, Facebook, Mail, Youtube, Users, Vote, Music, VolumeX, Play, Pause, BarChart2, Check, X, RefreshCw, Shuffle, ExternalLink, Trophy } from 'lucide-react';
+import { ChevronRight, ChevronDown, ChevronUp, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, MessageSquare, CheckCircle2, Facebook, Mail, Youtube, Users, Vote, Music, VolumeX, Play, Pause, BarChart2, Check, X, RefreshCw, Shuffle, ExternalLink, Trophy, ListTree, Copy, ArrowLeft } from 'lucide-react';
 import Hls from 'hls.js';
 
 // --- CẤU HÌNH CỐ ĐỊNH ---
@@ -3797,7 +3797,127 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
   const [newNotif, setNewNotif] = useState('');
   const [newFooter, setNewFooter] = useState('XIN CHÚC BẠN VÀ GIA ĐÌNH SỨC KHỎE VÀ PHÁT TÀI.');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [quickMenuItems, setQuickMenuItems] = useState<any[]>([]);
+
+  // Tree View state cho THỰC ĐƠN trong ACP (Chế độ xem kiểm kê chỉ đọc)
+  const [isTreeView, setIsTreeView] = useState(false);
+  const [checkedTreeIds, setCheckedTreeIds] = useState<Set<string>>(new Set());
+  const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
+  const [copySuccess, setCopySuccess] = useState(false);
+
+  // Phân nhóm món ăn theo danh mục hiện có phục vụ Tree View
+  const treeCategories = useMemo(() => {
+    const standardCategories: string[] = [
+      Category.MainCourse,
+      Category.Soup,
+      Category.StirFry,
+      Category.Vegetable,
+      Category.Drink
+    ];
+
+    const seenCategories = new Set<string>();
+    const categoryMap = new Map<string, Dish[]>();
+
+    standardCategories.forEach(cat => {
+      categoryMap.set(cat, []);
+      seenCategories.add(cat);
+    });
+
+    const menuList: Dish[] = Array.isArray(menu) ? menu : [];
+    menuList.forEach(dish => {
+      const cat = (dish.category as string) || 'Khác';
+      if (!categoryMap.has(cat)) {
+        categoryMap.set(cat, []);
+        seenCategories.add(cat);
+      }
+      categoryMap.get(cat)!.push(dish);
+    });
+
+    const result: Array<{ category: string; dishes: Dish[] }> = [];
+    seenCategories.forEach(cat => {
+      const dishes = categoryMap.get(cat) || [];
+      if (dishes.length > 0) {
+        result.push({ category: cat, dishes });
+      }
+    });
+
+    return result;
+  }, [menu]);
+
+  const toggleCategoryCollapse = (category: string) => {
+    setCollapsedCategories(prev => {
+      const next = new Set(prev);
+      if (next.has(category)) {
+        next.delete(category);
+      } else {
+        next.add(category);
+      }
+      return next;
+    });
+  };
+
+  const handleExpandAll = () => {
+    setCollapsedCategories(new Set());
+  };
+
+  const handleCollapseAll = () => {
+    const all = new Set<string>(treeCategories.map(c => c.category));
+    setCollapsedCategories(all);
+  };
+
+  const toggleTreeCheck = (dishId: string) => {
+    setCheckedTreeIds(prev => {
+      const next = new Set(prev);
+      if (next.has(dishId)) {
+        next.delete(dishId);
+      } else {
+        next.add(dishId);
+      }
+      return next;
+    });
+  };
+
+  const handleCopyTreeList = async () => {
+    try {
+      const totalCount = Array.isArray(menu) ? menu.length : 0;
+      let text = `THỰC ĐƠN CƠM PHẦN ÚT TRINH\nTỔNG CỘNG: ${totalCount} MÓN\n\n`;
+
+      treeCategories.forEach(({ category, dishes }) => {
+        if (dishes.length > 0) {
+          text += `[${category.toUpperCase()}]\n`;
+          dishes.forEach((dish, idx) => {
+            text += `${idx + 1}. ${dish.name.trim()}\n`;
+          });
+          text += '\n';
+        }
+      });
+
+      const finalText = text.trimEnd();
+
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(finalText);
+      } else {
+        const textArea = document.createElement('textarea');
+        textArea.value = finalText;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-9999px';
+        textArea.style.top = '0';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+        if (!successful) {
+          throw new Error('Trình duyệt không hỗ trợ lệnh sao chép tự động');
+        }
+      }
+
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2500);
+    } catch (err: any) {
+      console.error('Lỗi khi sao chép danh sách thực đơn:', err);
+      alert('Không thể sao chép danh sách vào clipboard: ' + (err?.message || 'Vui lòng kiểm tra quyền truy cập clipboard'));
+    }
+  };
   const [loadingQuick, setLoadingQuick] = useState(false);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [totalViews, setTotalViews] = useState<number>(0);
@@ -4321,10 +4441,210 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                 <div className="flex gap-3">
                   <button onClick={onSave} className="bg-green-600 text-white px-8 py-3.5 text-[10px] font-black rounded-xl uppercase tracking-widest shadow-lg">ĐỒNG BỘ</button>
                   <button onClick={() => setMenu([{ id: Date.now().toString(), name: 'Món Mới', price: '35.000 VNĐ', description: '', image_url: '', category: Category.MainCourse }, ...menu])} className="bg-amber-800 text-white px-8 py-3.5 text-[10px] font-black rounded-xl uppercase tracking-widest shadow-lg">+ THÊM MÓN</button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsTreeView(true);
+                      setCheckedTreeIds(new Set());
+                      setCollapsedCategories(new Set());
+                    }}
+                    className="bg-stone-800 hover:bg-stone-900 text-white px-6 py-3.5 text-[10px] font-black rounded-xl uppercase tracking-widest shadow-lg flex items-center gap-2 cursor-pointer transition-all active:scale-95"
+                    title="Xem danh sách thực đơn dạng cây phân nhóm kiểm kê"
+                  >
+                    <ListTree size={16} />
+                    <span>XEM DẠNG TREE</span>
+                  </button>
                 </div>
               </div>
-              <div className="grid gap-6">
-                {menu.map((dish: Dish, i: number) => (
+
+              {isTreeView ? (
+                /* CHẾ ĐỘ TREE VIEW (KIỂM KÊ CHỈ ĐỌC DẠNG CÂY) */
+                <div className="space-y-6">
+                  {/* Thanh điều khiển Tree View */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-stone-50/90 border border-stone-200/90 p-5 md:p-6 rounded-[30px] shadow-xs">
+                    <div>
+                      <div className="flex items-center gap-2.5">
+                        <span className="w-9 h-9 rounded-xl bg-amber-800/10 text-amber-900 font-bold flex items-center justify-center text-base shadow-xs">
+                          <ListTree size={20} />
+                        </span>
+                        <div>
+                          <h3 className="text-base font-black uppercase tracking-tight text-stone-900">
+                            THỰC ĐƠN ({menu.length} MÓN)
+                          </h3>
+                          <p className="text-[11px] text-stone-500 font-medium">
+                            Chế độ kiểm kê dạng cây • Chỉ đọc • Đã kiểm: <span className="font-extrabold text-amber-900">{checkedTreeIds.size}/{menu.length}</span> món
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      {/* Nút Copy danh sách */}
+                      <button
+                        type="button"
+                        onClick={handleCopyTreeList}
+                        className="bg-amber-800 hover:bg-amber-900 text-white px-5 py-3 text-[10px] font-black rounded-xl uppercase tracking-widest shadow-md flex items-center gap-2 cursor-pointer transition-all active:scale-95"
+                        title="Sao chép toàn bộ danh sách món ăn phân theo danh mục vào bộ nhớ tạm"
+                      >
+                        {copySuccess ? <Check size={14} className="text-emerald-300" /> : <Copy size={14} />}
+                        <span>{copySuccess ? 'ĐÃ SAO CHÉP!' : 'COPY DANH SÁCH'}</span>
+                      </button>
+
+                      {/* Nút Mở rộng / Thu gọn tất cả */}
+                      <div className="inline-flex p-1 bg-stone-200/70 rounded-xl gap-1">
+                        <button
+                          type="button"
+                          onClick={handleExpandAll}
+                          className="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider text-stone-600 hover:text-stone-900 transition-all cursor-pointer"
+                          title="Mở rộng tất cả các danh mục"
+                        >
+                          MỞ TẤT CẢ
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleCollapseAll}
+                          className="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider text-stone-600 hover:text-stone-900 transition-all cursor-pointer"
+                          title="Thu gọn tất cả các danh mục"
+                        >
+                          THU GỌN
+                        </button>
+                      </div>
+
+                      {/* Nút Quay lại quản lý */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsTreeView(false);
+                          setCheckedTreeIds(new Set());
+                        }}
+                        className="bg-stone-800 hover:bg-stone-900 text-white px-6 py-3 text-[10px] font-black rounded-xl uppercase tracking-widest shadow-md flex items-center gap-2 cursor-pointer transition-all active:scale-95"
+                        title="Đóng Tree View và quay về giao diện quản lý thực đơn"
+                      >
+                        <ArrowLeft size={14} />
+                        <span>QUAY LẠI QUẢN LÝ</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Thông báo sao chép thành công */}
+                  {copySuccess && (
+                    <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-800 text-xs font-bold flex items-center gap-2.5 shadow-2xs">
+                      <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+                      <span>Đã sao chép toàn bộ danh sách thực đơn phân nhóm vào clipboard thành công!</span>
+                    </div>
+                  )}
+
+                  {/* Danh sách dạng cây */}
+                  {treeCategories.length === 0 ? (
+                    <div className="text-center py-16 bg-stone-50 rounded-[35px] border border-stone-200 p-8 space-y-4">
+                      <div className="text-4xl">🍱</div>
+                      <h3 className="text-base font-black uppercase text-stone-800">Chưa có món ăn nào trong thực đơn</h3>
+                      <p className="text-xs text-stone-500 max-w-md mx-auto">
+                        Hãy nhấn nút "QUAY LẠI QUẢN LÝ" và thêm món ăn vào thực đơn.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4 font-sans">
+                      {treeCategories.map(({ category, dishes }) => {
+                        const isCollapsed = collapsedCategories.has(category);
+                        const checkedCount = dishes.filter(d => checkedTreeIds.has(d.id)).length;
+
+                        return (
+                          <div
+                            key={category}
+                            className="border border-stone-200/90 rounded-[28px] bg-white overflow-hidden shadow-xs transition-all"
+                          >
+                            {/* Tiêu đề nhóm danh mục: click để Mở rộng / Thu gọn */}
+                            <button
+                              type="button"
+                              onClick={() => toggleCategoryCollapse(category)}
+                              className="w-full flex items-center justify-between p-4 md:p-5 bg-stone-50/80 hover:bg-stone-100/80 transition-colors text-left cursor-pointer border-b border-stone-200/60"
+                            >
+                              <div className="flex items-center gap-3">
+                                <span className="w-7 h-7 rounded-lg bg-stone-200 text-stone-700 flex items-center justify-center font-bold">
+                                  {isCollapsed ? <ChevronRight size={16} /> : <ChevronDown size={16} />}
+                                </span>
+                                <span className="text-xs md:text-sm font-black uppercase tracking-wider text-stone-900">
+                                  {category}
+                                </span>
+                                <span className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-200/70">
+                                  {dishes.length}
+                                </span>
+                              </div>
+
+                              <div className="flex items-center gap-3 text-[10px] font-bold text-stone-500">
+                                {checkedCount > 0 && (
+                                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                    ✓ Đã kiểm {checkedCount}/{dishes.length}
+                                  </span>
+                                )}
+                                <span className="text-stone-400 text-xs hidden sm:inline">
+                                  {isCollapsed ? 'Nhấn để mở rộng ▼' : 'Nhấn để thu gọn ▲'}
+                                </span>
+                              </div>
+                            </button>
+
+                            {/* Danh sách các món trong nhóm */}
+                            {!isCollapsed && (
+                              <div className="p-3 md:p-5 space-y-1.5 bg-white">
+                                {dishes.map((dish, idx) => {
+                                  const isChecked = checkedTreeIds.has(dish.id);
+
+                                  return (
+                                    <div
+                                      key={dish.id}
+                                      onClick={() => toggleTreeCheck(dish.id)}
+                                      className={`flex items-center gap-3 p-3 md:p-3.5 rounded-2xl border transition-all cursor-pointer ${
+                                        isChecked
+                                          ? 'bg-amber-50/50 border-amber-200/80 shadow-2xs'
+                                          : 'bg-stone-50/30 border-stone-100 hover:bg-stone-50 hover:border-stone-200'
+                                      }`}
+                                    >
+                                      {/* Tree branch connector */}
+                                      <div className="flex items-center gap-2.5 pl-2 select-none">
+                                        <span className="text-stone-300 font-mono text-xs">
+                                          {idx === dishes.length - 1 ? '└─' : '├─'}
+                                        </span>
+                                        <input
+                                          type="checkbox"
+                                          checked={isChecked}
+                                          onChange={(e) => {
+                                            e.stopPropagation();
+                                            toggleTreeCheck(dish.id);
+                                          }}
+                                          className="w-5 h-5 rounded-md border-stone-300 text-amber-800 focus:ring-amber-800 cursor-pointer"
+                                        />
+                                      </div>
+
+                                      {/* Tên món */}
+                                      <div className="flex-1 flex items-center justify-between gap-3">
+                                        <span
+                                          className={`text-xs md:text-sm font-bold transition-all ${
+                                            isChecked
+                                              ? 'line-through text-stone-400 font-medium'
+                                              : 'text-stone-800'
+                                          }`}
+                                        >
+                                          {dish.name}
+                                        </span>
+                                        <span className="text-[10px] font-mono text-stone-400 font-semibold shrink-0">
+                                          #{idx + 1}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="grid gap-6">
+                  {menu.map((dish: Dish, i: number) => (
                   <div key={dish.id} className={`p-8 border rounded-[35px] flex gap-10 items-start transition-all ${selectedIds.includes(dish.id) ? 'bg-amber-50/50 border-amber-200' : 'bg-stone-50/40 border-stone-100 hover:border-amber-200'}`}>
                     <div className="pt-2">
                       <input 
@@ -4396,7 +4716,8 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                   </div>
                 ))}
               </div>
-            </div>
+            )}
+          </div>
           ) : activeTab === 'quick' ? (
             <div className="space-y-8">
               <div className="flex justify-between items-end border-b pb-6">
