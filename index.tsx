@@ -538,6 +538,38 @@ const GUESTBOOK_COLORS = [
   { avatar: 'bg-violet-100 text-violet-800', content: 'text-violet-600', border: 'border-violet-100', bg: 'bg-violet-50/30' },
 ];
 
+/**
+ * Render an toàn lời chúc / ghi chú thông báo:
+ * Nhận diện URL HTTPS hợp lệ và tạo link <a> mở tab mới (target="_blank" rel="noopener noreferrer").
+ * Tuyệt đối không dùng dangerouslySetInnerHTML; từ chối javascript: và data:.
+ */
+const renderSafeFooterWithLinks = (text: string) => {
+  if (!text) return null;
+  const urlRegex = /(https:\/\/[^\s<>"']+)/g;
+  const parts = text.split(urlRegex);
+
+  return parts.map((part, index) => {
+    if (/^https:\/\/[^\s<>"']+$/i.test(part)) {
+      if (part.toLowerCase().startsWith('javascript:') || part.toLowerCase().startsWith('data:')) {
+        return <span key={index}>{part}</span>;
+      }
+      return (
+        <a
+          key={index}
+          href={part}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline underline-offset-4 hover:opacity-80 transition-opacity break-all cursor-pointer font-bold inline-block mx-1"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {part}
+        </a>
+      );
+    }
+    return <span key={index}>{part}</span>;
+  });
+};
+
 enum Theme {
   White = 'White',
   Yellow = 'Yellow',
@@ -2775,18 +2807,36 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
       {/* Dynamic Notification Popup */}
       {showTetPopup && activeNotif && (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-stone-950/70 backdrop-blur-sm p-4">
-          <div className={`${themeData.bg} rounded-[40px] shadow-2xl max-w-2xl w-full p-10 md:p-16 relative overflow-hidden text-center border-t-[12px] border-${themeData.primary} animate-[popIn_0.5s_ease-out]`}>
-            <button onClick={() => setShowTetPopup(false)} className={`absolute top-8 right-8 ${themeData.text} opacity-30 hover:opacity-100 text-4xl transition-all`}>×</button>
-            <div className="space-y-8">
+          <div className={`${themeData.bg} rounded-[40px] shadow-2xl max-w-2xl w-full p-8 md:p-14 relative overflow-hidden text-center border-t-[12px] border-${themeData.primary} animate-[popIn_0.5s_ease-out] max-h-[90vh] overflow-y-auto`}>
+            <button onClick={() => setShowTetPopup(false)} className={`absolute top-6 right-6 md:top-8 md:right-8 ${themeData.text} opacity-30 hover:opacity-100 text-4xl transition-all z-10`}>×</button>
+            <div className="space-y-6 md:space-y-8">
               <span className={`${themeData.accent} font-black text-xs md:text-sm tracking-[0.6em] uppercase block`}>Thông báo từ quán</span>
-              <h2 className={`text-4xl md:text-6xl font-black uppercase tracking-tighter ${themeData.text} leading-tight`}>THÔNG BÁO</h2>
+              <h2 className={`text-3xl md:text-5xl font-black uppercase tracking-tighter ${themeData.text} leading-tight`}>THÔNG BÁO</h2>
               <div className={`w-16 h-1 ${themeData.button} mx-auto rounded-full`}></div>
-              <p className={`${themeData.text} text-lg md:text-2xl font-bold leading-relaxed whitespace-pre-line`}>
+              
+              {/* Ảnh minh họa thông báo (Tùy chọn - responsive, không làm tràn popup, ẩn nếu lỗi tải) */}
+              {activeNotif.image_url && (
+                <div className="w-full flex justify-center my-2 overflow-hidden rounded-2xl bg-stone-100/50 p-1 border border-stone-200/60">
+                  <img
+                    src={activeNotif.image_url}
+                    alt="Ảnh thông báo Cơm Phần Út Trinh"
+                    className="max-h-[38vh] w-auto max-w-full object-contain rounded-xl shadow-sm mx-auto"
+                    onError={(e) => {
+                      const target = e.currentTarget;
+                      const parent = target.parentElement;
+                      if (parent) parent.style.display = 'none';
+                      else target.style.display = 'none';
+                    }}
+                  />
+                </div>
+              )}
+
+              <p className={`${themeData.text} text-base md:text-2xl font-bold leading-relaxed whitespace-pre-line`}>
                 {activeNotif.message}
               </p>
-              <div className="pt-6">
-                <p className={`${themeData.accent} text-sm md:text-lg italic font-black uppercase tracking-wide`}>
-                  {activeNotif.footer || "XIN CHÚC BẠN VÀ GIA ĐÌNH SỨC KHỎE VÀ PHÁT TÀI."}
+              <div className="pt-4 border-t border-stone-100/60">
+                <p className={`${themeData.accent} text-xs md:text-base italic font-black uppercase tracking-wide break-words`}>
+                  {renderSafeFooterWithLinks(activeNotif.footer || "XIN CHÚC BẠN VÀ GIA ĐÌNH SỨC KHỎE VÀ PHÁT TÀI.")}
                 </p>
               </div>
               <button onClick={() => setShowTetPopup(false)} className={`${themeData.button} text-white px-12 py-4 rounded-full text-[10px] font-black uppercase tracking-[0.3em] hover:brightness-110 transition-all shadow-xl`}>ĐÃ HIỂU</button>
@@ -3794,9 +3844,20 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
   const themeData = THEMES[theme as Theme] || THEMES[Theme.White];
   const [notifications, setNotifications] = useState<any[]>([]);
   const [guestbookItems, setGuestbookItems] = useState<GuestbookEntry[]>([]);
+  const [guestbookPage, setGuestbookPage] = useState<number>(1);
   const [newNotif, setNewNotif] = useState('');
+  const [newImageUrl, setNewImageUrl] = useState('');
   const [newFooter, setNewFooter] = useState('XIN CHÚC BẠN VÀ GIA ĐÌNH SỨC KHỎE VÀ PHÁT TÀI.');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  // Phân trang danh sách góp ý (ACP -> GÓP Ý, tối đa 12 bản ghi/trang)
+  const GUESTBOOK_PAGE_SIZE = 12;
+  const totalGuestbookPages = Math.max(1, Math.ceil(guestbookItems.length / GUESTBOOK_PAGE_SIZE));
+  const currentGuestbookPage = Math.min(Math.max(1, guestbookPage), totalGuestbookPages);
+  const paginatedGuestbook = useMemo(() => {
+    const start = (currentGuestbookPage - 1) * GUESTBOOK_PAGE_SIZE;
+    return guestbookItems.slice(start, start + GUESTBOOK_PAGE_SIZE);
+  }, [guestbookItems, currentGuestbookPage]);
 
   // Tree View state cho THỰC ĐƠN trong ACP (Chế độ xem kiểm kê chỉ đọc)
   const [isTreeView, setIsTreeView] = useState(false);
@@ -4177,7 +4238,15 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
   const deleteGuestbook = async (id: string) => {
     if (!confirm("Xóa góp ý này?")) return;
     const { error } = await supabase.from('guestbook').delete().eq('id', id);
-    if (!error) fetchGuestbook();
+    if (!error) {
+      // Tự động kiểm tra và lùi trang nếu trang hiện tại bị trống sau khi xóa
+      const remainingCount = guestbookItems.length - 1;
+      const maxPages = Math.max(1, Math.ceil(remainingCount / GUESTBOOK_PAGE_SIZE));
+      if (guestbookPage > maxPages) {
+        setGuestbookPage(maxPages);
+      }
+      fetchGuestbook();
+    }
   };
 
   const handleAddQuick = async (parentId: string | null = null) => {
@@ -4259,35 +4328,34 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
       return;
     }
 
-    console.log("Attempting to create notification:", message);
+    const imageUrl = newImageUrl.trim() || null;
+    const footer = newFooter.trim();
+
+    console.log("Attempting to create notification:", message, "image_url:", imageUrl);
     
     try {
-      // Thử insert với cột footer
-      let { data, error } = await supabase
+      // Lưu thông báo trực tiếp với đầy đủ trường message, footer, image_url
+      const payload: {
+        message: string;
+        footer: string;
+        image_url: string | null;
+        is_active: boolean;
+      } = {
+        message,
+        footer,
+        image_url: imageUrl,
+        is_active: true
+      };
+
+      const { data, error } = await supabase
         .from('notifications')
-        .insert([{ message, footer: newFooter.trim(), is_active: true }])
+        .insert([payload])
         .select()
         .single();
       
-      // Nếu lỗi do thiếu cột 'footer' trong database
-      if (error && error.message.includes("column 'footer'")) {
-        console.warn("Cột 'footer' chưa tồn tại, đang thử lại không có footer...");
-        const retry = await supabase
-          .from('notifications')
-          .insert([{ message, is_active: true }])
-          .select()
-          .single();
-        data = retry.data;
-        error = retry.error;
-
-        if (!error) {
-          alert("Lưu ý: Thông báo đã được tạo nhưng dòng chữ màu vàng (Lời chúc) không được lưu vì bạn chưa thêm cột 'footer' vào bảng 'notifications' trong Supabase.\n\nHướng dẫn: Vào Supabase Dashboard -> SQL Editor -> Chạy lệnh: ALTER TABLE notifications ADD COLUMN footer TEXT;");
-        }
-      }
-      
       if (error) {
         console.error('Supabase Error:', error);
-        alert(`Lỗi hệ thống: ${error.message}\n\nHướng dẫn: Hãy đảm bảo bạn đã tạo bảng 'notifications' trong Supabase Dashboard.`);
+        alert(`Lỗi khi lưu thông báo vào cơ sở dữ liệu: ${error.message}\n(Mã lỗi: ${error.code || 'không rõ'})`);
         return;
       }
 
@@ -4295,6 +4363,7 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
         console.log("Notification created successfully:", data);
         setNotifications(prev => [data, ...prev]);
         setNewNotif('');
+        setNewImageUrl('');
         setNewFooter('XIN CHÚC BẠN VÀ GIA ĐÌNH SỨC KHỎE VÀ PHÁT TÀI.');
         alert("Chúc mừng! Thông báo đã được tạo và đang hiển thị.");
       } else {
@@ -5136,16 +5205,28 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
             </div>
           ) : activeTab === 'guestbook' ? (
             <div className="space-y-10">
-              <div className="flex justify-between items-end border-b pb-6">
-                <h2 className="text-3xl font-black uppercase text-stone-900">QUẢN LÝ GÓP Ý</h2>
-                <span className="text-[10px] font-black uppercase tracking-widest text-stone-400">{guestbookItems.length} Tổng số</span>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3 border-b pb-6">
+                <div>
+                  <h2 className="text-3xl font-black uppercase text-stone-900">QUẢN LÝ GÓP Ý</h2>
+                  <p className="text-xs font-bold text-stone-400 mt-1">Danh sách đánh giá và phản hồi của khách hàng qua Sổ Lưu Bút</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-black uppercase tracking-widest bg-stone-100 text-stone-600 px-3 py-1.5 rounded-full border border-stone-200">
+                    {guestbookItems.length} Tổng số
+                  </span>
+                  {guestbookItems.length > 0 && (
+                    <span className="text-[10px] font-black uppercase tracking-widest bg-amber-100 text-amber-800 px-3 py-1.5 rounded-full border border-amber-200">
+                      Trang {currentGuestbookPage} / {totalGuestbookPages}
+                    </span>
+                  )}
+                </div>
               </div>
 
               <div className="grid gap-6">
                 {guestbookItems.length === 0 ? (
                   <div className="text-center py-20 text-stone-400 font-bold">Chưa có góp ý nào từ khách hàng.</div>
                 ) : (
-                  guestbookItems.map((item) => (
+                  paginatedGuestbook.map((item) => (
                     <div key={item.id} className={`p-8 rounded-[35px] border flex flex-col md:flex-row gap-6 items-start md:items-center justify-between transition-all ${item.is_approved ? 'bg-white border-stone-100' : 'bg-amber-50 border-amber-200 shadow-lg shadow-amber-900/5'}`}>
                       <div className="flex-1 space-y-3">
                         <div className="flex items-center gap-3">
@@ -5189,6 +5270,60 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                   ))
                 )}
               </div>
+
+              {/* Điều khiển phân trang (ACP -> GÓP Ý, tối đa 12 bản ghi/trang) */}
+              {guestbookItems.length > 0 && (
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-stone-200">
+                  <div className="text-[11px] font-black uppercase tracking-widest text-stone-500">
+                    Trang {currentGuestbookPage} / {totalGuestbookPages} <span className="text-stone-400">({guestbookItems.length} tổng số)</span>
+                  </div>
+
+                  <div className="flex items-center gap-2 flex-wrap justify-center">
+                    <button
+                      onClick={() => setGuestbookPage(prev => Math.max(1, prev - 1))}
+                      disabled={currentGuestbookPage <= 1}
+                      className="px-4 py-2.5 rounded-xl border border-stone-200 text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-30 disabled:cursor-not-allowed hover:bg-stone-100 text-stone-700 bg-white shadow-sm flex items-center gap-1.5"
+                    >
+                      ← TRƯỚC
+                    </button>
+
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: totalGuestbookPages }, (_, i) => i + 1).map((pg) => {
+                        const isCurrent = pg === currentGuestbookPage;
+                        if (totalGuestbookPages > 10) {
+                          if (pg !== 1 && pg !== totalGuestbookPages && Math.abs(pg - currentGuestbookPage) > 2) {
+                            if (pg === 2 || pg === totalGuestbookPages - 1) {
+                              return <span key={pg} className="px-1 text-stone-400 font-bold">...</span>;
+                            }
+                            return null;
+                          }
+                        }
+                        return (
+                          <button
+                            key={pg}
+                            onClick={() => setGuestbookPage(pg)}
+                            className={`min-w-[36px] h-9 px-2 rounded-xl text-xs font-black transition-all ${
+                              isCurrent
+                                ? 'bg-amber-800 text-white shadow-md scale-105'
+                                : 'bg-white border border-stone-200 text-stone-700 hover:bg-stone-100'
+                            }`}
+                          >
+                            {pg}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <button
+                      onClick={() => setGuestbookPage(prev => Math.min(totalGuestbookPages, prev + 1))}
+                      disabled={currentGuestbookPage >= totalGuestbookPages}
+                      className="px-4 py-2.5 rounded-xl border border-stone-200 text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-30 disabled:cursor-not-allowed hover:bg-stone-100 text-stone-700 bg-white shadow-sm flex items-center gap-1.5"
+                    >
+                      TIẾP THEO →
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           ) : activeTab === 'stats' ? (
             <div className="space-y-10">
@@ -5449,13 +5584,36 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                     placeholder="Nội dung thông báo chính (Ví dụ: Website mới có chức năng giả lập...)" 
                   />
                   <div className="flex flex-col gap-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-amber-800 ml-2">Lời chúc / Ghi chú (Chữ màu vàng):</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-amber-800 ml-2">URL ảnh minh họa (Tùy chọn - Cloudinary, ImageKit, v.v.):</label>
+                    <input 
+                      type="url"
+                      value={newImageUrl}
+                      onChange={(e) => setNewImageUrl(e.target.value)}
+                      className="w-full p-4 border rounded-2xl text-sm font-bold focus:ring-2 focus:ring-amber-500 outline-none transition-all"
+                      placeholder="https://ik.imagekit.io/... hoặc https://res.cloudinary.com/... (Để trống nếu không dùng ảnh)"
+                    />
+                    {newImageUrl.trim() && (
+                      <div className="mt-2 p-2 bg-white rounded-xl border border-stone-200 flex items-center gap-3">
+                        <img 
+                          src={newImageUrl.trim()} 
+                          alt="Xem trước ảnh minh họa" 
+                          className="w-16 h-16 object-cover rounded-lg border border-stone-200" 
+                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = '0.3'; }}
+                        />
+                        <div className="text-[10px] text-stone-500 font-bold truncate">
+                          Xem trước ảnh minh họa
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-amber-800 ml-2">Lời chúc / Ghi chú (Chữ màu vàng - hỗ trợ link HTTPS):</label>
                     <input 
                       type="text"
                       value={newFooter}
                       onChange={(e) => setNewFooter(e.target.value)}
                       className="w-full p-4 border rounded-2xl text-sm font-bold focus:ring-2 focus:ring-amber-500 outline-none transition-all"
-                      placeholder="Ví dụ: CHÚC MỪNG NĂM MỚI..."
+                      placeholder="Ví dụ: Đặt hàng ngay tại https://grabfoodcantho.online/ hoặc CHÚC MỪNG NĂM MỚI..."
                     />
                   </div>
                   <button 
@@ -5470,13 +5628,27 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
               <div className="grid gap-4">
                 <h3 className="text-[10px] font-black uppercase tracking-widest text-stone-400 mt-6">Danh sách thông báo</h3>
                 {notifications.map((n) => (
-                  <div key={n.id} className={`p-6 rounded-[30px] border flex items-center justify-between transition-all ${n.is_active ? 'bg-amber-50 border-amber-200' : 'bg-white border-stone-100 opacity-60'}`}>
-                    <div className="flex-1">
-                      <p className={`text-lg font-bold ${n.is_active ? 'text-amber-900' : 'text-stone-400'}`}>{n.message}</p>
-                      {n.footer && <p className="text-xs italic text-amber-600 font-bold mt-1">{n.footer}</p>}
-                      <span className="text-[9px] font-black uppercase tracking-widest text-stone-300">{new Date(n.created_at).toLocaleString('vi-VN')}</span>
+                  <div key={n.id} className={`p-6 rounded-[30px] border flex flex-col md:flex-row gap-4 items-start md:items-center justify-between transition-all ${n.is_active ? 'bg-amber-50 border-amber-200' : 'bg-white border-stone-100 opacity-60'}`}>
+                    <div className="flex-1 flex gap-4 items-start">
+                      {n.image_url && (
+                        <img 
+                          src={n.image_url} 
+                          alt="Minh họa" 
+                          className="w-16 h-16 md:w-20 md:h-20 object-cover rounded-2xl border border-amber-200 shrink-0" 
+                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                        />
+                      )}
+                      <div className="flex-1">
+                        <p className={`text-lg font-bold ${n.is_active ? 'text-amber-900' : 'text-stone-400'}`}>{n.message}</p>
+                        {n.footer && (
+                          <div className="text-xs italic text-amber-600 font-bold mt-1">
+                            {renderSafeFooterWithLinks(n.footer)}
+                          </div>
+                        )}
+                        <span className="text-[9px] font-black uppercase tracking-widest text-stone-300 block mt-1">{new Date(n.created_at).toLocaleString('vi-VN')}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-4 self-end md:self-center">
                       <div className="flex items-center gap-2">
                         <span className={`text-[9px] font-black uppercase tracking-widest ${n.is_active ? 'text-green-600' : 'text-stone-300'}`}>
                           {n.is_active ? 'ĐANG BẬT' : 'ĐÃ TẮT'}
