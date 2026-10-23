@@ -53,9 +53,29 @@ import { createClient } from '@supabase/supabase-js';
 import { ChevronRight, ChevronDown, ChevronUp, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, MessageSquare, CheckCircle2, Facebook, Mail, Youtube, Users, Vote, Music, VolumeX, Play, Pause, BarChart2, Check, X, RefreshCw, Shuffle, ExternalLink, Trophy, ListTree, Copy, ArrowLeft } from 'lucide-react';
 import Hls from 'hls.js';
 
-// --- CẤU HÌNH CỐ ĐỊNH ---
-const DEFAULT_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co';
-const DEFAULT_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyemZwZWV1b2h6ZnF1emZpZWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3NDY4MDgsImV4cCI6MjA4NDMyMjgwOH0.tyzhzbucriL09bH-ndgXs3ob1-Www97vsfQ6Wsh8d7s';
+// --- CẤU HÌNH SUPABASE: ƯU TIÊN BIẾN MÔI TRƯỜNG VITE (VERCEL / PRODUCTION) ---
+const getViteEnv = (key: string): string => {
+  if (typeof import.meta !== 'undefined' && (import.meta as any).env) {
+    const val = (import.meta as any).env[key];
+    if (typeof val === 'string' && val.trim().length > 0 && !val.includes('your_supabase_') && !val.includes('<ACTUAL_')) {
+      return val.trim();
+    }
+  }
+  return '';
+};
+
+// Đọc chính xác biến môi trường theo chuẩn Vite
+const ENV_SUPABASE_URL = getViteEnv('VITE_SUPABASE_URL');
+const ENV_SUPABASE_ANON_KEY = 
+  getViteEnv('VITE_SUPABASE_ANON_KEY') || 
+  getViteEnv('VITE_SUPABASE_PUBLISHABLE_KEY') || 
+  getViteEnv('VITE_SUPABASE_KEY');
+
+const FALLBACK_DEFAULT_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co';
+const FALLBACK_DEFAULT_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyemZwZWV1b2h6ZnF1emZpZWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3NDY4MDgsImV4cCI6MjA4NDMyMjgwOH0.tyzhzbucriL09bH-ndgXs3ob1-Www97vsfQ6Wsh8d7s';
+
+const DEFAULT_URL = ENV_SUPABASE_URL || FALLBACK_DEFAULT_URL;
+const DEFAULT_ANON_KEY = ENV_SUPABASE_ANON_KEY || FALLBACK_DEFAULT_ANON_KEY;
 
 interface VotePoll {
   is_active: boolean;
@@ -6008,7 +6028,21 @@ const AdminPinModal = ({
     setErrorMsg('');
 
     try {
-      const anonKey = (supabaseAnonKey || (supabase as any)?.supabaseKey || DEFAULT_ANON_KEY || '').trim();
+      const effectiveUrl = (
+        supabaseUrl || 
+        (supabase as any)?.supabaseUrl || 
+        ENV_SUPABASE_URL || 
+        DEFAULT_URL || 
+        ''
+      ).trim().replace(/\/+$/, '');
+
+      const anonKey = (
+        supabaseAnonKey || 
+        (supabase as any)?.supabaseKey || 
+        ENV_SUPABASE_ANON_KEY || 
+        DEFAULT_ANON_KEY || 
+        ''
+      ).trim();
 
       let data: any = null;
       let errorResponse: any = null;
@@ -6060,7 +6094,7 @@ const AdminPinModal = ({
             fetchHeaders['Authorization'] = `Bearer ${anonKey}`;
           }
 
-          const response = await fetch(`${supabaseUrl}/functions/v1/verify-acp-pin`, {
+          const response = await fetch(`${effectiveUrl}/functions/v1/verify-acp-pin`, {
             method: 'POST',
             headers: fetchHeaders,
             body: JSON.stringify({ pin: pinStr })
@@ -6089,7 +6123,9 @@ const AdminPinModal = ({
 
         const msg = String(errorResponse.error || errorResponse.message || '');
 
-        if (msg.includes('MISSING_CREDENTIALS') || msg.includes('apikey absent') || msg.includes('authorization absent')) {
+        if (msg.includes('matched no key configured for auth mode') || msg.includes('apikey header matched no key')) {
+          throw new Error('Lỗi Supabase API Key: Khóa API key không khớp với dự án Supabase. Vui lòng kiểm tra biến môi trường VITE_SUPABASE_ANON_KEY (hoặc VITE_SUPABASE_PUBLISHABLE_KEY) trên Vercel.');
+        } else if (msg.includes('MISSING_CREDENTIALS') || msg.includes('apikey absent') || msg.includes('authorization absent')) {
           throw new Error('Lỗi kết nối máy chủ Supabase: Thiếu thông tin xác thực apikey. Vui lòng kiểm tra lại cấu hình.');
         } else if (msg.includes('Edge Secrets') || msg.includes('cấu hình máy chủ')) {
           throw new Error('Lỗi cấu hình máy chủ bảo mật. Yêu cầu quản trị viên kiểm tra Edge Secrets.');
@@ -6309,8 +6345,31 @@ const App = () => {
   };
 
   const [supabaseConfig] = useState(() => {
-    const saved = localStorage.getItem(CONFIG_KEY);
-    return saved ? JSON.parse(saved) : { url: DEFAULT_URL, key: DEFAULT_ANON_KEY };
+    // 1. ƯU TIÊN TUYỆT ĐỐI: Biến môi trường Vite đã cấu hình trong Vercel / .env
+    if (ENV_SUPABASE_URL && ENV_SUPABASE_ANON_KEY) {
+      return { url: ENV_SUPABASE_URL, key: ENV_SUPABASE_ANON_KEY };
+    }
+
+    // 2. Kiểm tra LocalStorage (nếu không có biến môi trường và dữ liệu hợp lệ)
+    try {
+      const saved = localStorage.getItem(CONFIG_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed?.url && parsed?.key && typeof parsed.url === 'string' && typeof parsed.key === 'string') {
+          if (parsed.key.length > 20 && !parsed.key.includes('your_supabase_') && !parsed.key.includes('<ACTUAL_')) {
+            return {
+              url: ENV_SUPABASE_URL || parsed.url.trim(),
+              key: ENV_SUPABASE_ANON_KEY || parsed.key.trim()
+            };
+          }
+        }
+      }
+    } catch {
+      // Bỏ qua lỗi parse
+    }
+
+    // 3. Fallback mặc định
+    return { url: DEFAULT_URL, key: DEFAULT_ANON_KEY };
   });
   const [menu, setMenu] = useState<Dish[]>([]);
   const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([]);
