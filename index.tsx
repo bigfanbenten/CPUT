@@ -5931,7 +5931,17 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
  * - Gửi PIN tới Supabase Edge Function verify-acp-pin
  * - Nạp Supabase Auth Session chính thức vào client khi thành công
  */
-const AdminPinModal = ({ onVerified, supabaseUrl, supabase }: { onVerified: () => Promise<boolean | void> | void; supabaseUrl: string; supabase: any }) => {
+const AdminPinModal = ({ 
+  onVerified, 
+  supabaseUrl, 
+  supabaseAnonKey,
+  supabase 
+}: { 
+  onVerified: () => Promise<boolean | void> | void; 
+  supabaseUrl: string; 
+  supabaseAnonKey?: string;
+  supabase: any; 
+}) => {
   const [digits, setDigits] = useState<string[]>(['', '', '', '', '', '']);
   const [errorMsg, setErrorMsg] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -5998,22 +6008,112 @@ const AdminPinModal = ({ onVerified, supabaseUrl, supabase }: { onVerified: () =
     setErrorMsg('');
 
     try {
-      const response = await fetch(`${supabaseUrl}/functions/v1/verify-acp-pin`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pin: pinStr })
-      });
+      const anonKey = (supabaseAnonKey || (supabase as any)?.supabaseKey || DEFAULT_ANON_KEY || '').trim();
 
-      const data = await response.json();
+      let data: any = null;
+      let errorResponse: any = null;
+      let networkError: any = null;
 
-      if (!response.ok) {
-        if (data.remaining_seconds) {
-          setLockSeconds(data.remaining_seconds);
+      // 1. ƯU TIÊN GỌI supabase.functions.invoke (Được cấu hình sẵn với Supabase Client)
+      // Tự động mang apikey & Authorization (Bearer anon_key) hợp lệ tới cổng Supabase Kong Gateway
+      if (supabase?.functions?.invoke) {
+        try {
+          const res = await supabase.functions.invoke('verify-acp-pin', {
+            body: { pin: pinStr },
+            headers: anonKey ? {
+              'apikey': anonKey,
+              'Authorization': `Bearer ${anonKey}`
+            } : undefined
+          });
+
+          data = res.data;
+
+          if (res.error) {
+            const rawResp = res.response || (res.error as any).context;
+            if (rawResp && typeof rawResp.json === 'function') {
+              try {
+                errorResponse = await rawResp.json();
+              } catch {
+                try {
+                  errorResponse = { error: await rawResp.text() };
+                } catch {
+                  errorResponse = { error: res.error.message };
+                }
+              }
+            } else if ((res.error as any).message) {
+              errorResponse = { error: (res.error as any).message };
+            }
+          }
+        } catch (invokeErr: any) {
+          networkError = invokeErr;
         }
-        throw new Error(data.error || 'Mã PIN không chính xác.');
       }
 
-      // Nạp phiên đăng nhập chính thức vào Supabase client
+      // 2. FALLBACK FETCH TRỰC TIẾP CÓ ĐẦY ĐỦ HEADER apikey & Authorization
+      if (!data && !errorResponse) {
+        try {
+          const fetchHeaders: Record<string, string> = {
+            'Content-Type': 'application/json'
+          };
+          if (anonKey) {
+            fetchHeaders['apikey'] = anonKey;
+            fetchHeaders['Authorization'] = `Bearer ${anonKey}`;
+          }
+
+          const response = await fetch(`${supabaseUrl}/functions/v1/verify-acp-pin`, {
+            method: 'POST',
+            headers: fetchHeaders,
+            body: JSON.stringify({ pin: pinStr })
+          });
+
+          const json = await response.json().catch(() => null);
+          if (response.ok) {
+            data = json;
+            errorResponse = null;
+            networkError = null;
+          } else {
+            errorResponse = json || { error: `HTTP ${response.status}: ${response.statusText}` };
+          }
+        } catch (fetchErr: any) {
+          if (!networkError) {
+            networkError = fetchErr;
+          }
+        }
+      }
+
+      // 3. XỬ LÝ LỖI RIÊNG BIỆT (KHÔNG BÁO SAI PIN CHO LỖI HẠ TẦNG/MẠNG/CẤU HÌNH)
+      if (errorResponse) {
+        if (errorResponse.remaining_seconds) {
+          setLockSeconds(errorResponse.remaining_seconds);
+        }
+
+        const msg = String(errorResponse.error || errorResponse.message || '');
+
+        if (msg.includes('MISSING_CREDENTIALS') || msg.includes('apikey absent') || msg.includes('authorization absent')) {
+          throw new Error('Lỗi kết nối máy chủ Supabase: Thiếu thông tin xác thực apikey. Vui lòng kiểm tra lại cấu hình.');
+        } else if (msg.includes('Edge Secrets') || msg.includes('cấu hình máy chủ')) {
+          throw new Error('Lỗi cấu hình máy chủ bảo mật. Yêu cầu quản trị viên kiểm tra Edge Secrets.');
+        } else if (msg.includes('IP') || msg.includes('403')) {
+          throw new Error(msg || 'Từ chối truy cập: Không thể xác định địa chỉ IP tin cậy.');
+        } else if (errorResponse.remaining_seconds > 0 || msg.includes('khóa') || msg.includes('đợi')) {
+          throw new Error(msg || `Hệ thống tạm khóa. Vui lòng thử lại sau ${errorResponse.remaining_seconds} giây.`);
+        } else if (msg) {
+          throw new Error(msg);
+        } else {
+          throw new Error('Máy chủ phản hồi lỗi không xác định.');
+        }
+      }
+
+      if (networkError) {
+        console.error("Lỗi mạng khi gọi verify-acp-pin:", networkError);
+        throw new Error('Lỗi kết nối mạng: Không thể kết nối tới máy chủ xác thực. Vui lòng kiểm tra đường truyền.');
+      }
+
+      if (!data || !data.access_token) {
+        throw new Error('Không nhận được phiên đăng nhập hợp lệ từ máy chủ.');
+      }
+
+      // 4. NẠP PHIÊN ĐĂNG NHẬP CHÍNH THỨC VÀO SUPABASE CLIENT
       if (data.access_token && data.refresh_token) {
         const { error: sessionError } = await supabase.auth.setSession({
           access_token: data.access_token,
@@ -6024,7 +6124,7 @@ const AdminPinModal = ({ onVerified, supabaseUrl, supabase }: { onVerified: () =
         }
       }
 
-      // Xác minh danh tính trực tiếp với Supabase Auth Server trước khi mở ACP
+      // 5. XÁC MINH DANH TÍNH TRỰC TIẾP VỚI SUPABASE AUTH SERVER TRƯỚC KHI MỞ ACP
       const isVerified = await onVerified();
       if (isVerified === false) {
         throw new Error('Xác minh quyền quản trị thất bại hoặc UID không khớp. Từ chối truy cập.');
@@ -6515,6 +6615,7 @@ const App = () => {
         <AdminPinModal 
           onVerified={() => checkAdminSession()} 
           supabaseUrl={supabaseConfig.url} 
+          supabaseAnonKey={supabaseConfig.key}
           supabase={supabase} 
         />
       );
