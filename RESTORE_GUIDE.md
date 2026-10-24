@@ -102,7 +102,7 @@ Nếu cần đưa hệ thống về trạng thái xem công khai mà không giá
    supabase link --project-ref <your-project-id>
    ```
 3. Cài đặt các secret bắt buộc trong Supabase Dashboard -> **Edge Functions** -> **Secrets**:
-   - `ACP_PIN_HASH`: Mã SHA-256 của PIN 6 số.
+   - `ACP_PIN_HASH`: Chuỗi bcrypt hash của PIN 6 số (chuẩn $2a$, $2b$, $2y$, sinh bởi bcrypt với cost 10).
    - `ACP_ADMIN_EMAIL`: Email tài khoản quản trị nội bộ.
    - `ACP_ADMIN_PASSWORD`: Mật khẩu tài khoản quản trị nội bộ.
    - `ACP_EXPECTED_ADMIN_UID`: UID của tài khoản quản trị.

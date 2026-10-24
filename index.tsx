@@ -52,6 +52,7 @@ import ReactDOM from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
 import { ChevronRight, ChevronDown, ChevronUp, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, MessageSquare, CheckCircle2, Facebook, Mail, Youtube, Users, Vote, Music, VolumeX, Play, Pause, BarChart2, Check, X, RefreshCw, Shuffle, ExternalLink, Trophy, ListTree, Copy, ArrowLeft } from 'lucide-react';
 import Hls from 'hls.js';
+import { AcpPinLock } from './components/AcpPinLock';
 
 // --- CẤU HÌNH CỐ ĐỊNH ---
 const DEFAULT_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co';
@@ -6149,6 +6150,14 @@ const App = () => {
   };
 
   const [hash, setHash] = useState(window.location.hash);
+  const [isAcpUnlocked, setIsAcpUnlocked] = useState<boolean>(() => {
+    try {
+      return sessionStorage.getItem('acp_pin_unlocked') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
   useEffect(() => {
     const handleHashChange = () => setHash(window.location.hash);
     window.addEventListener('hashchange', handleHashChange);
@@ -6156,22 +6165,35 @@ const App = () => {
   }, []);
 
   const isAcp = hash.toUpperCase().includes('ACP1122');
-  return isAcp ? (
-    <AdminPanel 
-      menu={menu} 
-      setMenu={setMenu} 
-      heroSlides={heroSlides} 
-      setHeroSlides={setHeroSlides} 
-      onSave={handleSave} 
-      supabase={supabase}
-      theme={currentTheme}
-      onThemeChange={handleThemeChange}
-      menuImageUrl={menuImageUrl}
-      setMenuImageUrl={setMenuImageUrl}
-      pollData={pollData}
-      onSavePoll={handleSavePoll}
-    />
-  ) : (
+
+  if (isAcp) {
+    if (!isAcpUnlocked) {
+      return (
+        <AcpPinLock 
+          onSuccess={() => setIsAcpUnlocked(true)} 
+          onCancel={() => { window.location.hash = ''; }} 
+        />
+      );
+    }
+    return (
+      <AdminPanel 
+        menu={menu} 
+        setMenu={setMenu} 
+        heroSlides={heroSlides} 
+        setHeroSlides={setHeroSlides} 
+        onSave={handleSave} 
+        supabase={supabase}
+        theme={currentTheme}
+        onThemeChange={handleThemeChange}
+        menuImageUrl={menuImageUrl}
+        setMenuImageUrl={setMenuImageUrl}
+        pollData={pollData}
+        onSavePoll={handleSavePoll}
+      />
+    );
+  }
+
+  return (
     <HomePage 
       menu={menu} 
       heroSlides={heroSlides} 

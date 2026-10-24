@@ -1,17 +1,20 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
+import bcrypt from "https://esm.sh/bcryptjs@2.4.3";
 
 /**
- * CƠM PHẦN ÚT TRINH — SUPABASE EDGE FUNCTION: verify-acp-pin (PHASE 6 HARDENED)
+ * CƠM PHẦN ÚT TRINH — SUPABASE EDGE FUNCTION: verify-acp-pin (PHASE 7 HARDENED)
  * -----------------------------------------------------------------------------
- * Các cải tiến bảo mật Phase 6:
- * 1. Kiểm soát khóa và ghi nhận nguyên tử trong 1 RPC duy nhất (chống race condition).
- * 2. Không cho phép PIN đúng reset bộ đếm hoặc cấp session khi IP đang bị khóa.
- * 3. Fail-Closed: Bất kỳ lỗi RPC/hệ thống nào đều lập tức từ chối cấp phiên.
- * 4. Bắt buộc có ACP_EXPECTED_ADMIN_UID, đối chiếu nghiêm ngặt trước khi trả token.
- * 5. Từ chối yêu cầu nếu không trích xuất được IP tin cậy (không fallback 127.0.0.1).
- * 6. Giới hạn CORS chặt chẽ đúng các origin thực tế (không wildcard vercel/run.app).
+ * Bản sửa lỗi Edge Runtime:
+ * 1. Thay thế deno.land/x/bcrypt bằng bcryptjs thuần JavaScript (esm.sh).
+ *    Tuyệt đối không dùng Web Worker API (tránh lỗi ReferenceError: Worker is not defined).
+ * 2. Xác minh chính xác với chuỗi bcrypt hash ACP_PIN_HASH hiện có ($2a$, $2b$, $2y$).
+ * 3. Kiểm soát khóa và ghi nhận nguyên tử trong 1 RPC duy nhất (chống race condition).
+ * 4. Không cho phép PIN đúng reset bộ đếm hoặc cấp session khi IP đang bị khóa.
+ * 5. Fail-Closed: Bất kỳ lỗi RPC/hệ thống nào đều lập tức từ chối cấp phiên.
+ * 6. Bắt buộc có ACP_EXPECTED_ADMIN_UID, đối chiếu nghiêm ngặt trước khi trả token.
+ * 7. Từ chối yêu cầu nếu không trích xuất được IP tin cậy (không fallback 127.0.0.1).
+ * 8. Giới hạn CORS chặt chẽ đúng các origin thực tế (không wildcard vercel/run.app).
  */
 
 const STRICT_ALLOWED_ORIGINS = [
@@ -30,6 +33,26 @@ function getStrictCorsHeaders(req: Request) {
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
     "Access-Control-Max-Age": "86400"
   };
+}
+
+/**
+ * So sánh mã PIN với Bcrypt hash bằng thư viện bcryptjs thuần JavaScript.
+ * Tương thích 100% với Supabase Edge Runtime V8 isolate (không phụ thuộc Worker API).
+ */
+async function compareBcrypt(pin: string, hash: string): Promise<boolean> {
+  if (typeof (bcrypt as any)?.compare === "function") {
+    return await (bcrypt as any).compare(pin, hash);
+  }
+  if (typeof (bcrypt as any)?.compareSync === "function") {
+    return (bcrypt as any).compareSync(pin, hash);
+  }
+  if (typeof (bcrypt as any)?.default?.compare === "function") {
+    return await (bcrypt as any).default.compare(pin, hash);
+  }
+  if (typeof (bcrypt as any)?.default?.compareSync === "function") {
+    return (bcrypt as any).default.compareSync(pin, hash);
+  }
+  throw new Error("Không thể khởi tạo hàm so sánh bcrypt trong Edge Runtime.");
 }
 
 serve(async (req) => {
@@ -102,8 +125,14 @@ serve(async (req) => {
       }
     });
 
-    // 5. So sánh mã PIN với Bcrypt hash
-    const isMatch = await bcrypt.compare(pin, pinHash);
+    // 5. So sánh mã PIN với Bcrypt hash (Edge Runtime Safe - Không dùng Web Worker)
+    let isMatch = false;
+    try {
+      isMatch = await compareBcrypt(pin, pinHash);
+    } catch (bcryptErr) {
+      console.error("Lỗi xác minh bcrypt hash trong Edge Runtime:", bcryptErr);
+      isMatch = false;
+    }
 
     // 6. Xử lý khóa và ghi nhận NGUYÊN TỬ trong một RPC duy nhất (Atomic Process)
     // RPC này kiểm tra khóa trước: Nếu đang bị khóa, tuyệt đối KHÔNG cấp quyền hay reset bộ đếm!
