@@ -53,29 +53,9 @@ import { createClient } from '@supabase/supabase-js';
 import { ChevronRight, ChevronDown, ChevronUp, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, MessageSquare, CheckCircle2, Facebook, Mail, Youtube, Users, Vote, Music, VolumeX, Play, Pause, BarChart2, Check, X, RefreshCw, Shuffle, ExternalLink, Trophy, ListTree, Copy, ArrowLeft } from 'lucide-react';
 import Hls from 'hls.js';
 
-// --- CẤU HÌNH SUPABASE: ƯU TIÊN BIẾN MÔI TRƯỜNG VITE (VERCEL / PRODUCTION) ---
-const getViteEnv = (key: string): string => {
-  if (typeof import.meta !== 'undefined' && (import.meta as any).env) {
-    const val = (import.meta as any).env[key];
-    if (typeof val === 'string' && val.trim().length > 0 && !val.includes('your_supabase_') && !val.includes('<ACTUAL_')) {
-      return val.trim();
-    }
-  }
-  return '';
-};
-
-// Đọc chính xác biến môi trường theo chuẩn Vite
-const ENV_SUPABASE_URL = getViteEnv('VITE_SUPABASE_URL');
-const ENV_SUPABASE_ANON_KEY = 
-  getViteEnv('VITE_SUPABASE_ANON_KEY') || 
-  getViteEnv('VITE_SUPABASE_PUBLISHABLE_KEY') || 
-  getViteEnv('VITE_SUPABASE_KEY');
-
-const FALLBACK_DEFAULT_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co';
-const FALLBACK_DEFAULT_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyemZwZWV1b2h6ZnF1emZpZWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3NDY4MDgsImV4cCI6MjA4NDMyMjgwOH0.tyzhzbucriL09bH-ndgXs3ob1-Www97vsfQ6Wsh8d7s';
-
-const DEFAULT_URL = ENV_SUPABASE_URL || FALLBACK_DEFAULT_URL;
-const DEFAULT_ANON_KEY = ENV_SUPABASE_ANON_KEY || FALLBACK_DEFAULT_ANON_KEY;
+// --- CẤU HÌNH CỐ ĐỊNH ---
+const DEFAULT_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co';
+const DEFAULT_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyemZwZWV1b2h6ZnF1emZpZWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3NDY4MDgsImV4cCI6MjA4NDMyMjgwOH0.tyzhzbucriL09bH-ndgXs3ob1-Www97vsfQ6Wsh8d7s';
 
 interface VotePoll {
   is_active: boolean;
@@ -2525,18 +2505,9 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
         let currentViews = Math.max(dbViews, localViews);
         
         if (isNewVisit) {
-          try {
-            const { data: rpcViews, error: rpcErr } = await supabase.rpc('increment_site_views');
-            if (!rpcErr && typeof rpcViews === 'number') {
-              currentViews = Math.max(rpcViews, currentViews + 1);
-            } else if (rpcErr) {
-              console.warn("Lỗi gọi RPC increment_site_views:", rpcErr.message);
-              currentViews += 1;
-            }
-          } catch (rpcErr) {
-            console.warn("Ngoại lệ khi gọi RPC increment_site_views:", rpcErr);
-            currentViews += 1;
-          }
+          currentViews += 1;
+          // Use upsert to ensure the row exists and is updated
+          await supabase.from('site_stats').upsert({ id: 1, total_views: currentViews });
           localStorage.setItem(SESSION_VISIT_KEY, now.toString());
 
           // Atomic increment via RPC (date is determined by DB in Asia/Ho_Chi_Minh)
@@ -3868,7 +3839,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
   );
 };
 
-const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase, theme, onThemeChange, menuImageUrl, setMenuImageUrl, pollData, onSavePoll, onLogout }: any) => {
+const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase, theme, onThemeChange, menuImageUrl, setMenuImageUrl, pollData, onSavePoll }: any) => {
   const [activeTab, setActiveTab] = useState<'menu' | 'hero' | 'notifications' | 'quick' | 'guestbook' | 'stats' | 'poll'>('menu');
   const themeData = THEMES[theme as Theme] || THEMES[Theme.White];
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -4502,7 +4473,7 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
       <ThemeSwitcher currentTheme={theme} onThemeChange={onThemeChange} />
       <Nav isAdmin theme={theme} menuImageUrl={menuImageUrl} />
       <div className="max-w-6xl mx-auto bg-white rounded-[40px] shadow-2xl overflow-hidden border border-stone-200">
-        <div className="flex bg-stone-50 border-b p-3 gap-2 overflow-x-auto items-center">
+        <div className="flex bg-stone-50 border-b p-3 gap-2 overflow-x-auto">
           <button onClick={() => setActiveTab('menu')} className={`flex-1 py-4 px-3 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${activeTab === 'menu' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>🍱 THỰC ĐƠN</button>
           <button onClick={() => setActiveTab('hero')} className={`flex-1 py-4 px-3 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${activeTab === 'hero' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>🎬 CINEMATIC HERO MEDIA</button>
           <button onClick={() => setActiveTab('quick')} className={`flex-1 py-4 px-3 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${activeTab === 'quick' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>⚡ CHỌN NHANH</button>
@@ -4510,15 +4481,6 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
           <button onClick={() => setActiveTab('poll')} className={`flex-1 py-4 px-3 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${activeTab === 'poll' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>🎵 QUẢN LÝ NHẠC & BÌNH CHỌN</button>
           <button onClick={() => setActiveTab('guestbook')} className={`flex-1 py-4 px-3 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${activeTab === 'guestbook' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>💬 GÓP Ý</button>
           <button onClick={() => setActiveTab('stats')} className={`flex-1 py-4 px-3 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${activeTab === 'stats' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>📊 THỐNG KÊ</button>
-          {onLogout && (
-            <button 
-              onClick={onLogout}
-              className="py-4 px-4 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors flex items-center gap-1.5 shrink-0 border border-rose-200 cursor-pointer"
-              title="Đăng xuất khỏi trang quản trị ACP"
-            >
-              <span>🔒 ĐĂNG XUẤT</span>
-            </button>
-          )}
         </div>
         
         <div className="p-12">
@@ -5943,373 +5905,6 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
   );
 };
 
-/**
- * Màn hình khóa PIN 6 số cao cấp bảo vệ ACP Cơm Phần Út Trinh:
- * - 6 ô nhập mã PIN (tự động nhảy ô, hỗ trợ Backspace, Paste)
- * - Tích hợp Bàn phím số Numpad cảm ứng cho điện thoại
- * - Đồng hồ đếm ngược trực quan khi bị khóa
- * - Gửi PIN tới Supabase Edge Function verify-acp-pin
- * - Nạp Supabase Auth Session chính thức vào client khi thành công
- */
-const AdminPinModal = ({ 
-  onVerified, 
-  supabaseUrl, 
-  supabaseAnonKey,
-  supabase 
-}: { 
-  onVerified: () => Promise<boolean | void> | void; 
-  supabaseUrl: string; 
-  supabaseAnonKey?: string;
-  supabase: any; 
-}) => {
-  const [digits, setDigits] = useState<string[]>(['', '', '', '', '', '']);
-  const [errorMsg, setErrorMsg] = useState<string>('');
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [lockSeconds, setLockSeconds] = useState<number>(0);
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-
-  useEffect(() => {
-    inputRefs.current[0]?.focus();
-  }, []);
-
-  useEffect(() => {
-    if (lockSeconds <= 0) return;
-    const timer = setInterval(() => {
-      setLockSeconds(prev => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [lockSeconds]);
-
-  const handleDigitChange = (index: number, val: string) => {
-    if (lockSeconds > 0 || isSubmitting) return;
-    const clean = val.replace(/\D/g, '');
-    const newDigits = [...digits];
-
-    if (clean.length > 0) {
-      newDigits[index] = clean[clean.length - 1];
-      setDigits(newDigits);
-      if (index < 5) {
-        inputRefs.current[index + 1]?.focus();
-      }
-      if (index === 5 && newDigits.every(d => d !== '')) {
-        submitPin(newDigits.join(''));
-      }
-    } else {
-      newDigits[index] = '';
-      setDigits(newDigits);
-    }
-  };
-
-  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Backspace' && digits[index] === '' && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    const pasteData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
-    if (pasteData.length === 6) {
-      const newDigits = pasteData.split('');
-      setDigits(newDigits);
-      submitPin(pasteData);
-    }
-  };
-
-  const submitPin = async (pinStr: string) => {
-    if (pinStr.length !== 6 || isSubmitting || lockSeconds > 0) return;
-    setIsSubmitting(true);
-    setErrorMsg('');
-
-    try {
-      const effectiveUrl = (
-        supabaseUrl || 
-        (supabase as any)?.supabaseUrl || 
-        ENV_SUPABASE_URL || 
-        DEFAULT_URL || 
-        ''
-      ).trim().replace(/\/+$/, '');
-
-      const anonKey = (
-        supabaseAnonKey || 
-        (supabase as any)?.supabaseKey || 
-        ENV_SUPABASE_ANON_KEY || 
-        DEFAULT_ANON_KEY || 
-        ''
-      ).trim();
-
-      let data: any = null;
-      let errorResponse: any = null;
-      let networkError: any = null;
-
-      // 1. ƯU TIÊN GỌI supabase.functions.invoke (Được cấu hình sẵn với Supabase Client)
-      // Tự động mang apikey & Authorization (Bearer anon_key) hợp lệ tới cổng Supabase Kong Gateway
-      if (supabase?.functions?.invoke) {
-        try {
-          const res = await supabase.functions.invoke('verify-acp-pin', {
-            body: { pin: pinStr },
-            headers: anonKey ? {
-              'apikey': anonKey,
-              'Authorization': `Bearer ${anonKey}`
-            } : undefined
-          });
-
-          data = res.data;
-
-          if (res.error) {
-            const rawResp = res.response || (res.error as any).context;
-            if (rawResp && typeof rawResp.json === 'function') {
-              try {
-                errorResponse = await rawResp.json();
-              } catch {
-                try {
-                  errorResponse = { error: await rawResp.text() };
-                } catch {
-                  errorResponse = { error: res.error.message };
-                }
-              }
-            } else if ((res.error as any).message) {
-              errorResponse = { error: (res.error as any).message };
-            }
-          }
-        } catch (invokeErr: any) {
-          networkError = invokeErr;
-        }
-      }
-
-      // 2. FALLBACK FETCH TRỰC TIẾP CÓ ĐẦY ĐỦ HEADER apikey & Authorization
-      if (!data && !errorResponse) {
-        try {
-          const fetchHeaders: Record<string, string> = {
-            'Content-Type': 'application/json'
-          };
-          if (anonKey) {
-            fetchHeaders['apikey'] = anonKey;
-            fetchHeaders['Authorization'] = `Bearer ${anonKey}`;
-          }
-
-          const response = await fetch(`${effectiveUrl}/functions/v1/verify-acp-pin`, {
-            method: 'POST',
-            headers: fetchHeaders,
-            body: JSON.stringify({ pin: pinStr })
-          });
-
-          const json = await response.json().catch(() => null);
-          if (response.ok) {
-            data = json;
-            errorResponse = null;
-            networkError = null;
-          } else {
-            errorResponse = json || { error: `HTTP ${response.status}: ${response.statusText}` };
-          }
-        } catch (fetchErr: any) {
-          if (!networkError) {
-            networkError = fetchErr;
-          }
-        }
-      }
-
-      // 3. XỬ LÝ LỖI RIÊNG BIỆT (KHÔNG BÁO SAI PIN CHO LỖI HẠ TẦNG/MẠNG/CẤU HÌNH)
-      if (errorResponse) {
-        if (errorResponse.remaining_seconds) {
-          setLockSeconds(errorResponse.remaining_seconds);
-        }
-
-        const msg = String(errorResponse.error || errorResponse.message || '');
-
-        if (msg.includes('matched no key configured for auth mode') || msg.includes('apikey header matched no key')) {
-          throw new Error('Lỗi Supabase API Key: Khóa API key không khớp với dự án Supabase. Vui lòng kiểm tra biến môi trường VITE_SUPABASE_ANON_KEY (hoặc VITE_SUPABASE_PUBLISHABLE_KEY) trên Vercel.');
-        } else if (msg.includes('MISSING_CREDENTIALS') || msg.includes('apikey absent') || msg.includes('authorization absent')) {
-          throw new Error('Lỗi kết nối máy chủ Supabase: Thiếu thông tin xác thực apikey. Vui lòng kiểm tra lại cấu hình.');
-        } else if (msg.includes('Edge Secrets') || msg.includes('cấu hình máy chủ')) {
-          throw new Error('Lỗi cấu hình máy chủ bảo mật. Yêu cầu quản trị viên kiểm tra Edge Secrets.');
-        } else if (msg.includes('IP') || msg.includes('403')) {
-          throw new Error(msg || 'Từ chối truy cập: Không thể xác định địa chỉ IP tin cậy.');
-        } else if (errorResponse.remaining_seconds > 0 || msg.includes('khóa') || msg.includes('đợi')) {
-          throw new Error(msg || `Hệ thống tạm khóa. Vui lòng thử lại sau ${errorResponse.remaining_seconds} giây.`);
-        } else if (msg) {
-          throw new Error(msg);
-        } else {
-          throw new Error('Máy chủ phản hồi lỗi không xác định.');
-        }
-      }
-
-      if (networkError) {
-        console.error("Lỗi mạng khi gọi verify-acp-pin:", networkError);
-        throw new Error('Lỗi kết nối mạng: Không thể kết nối tới máy chủ xác thực. Vui lòng kiểm tra đường truyền.');
-      }
-
-      if (!data || !data.access_token) {
-        throw new Error('Không nhận được phiên đăng nhập hợp lệ từ máy chủ.');
-      }
-
-      // 4. NẠP PHIÊN ĐĂNG NHẬP CHÍNH THỨC VÀO SUPABASE CLIENT
-      if (data.access_token && data.refresh_token) {
-        const { error: sessionError } = await supabase.auth.setSession({
-          access_token: data.access_token,
-          refresh_token: data.refresh_token
-        });
-        if (sessionError) {
-          throw new Error('Lỗi nạp phiên đăng nhập: ' + sessionError.message);
-        }
-      }
-
-      // 5. XÁC MINH DANH TÍNH TRỰC TIẾP VỚI SUPABASE AUTH SERVER TRƯỚC KHI MỞ ACP
-      const isVerified = await onVerified();
-      if (isVerified === false) {
-        throw new Error('Xác minh quyền quản trị thất bại hoặc UID không khớp. Từ chối truy cập.');
-      }
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Mã PIN không hợp lệ');
-      setDigits(['', '', '', '', '', '']);
-      inputRefs.current[0]?.focus();
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-stone-950 text-white flex flex-col items-center justify-center p-4 select-none">
-      <div className="bg-stone-900 border border-amber-900/40 rounded-[35px] max-w-md w-full p-8 md:p-10 shadow-2xl text-center space-y-6 animate-[fadeIn_0.3s_ease-out]">
-        <div className="w-16 h-16 bg-amber-500/10 text-amber-500 rounded-2xl flex items-center justify-center mx-auto text-3xl font-black shadow-inner">
-          🔒
-        </div>
-        <div className="space-y-1.5">
-          <h2 className="text-2xl font-black text-amber-500 uppercase tracking-tight">XÁC THỰC QUẢN TRỊ ACP</h2>
-          <p className="text-xs text-stone-400 font-medium">Nhập mã PIN 6 chữ số để mở khóa bảng điều khiển</p>
-        </div>
-
-        {/* 6 Ô NHẬP PIN */}
-        <div className="flex justify-center gap-2 sm:gap-3 my-4" onPaste={handlePaste}>
-          {digits.map((digit, idx) => (
-            <input
-              key={idx}
-              ref={el => (inputRefs.current[idx] = el)}
-              type="password"
-              inputMode="numeric"
-              maxLength={1}
-              value={digit}
-              disabled={lockSeconds > 0 || isSubmitting}
-              onChange={e => handleDigitChange(idx, e.target.value)}
-              onKeyDown={e => handleKeyDown(idx, e)}
-              className="w-11 h-14 sm:w-13 sm:h-16 text-center text-2xl font-black bg-stone-800 border-2 border-stone-700 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 text-white rounded-2xl outline-none transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-            />
-          ))}
-        </div>
-
-        {/* BÀN PHÍM SỐ CẢM ỨNG DI ĐỘNG (NUMPAD) */}
-        <div className="grid grid-cols-3 gap-2 max-w-xs mx-auto pt-2">
-          {['1', '2', '3', '4', '5', '6', '7', '8', '9', 'C', '0', '⌫'].map(key => (
-            <button
-              key={key}
-              type="button"
-              disabled={lockSeconds > 0 || isSubmitting}
-              onClick={() => {
-                if (key === 'C') {
-                  setDigits(['', '', '', '', '', '']);
-                  inputRefs.current[0]?.focus();
-                } else if (key === '⌫') {
-                  const filledIndices = digits.map((d, i) => d !== '' ? i : -1).filter(i => i !== -1);
-                  if (filledIndices.length > 0) {
-                    const lastIdx = filledIndices[filledIndices.length - 1];
-                    const next = [...digits];
-                    next[lastIdx] = '';
-                    setDigits(next);
-                    inputRefs.current[lastIdx]?.focus();
-                  }
-                } else {
-                  const emptyIdx = digits.findIndex(d => d === '');
-                  if (emptyIdx !== -1) {
-                    handleDigitChange(emptyIdx, key);
-                  }
-                }
-              }}
-              className="h-12 rounded-xl bg-stone-800/80 hover:bg-stone-700 text-stone-200 font-black text-lg transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center border border-stone-700/50"
-            >
-              {key}
-            </button>
-          ))}
-        </div>
-
-        {/* THÔNG BÁO LỖI HOẶC ĐẾM NGƯỢC */}
-        {errorMsg && (
-          <p className="text-xs text-rose-400 font-bold bg-rose-500/10 p-3 rounded-xl border border-rose-500/30">
-            {errorMsg}
-          </p>
-        )}
-        {lockSeconds > 0 && (
-          <p className="text-xs text-amber-400 font-bold bg-amber-500/10 p-3 rounded-xl border border-amber-500/30">
-            Hệ thống tạm khóa. Còn lại: {Math.floor(lockSeconds / 60)} phút {lockSeconds % 60} giây
-          </p>
-        )}
-
-        {isSubmitting && (
-          <div className="flex items-center justify-center gap-2 text-xs font-bold text-amber-500 animate-pulse">
-            <span>Đang xác thực mã PIN...</span>
-          </div>
-        )}
-
-        <button
-          onClick={() => { window.location.hash = ''; window.location.reload(); }}
-          className="text-xs text-stone-400 hover:text-white transition-colors underline block mx-auto pt-2 cursor-pointer"
-        >
-          ← Trở về Trang chủ Cơm Phần Út Trinh
-        </button>
-      </div>
-    </div>
-  );
-};
-
-/**
- * Định danh công khai không nhạy cảm của tài khoản quản trị CPUT.
- * Khớp nhất quán với <ACTUAL_ADMIN_UID> trong Migration SQL và ACP_EXPECTED_ADMIN_UID của Edge Function.
- * Tuyệt đối không chứa secret hay service_role key.
- */
-const EXPECTED_ADMIN_UID = (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_ACP_ADMIN_UID)
-  ? String((import.meta as any).env.VITE_ACP_ADMIN_UID).trim()
-  : '<ACTUAL_ADMIN_UID>';
-
-const isValidUuid = (val: string): boolean => {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(val);
-};
-
-/**
- * Kiểm tra tính hợp lệ của phiên quản trị ACP từ Supabase Auth (Fail-Closed):
- * - BẮT BUỘC EXPECTED_ADMIN_UID phải được cấu hình và đúng định dạng UUID.
- * - Nếu EXPECTED_ADMIN_UID chưa được cấu hình (còn là '<ACTUAL_ADMIN_UID>') hoặc sai định dạng:
- *   TỪ CHỐI TRUY CẬP 100% (Fail-Closed). Tuyệt đối không có cơ chế chấp nhận bất kỳ UID nào.
- * - UID của người dùng phải KHỚP CHÍNH XÁC TUYỆT ĐỐI với EXPECTED_ADMIN_UID.
- * - Phiên chưa hết hạn (expires_at).
- * - Không sử dụng sessionStorage, localStorage hoặc email làm bằng chứng thay thế UID.
- */
-const isSessionValidAdmin = (session: any): boolean => {
-  if (!session || !session.user || typeof session.user.id !== 'string') {
-    return false;
-  }
-
-  // 1. Kiểm tra cấu hình UID quản trị (Fail-Closed)
-  if (!EXPECTED_ADMIN_UID || EXPECTED_ADMIN_UID === '<ACTUAL_ADMIN_UID>' || !isValidUuid(EXPECTED_ADMIN_UID)) {
-    return false;
-  }
-
-  // 2. Kiểm tra thời hạn phiên
-  if (session.expires_at) {
-    const expiresAtMs = session.expires_at * 1000;
-    if (expiresAtMs <= Date.now()) {
-      return false;
-    }
-  }
-
-  // 3. Đối chiếu chính xác tuyệt đối UID quản trị
-  return session.user.id === EXPECTED_ADMIN_UID;
-};
-
 const App = () => {
   const [currentTheme, setCurrentTheme] = useState<Theme>(() => {
     const saved = localStorage.getItem(THEME_KEY);
@@ -6345,31 +5940,8 @@ const App = () => {
   };
 
   const [supabaseConfig] = useState(() => {
-    // 1. ƯU TIÊN TUYỆT ĐỐI: Biến môi trường Vite đã cấu hình trong Vercel / .env
-    if (ENV_SUPABASE_URL && ENV_SUPABASE_ANON_KEY) {
-      return { url: ENV_SUPABASE_URL, key: ENV_SUPABASE_ANON_KEY };
-    }
-
-    // 2. Kiểm tra LocalStorage (nếu không có biến môi trường và dữ liệu hợp lệ)
-    try {
-      const saved = localStorage.getItem(CONFIG_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed?.url && parsed?.key && typeof parsed.url === 'string' && typeof parsed.key === 'string') {
-          if (parsed.key.length > 20 && !parsed.key.includes('your_supabase_') && !parsed.key.includes('<ACTUAL_')) {
-            return {
-              url: ENV_SUPABASE_URL || parsed.url.trim(),
-              key: ENV_SUPABASE_ANON_KEY || parsed.key.trim()
-            };
-          }
-        }
-      }
-    } catch {
-      // Bỏ qua lỗi parse
-    }
-
-    // 3. Fallback mặc định
-    return { url: DEFAULT_URL, key: DEFAULT_ANON_KEY };
+    const saved = localStorage.getItem(CONFIG_KEY);
+    return saved ? JSON.parse(saved) : { url: DEFAULT_URL, key: DEFAULT_ANON_KEY };
   });
   const [menu, setMenu] = useState<Dish[]>([]);
   const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([]);
@@ -6434,20 +6006,16 @@ const App = () => {
         }
 
         if (supabase) {
-          supabase.rpc('cast_poll_vote', { p_option: option }).then(({ data, error }) => {
-            if (error) {
-              console.warn("Lỗi gọi RPC cast_poll_vote:", error.message);
-            } else if (data && typeof data.yes === 'number' && typeof data.no === 'number') {
-              // Đồng bộ phiếu chuẩn xác từ kết quả trả về của RPC
-              setPollData(prev => ({
-                ...prev,
-                yes_votes: data.yes,
-                no_votes: data.no
-              }));
-            }
-          }).catch(err => {
-            console.warn("Lỗi ngoại lệ khi gọi RPC cast_poll_vote:", err);
-          });
+          supabase.from('site_stats').upsert({
+            id: 1,
+            poll_is_active: updated.is_active,
+            poll_question: updated.question,
+            poll_music_url: updated.music_url,
+            poll_yes_votes: newYes,
+            poll_no_votes: newNo
+          }).then(({ error }) => {
+            if (error) console.warn("Lỗi cập nhật phiếu bầu Supabase:", error.message);
+          }).catch(err => console.error("Lỗi cập nhật phiếu bầu Supabase:", err));
         }
 
         return updated;
@@ -6581,125 +6149,29 @@ const App = () => {
   };
 
   const [hash, setHash] = useState(window.location.hash);
-  const [adminSession, setAdminSession] = useState<any>(null);
-  const [isCheckingAdminSession, setIsCheckingAdminSession] = useState<boolean>(true);
-
   useEffect(() => {
     const handleHashChange = () => setHash(window.location.hash);
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
-  const checkAdminSession = useCallback(async (): Promise<boolean> => {
-    setIsCheckingAdminSession(true);
-    try {
-      // 1. Kiểm tra session cục bộ (Fail-Closed)
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError || !sessionData?.session) {
-        setAdminSession(null);
-        return false;
-      }
-      const session = sessionData.session;
-      if (!isSessionValidAdmin(session)) {
-        setAdminSession(null);
-        return false;
-      }
-
-      // 2. Xác minh danh tính trực tiếp với Supabase Auth Server (chống token giả mạo/thu hồi)
-      // TUYỆT ĐỐI KHÔNG cấp trạng thái quản trị trước khi getUser() xác minh thành công và UID khớp chính xác
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      if (userError || !userData?.user || userData.user.id !== EXPECTED_ADMIN_UID) {
-        console.warn("Xác minh danh tính với Supabase Auth Server thất bại hoặc UID không khớp. Từ chối truy cập.");
-        setAdminSession(null);
-        return false;
-      }
-
-      // CHỈ CẤP TRẠNG THÁI QUẢN TRỊ KHI ĐÃ ĐƯỢC AUTH SERVER XÁC NHẬN VÀ UID KHỚP CHÍNH XÁC
-      setAdminSession(session);
-      return true;
-    } catch (e) {
-      console.warn("Lỗi kiểm tra session admin:", e);
-      setAdminSession(null);
-      return false;
-    } finally {
-      setIsCheckingAdminSession(false);
-    }
-  }, [supabase]);
-
-  useEffect(() => {
-    checkAdminSession();
-
-    // Callback hoàn toàn ĐỒNG BỘ (không async, không await) để chống deadlock trong GoTrue / Supabase Auth SDK.
-    // TUYỆT ĐỐI KHÔNG cấp trạng thái quản trị (setAdminSession) bên trong callback này.
-    // Trạng thái quản trị CHỈ ĐƯỢC CẤP sau khi supabase.auth.getUser() xác minh thành công và UID khớp chính xác.
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: string, session: any) => {
-      if (event === 'SIGNED_OUT' || !session || !isSessionValidAdmin(session)) {
-        setAdminSession(null);
-      } else {
-        // Chỉ kích hoạt xác minh bất đồng bộ ra ngoài luồng callback của SDK.
-        // KHÔNG cấp adminSession ở đây. Giữ màn hình khóa cho tới khi getUser() xác minh thành công.
-        setTimeout(() => {
-          checkAdminSession();
-        }, 0);
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, [checkAdminSession, supabase]);
-
-  const handleAdminLogout = async () => {
-    try {
-      await supabase.auth.signOut();
-    } catch (e) {
-      console.warn("Lỗi khi đăng xuất:", e);
-    }
-    setAdminSession(null);
-    window.location.hash = '';
-    window.location.reload();
-  };
-
   const isAcp = hash.toUpperCase().includes('ACP1122');
-
-  if (isAcp) {
-    if (isCheckingAdminSession) {
-      return (
-        <div className="min-h-screen bg-stone-950 flex flex-col items-center justify-center p-4">
-          <div className="animate-spin text-4xl mb-4 text-amber-500">🌾</div>
-          <p className="text-stone-400 text-xs font-bold uppercase tracking-widest">Đang kiểm tra quyền truy cập ACP...</p>
-        </div>
-      );
-    }
-
-    if (!adminSession) {
-      return (
-        <AdminPinModal 
-          onVerified={() => checkAdminSession()} 
-          supabaseUrl={supabaseConfig.url} 
-          supabaseAnonKey={supabaseConfig.key}
-          supabase={supabase} 
-        />
-      );
-    }
-
-    return (
-      <AdminPanel 
-        menu={menu} 
-        setMenu={setMenu} 
-        heroSlides={heroSlides} 
-        setHeroSlides={setHeroSlides} 
-        onSave={handleSave} 
-        supabase={supabase}
-        theme={currentTheme}
-        onThemeChange={handleThemeChange}
-        menuImageUrl={menuImageUrl}
-        setMenuImageUrl={setMenuImageUrl}
-        pollData={pollData}
-        onSavePoll={handleSavePoll}
-        onLogout={handleAdminLogout}
-      />
-    );
-  }
-
-  return (
+  return isAcp ? (
+    <AdminPanel 
+      menu={menu} 
+      setMenu={setMenu} 
+      heroSlides={heroSlides} 
+      setHeroSlides={setHeroSlides} 
+      onSave={handleSave} 
+      supabase={supabase}
+      theme={currentTheme}
+      onThemeChange={handleThemeChange}
+      menuImageUrl={menuImageUrl}
+      setMenuImageUrl={setMenuImageUrl}
+      pollData={pollData}
+      onSavePoll={handleSavePoll}
+    />
+  ) : (
     <HomePage 
       menu={menu} 
       heroSlides={heroSlides} 
