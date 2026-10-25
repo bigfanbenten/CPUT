@@ -370,15 +370,12 @@ const DISH_DICTIONARY: Record<string, DishDictionaryItem> = {
   },
 };
 
+import { DELIVERY_LINKS as CENTRAL_DELIVERY_LINKS } from '../deliveryLinks';
+
 export const DELIVERY_LINKS = {
-  phone: '0939.709.020',
-  phoneTel: 'tel:0939709020',
-  address: '158A Trần Vĩnh Kiết, An Bình, Cần Thơ, Vietnam',
-  googleMaps: 'https://www.google.com/maps?cid=4432329112330468584',
-  grab: 'https://grab.onelink.me/2695613898?pid=inappsharing&c=9-C6METJCWAKDAAE&is_retargeting=true&af_dp=grab%3A%2F%2Fopen%3FscreenType%3DGRABFOOD%26sourceID%3DA4pcHCZkS4%26merchantIDs%3D9-C6METJCWAKDAAE&af_force_deeplink=true',
-  shopee: 'https://shopeefood.vn/can-tho/com-phan-ut-trinh-tran-vinh-kiet',
-  xanhsm: 'https://xanhsm.com',
+  ...CENTRAL_DELIVERY_LINKS,
 };
+
 
 /**
  * Format numeric price to Vietnamese Dong string with thousand separator

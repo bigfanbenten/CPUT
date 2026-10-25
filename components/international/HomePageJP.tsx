@@ -95,7 +95,8 @@ export const HomePageJP: React.FC<HomePageJPProps> = ({
       
       {/* 1. TOP HEADER BAR */}
       <header className="sticky top-0 z-50 bg-[#FAF7F2]/95 backdrop-blur-md border-b border-[#E8DFD3] shadow-2xs">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 h-12 md:h-14 flex items-center justify-between gap-2">
+        {/* Desktop View (>= 640px): 100% Unchanged */}
+        <div className="hidden sm:flex max-w-7xl mx-auto px-3 sm:px-6 h-12 md:h-14 items-center justify-between gap-2">
           
           {/* Left: 4-Country Selector */}
           <div className="flex items-center">
@@ -153,6 +154,48 @@ export const HomePageJP: React.FC<HomePageJPProps> = ({
                 <img src="/assets/kr/badge-xanhsm.png" alt="Xanh SM" className="w-full h-full object-cover" />
               </a>
             </div>
+          </div>
+        </div>
+
+        {/* Mobile View (< 640px): 2 Clean Rows (Row 1: Country Selector, Row 2: Delivery Platforms) */}
+        <div className="flex sm:hidden flex-col items-center justify-center py-2 px-2 gap-1.5 max-w-full">
+          {/* Hàng 1 — COUNTRY SELECTOR */}
+          <div className="w-full flex justify-center items-center">
+            <CountrySelectorBar
+              selectedCountry={selectedCountry}
+              onSelectCountry={onSelectCountry}
+            />
+          </div>
+
+          {/* Hàng 2 — DELIVERY PLATFORMS */}
+          <div className="w-full flex items-center justify-center gap-3">
+            <a
+              href={DELIVERY_LINKS.grab}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="GrabFood Cần Thơ"
+              className="w-7 h-7 rounded-lg overflow-hidden hover:scale-105 active:scale-95 transition-transform shadow-xs shrink-0 flex items-center justify-center"
+            >
+              <img src="/assets/kr/badge-grabfood.png" alt="GrabFood" className="w-full h-full object-cover" />
+            </a>
+            <a
+              href={DELIVERY_LINKS.shopee}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="ShopeeFood Cần Thơ"
+              className="w-7 h-7 rounded-lg overflow-hidden hover:scale-105 active:scale-95 transition-transform shadow-xs shrink-0 flex items-center justify-center"
+            >
+              <img src="/assets/kr/badge-shopeefood.png" alt="ShopeeFood" className="w-full h-full object-cover" />
+            </a>
+            <a
+              href={DELIVERY_LINKS.xanhsm}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Xanh SM"
+              className="w-7 h-7 rounded-lg overflow-hidden hover:scale-105 active:scale-95 transition-transform shadow-xs shrink-0 flex items-center justify-center"
+            >
+              <img src="/assets/kr/badge-xanhsm.png" alt="Xanh SM" className="w-full h-full object-cover" />
+            </a>
           </div>
         </div>
 
@@ -780,24 +823,33 @@ export const HomePageJP: React.FC<HomePageJPProps> = ({
                   <span>お電話で注文する ({DELIVERY_LINKS.hotlineDisplay})</span>
                 </a>
 
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-3 gap-1.5">
                   <a
                     href={DELIVERY_LINKS.grab}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="py-2.5 px-3 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs"
+                    className="py-2.5 px-1.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold flex items-center justify-center gap-1 shadow-xs"
                   >
-                    <span>GrabFoodで注文</span>
-                    <ExternalLink size={12} />
+                    <span>Grab</span>
+                    <ExternalLink size={10} />
                   </a>
                   <a
                     href={DELIVERY_LINKS.shopee}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="py-2.5 px-3 rounded-full bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs"
+                    className="py-2.5 px-1.5 rounded-full bg-orange-500 hover:bg-orange-600 text-white text-[11px] font-bold flex items-center justify-center gap-1 shadow-xs"
                   >
-                    <span>ShopeeFoodで注文</span>
-                    <ExternalLink size={12} />
+                    <span>Shopee</span>
+                    <ExternalLink size={10} />
+                  </a>
+                  <a
+                    href={DELIVERY_LINKS.xanhsm}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="py-2.5 px-1.5 rounded-full bg-cyan-600 hover:bg-cyan-700 text-white text-[11px] font-bold flex items-center justify-center gap-1 shadow-xs"
+                  >
+                    <span>Xanh SM</span>
+                    <ExternalLink size={10} />
                   </a>
                 </div>
               </div>

@@ -58,6 +58,7 @@ import { CountrySelectorBar } from './components/CountrySelectorBar';
 import { HomePageKR } from './components/international/HomePageKR';
 import { HomePageJP } from './components/international/HomePageJP';
 import { HomePageUS } from './components/international/HomePageUS';
+import { DELIVERY_LINKS } from './deliveryLinks';
 
 // --- CẤU HÌNH CỐ ĐỊNH ---
 const DEFAULT_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co';
@@ -916,7 +917,7 @@ const Nav = ({ isAdmin = false, onShowQuickSelect, cartCount, onShowCart, theme,
 
   return (
     <>
-      <nav className={`fixed top-10 md:top-12 w-full z-[80] ${themeData.nav} backdrop-blur-xl border-b ${themeData.border} px-2 md:px-20 h-24 md:h-32 flex items-center justify-between transition-all duration-500`}>
+      <nav className={`fixed top-[74px] sm:top-10 md:top-12 w-full z-[80] ${themeData.nav} backdrop-blur-xl border-b ${themeData.border} px-2 md:px-20 h-24 md:h-32 flex items-center justify-between transition-all duration-500`}>
         <div className="flex items-center gap-2 md:gap-6 cursor-pointer group" onClick={() => window.location.hash = ''}>
           <img 
             src="https://i.postimg.cc/5tdmrBLb/6d45d4f.png" 
@@ -969,9 +970,34 @@ const Nav = ({ isAdmin = false, onShowQuickSelect, cartCount, onShowCart, theme,
                 )}
               </button>
 
-              <div className={`hidden sm:flex items-center gap-2 md:gap-4 border-l ${themeData.border} pl-4`}>
-                <img src="https://inkythuatso.com/uploads/thumbnails/800/2021/12/logo-grab-food-inkythuatso-20-15-57-46.jpg" className="h-6 md:h-12 object-contain rounded-sm" alt="Grab" />
-                <img src={SHOPEE_LOGO} className="h-6 md:h-12 object-contain" alt="Shopee" />
+              <div className={`hidden sm:flex items-center gap-2 md:gap-3 border-l ${themeData.border} pl-3 md:pl-4 shrink-0`}>
+                <a
+                  href={DELIVERY_LINKS.grabFood}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Đặt món qua GrabFood"
+                  className="transition-transform hover:scale-105 active:scale-95 inline-flex items-center"
+                >
+                  <img src="https://inkythuatso.com/uploads/thumbnails/800/2021/12/logo-grab-food-inkythuatso-20-15-57-46.jpg" className="h-6 md:h-10 object-contain rounded-sm" alt="GrabFood" />
+                </a>
+                <a
+                  href={DELIVERY_LINKS.shopeeFood}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Đặt món qua ShopeeFood"
+                  className="transition-transform hover:scale-105 active:scale-95 inline-flex items-center"
+                >
+                  <img src={SHOPEE_LOGO} className="h-6 md:h-10 object-contain" alt="ShopeeFood" />
+                </a>
+                <a
+                  href={DELIVERY_LINKS.xanhSM}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Đặt món qua Xanh SM"
+                  className="transition-transform hover:scale-105 active:scale-95 inline-flex items-center"
+                >
+                  <img src="/assets/kr/badge-xanhsm.png" className="h-6 md:h-10 object-contain rounded-md" alt="Xanh SM" />
+                </a>
               </div>
             </>
           )}
@@ -995,19 +1021,84 @@ const Nav = ({ isAdmin = false, onShowQuickSelect, cartCount, onShowCart, theme,
 
 const ThemeSwitcher = ({ currentTheme, onThemeChange, selectedCountry, onSelectCountry }: any) => {
   return (
-    <div className="fixed top-0 w-full z-[100] bg-white/95 backdrop-blur-xl border-b border-stone-100 h-10 md:h-12 flex items-center justify-between md:justify-center gap-2 md:gap-8 px-2 md:px-6 overflow-x-auto no-scrollbar shadow-sm transition-all duration-500">
-      {selectedCountry && onSelectCountry && (
-        <CountrySelectorBar
-          selectedCountry={selectedCountry}
-          onSelectCountry={onSelectCountry}
-        />
-      )}
-      <div className="flex items-center gap-2 md:gap-4 py-1 shrink-0">
-        <div className="flex items-center gap-1.5 md:gap-3 shrink-0">
-          <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-amber-800 rounded-full animate-pulse" />
-          <span className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] text-stone-500 whitespace-nowrap">CHỌN MÀU SITE:</span>
+    <div className="fixed top-0 w-full z-[100] bg-white/95 backdrop-blur-xl border-b border-stone-100 shadow-sm transition-all duration-500">
+      {/* Desktop view (>= 640px): 100% Unchanged */}
+      <div className="hidden sm:flex h-10 md:h-12 items-center justify-between md:justify-center gap-2 md:gap-8 px-2 md:px-6 overflow-x-auto no-scrollbar">
+        {selectedCountry && onSelectCountry && (
+          <CountrySelectorBar
+            selectedCountry={selectedCountry}
+            onSelectCountry={onSelectCountry}
+          />
+        )}
+        <div className="flex items-center gap-2 md:gap-4 py-1 shrink-0">
+          <div className="flex items-center gap-1.5 md:gap-3 shrink-0">
+            <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-amber-800 rounded-full animate-pulse" />
+            <span className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] text-stone-500 whitespace-nowrap">CHỌN MÀU SITE:</span>
+          </div>
+          <div className="flex items-center gap-1.5 md:gap-4 py-1">
+            {(Object.keys(Theme) as Array<keyof typeof Theme>).map((key) => {
+              const t = Theme[key];
+              const themeData = THEMES[t];
+              const isActive = currentTheme === t;
+              return (
+                <button
+                  key={t}
+                  onClick={() => onThemeChange(t)}
+                  className={`group flex items-center gap-1.5 md:gap-3 px-2.5 md:px-5 py-1 md:py-1.5 rounded-full transition-all duration-500 border-2 ${isActive ? 'bg-stone-900 border-stone-900 text-white shadow-lg scale-105' : 'bg-white border-stone-100 text-stone-500 hover:border-stone-300 hover:bg-stone-50'}`}
+                >
+                  <div className={`w-3 h-3 md:w-4 md:h-4 rounded-full border-2 border-white shadow-sm transition-transform group-hover:scale-110 ${themeData.bg}`} />
+                  <span className={`text-[8px] md:text-[10px] font-black uppercase tracking-tighter whitespace-nowrap ${isActive ? 'text-white' : 'text-stone-600'}`}>{themeData.name}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
-        <div className="flex items-center gap-1.5 md:gap-4 py-1">
+      </div>
+
+      {/* Mobile view (< 640px): 2 clean rows (Row 1: Country Selector, Row 2: Delivery Platforms) */}
+      {selectedCountry && onSelectCountry ? (
+        <div className="flex sm:hidden flex-col items-center justify-center py-1.5 px-2 gap-1 max-w-full">
+          {/* Hàng 1 — COUNTRY SELECTOR */}
+          <div className="w-full flex justify-center items-center">
+            <CountrySelectorBar
+              selectedCountry={selectedCountry}
+              onSelectCountry={onSelectCountry}
+            />
+          </div>
+
+          {/* Hàng 2 — DELIVERY PLATFORMS */}
+          <div className="w-full flex items-center justify-center gap-3 py-0.5">
+            <a
+              href={DELIVERY_LINKS.grabFood}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Đặt món qua GrabFood"
+              className="transition-transform hover:scale-105 active:scale-95 inline-flex items-center shrink-0"
+            >
+              <img src="https://inkythuatso.com/uploads/thumbnails/800/2021/12/logo-grab-food-inkythuatso-20-15-57-46.jpg" className="h-6 object-contain rounded-sm" alt="GrabFood" />
+            </a>
+            <a
+              href={DELIVERY_LINKS.shopeeFood}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Đặt món qua ShopeeFood"
+              className="transition-transform hover:scale-105 active:scale-95 inline-flex items-center shrink-0"
+            >
+              <img src={SHOPEE_LOGO} className="h-6 object-contain" alt="ShopeeFood" />
+            </a>
+            <a
+              href={DELIVERY_LINKS.xanhSM}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Đặt món qua Xanh SM"
+              className="transition-transform hover:scale-105 active:scale-95 inline-flex items-center shrink-0"
+            >
+              <img src="/assets/kr/badge-xanhsm.png" className="h-6 object-contain rounded-md" alt="Xanh SM" />
+            </a>
+          </div>
+        </div>
+      ) : (
+        <div className="flex sm:hidden items-center justify-center gap-2 py-2 px-2 overflow-x-auto no-scrollbar">
           {(Object.keys(Theme) as Array<keyof typeof Theme>).map((key) => {
             const t = Theme[key];
             const themeData = THEMES[t];
@@ -1016,15 +1107,15 @@ const ThemeSwitcher = ({ currentTheme, onThemeChange, selectedCountry, onSelectC
               <button
                 key={t}
                 onClick={() => onThemeChange(t)}
-                className={`group flex items-center gap-1.5 md:gap-3 px-2.5 md:px-5 py-1 md:py-1.5 rounded-full transition-all duration-500 border-2 ${isActive ? 'bg-stone-900 border-stone-900 text-white shadow-lg scale-105' : 'bg-white border-stone-100 text-stone-500 hover:border-stone-300 hover:bg-stone-50'}`}
+                className={`group flex items-center gap-1.5 px-2.5 py-1 rounded-full transition-all duration-500 border-2 ${isActive ? 'bg-stone-900 border-stone-900 text-white shadow-lg scale-105' : 'bg-white border-stone-100 text-stone-500 hover:border-stone-300 hover:bg-stone-50'}`}
               >
-                <div className={`w-3 h-3 md:w-4 md:h-4 rounded-full border-2 border-white shadow-sm transition-transform group-hover:scale-110 ${themeData.bg}`} />
-                <span className={`text-[8px] md:text-[10px] font-black uppercase tracking-tighter whitespace-nowrap ${isActive ? 'text-white' : 'text-stone-600'}`}>{themeData.name}</span>
+                <div className={`w-3 h-3 rounded-full border-2 border-white shadow-sm ${themeData.bg}`} />
+                <span className={`text-[8px] font-black uppercase tracking-tighter ${isActive ? 'text-white' : 'text-stone-600'}`}>{themeData.name}</span>
               </button>
             );
           })}
         </div>
-      </div>
+      )}
     </div>
   );
 };

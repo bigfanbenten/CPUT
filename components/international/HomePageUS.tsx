@@ -170,8 +170,8 @@ export const HomePageUS: React.FC<HomePageUSProps> = ({
 
       {/* 1. TOP HEADER BAR: Country Selector + Quick Info + Delivery Apps */}
       <header className="sticky top-0 z-50 bg-[#FDFCF7]/95 backdrop-blur-md border-b border-[#E2E8F0] shadow-xs">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 h-12 md:h-14 flex items-center justify-between gap-2">
-          
+        {/* Desktop View (>= 640px): 100% Unchanged */}
+        <div className="hidden sm:flex max-w-7xl mx-auto px-3 sm:px-6 h-12 md:h-14 items-center justify-between gap-2">
           {/* Left: 4-Country Selector */}
           <div className="flex items-center">
             <CountrySelectorBar
@@ -223,12 +223,54 @@ export const HomePageUS: React.FC<HomePageUSProps> = ({
                 href={DELIVERY_LINKS.xanhsm}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#0088D6] hover:bg-[#0074B7] text-white text-[10px] font-black uppercase tracking-wider transition-transform active:scale-95 shadow-xs cursor-pointer"
+                className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#0088D6] hover:bg-[#0074B7] text-white text-[10px] font-black uppercase tracking-wider transition-transform active:scale-95 shadow-xs cursor-pointer"
                 title="Order on Xanh SM"
               >
                 <span>Xanh SM</span>
               </a>
             </div>
+          </div>
+        </div>
+
+        {/* Mobile View (< 640px): 2 Clean Rows (Row 1: Country Selector, Row 2: Delivery Platforms) */}
+        <div className="flex sm:hidden flex-col items-center justify-center py-2 px-2 gap-1.5 max-w-full">
+          {/* Hàng 1 — COUNTRY SELECTOR */}
+          <div className="w-full flex justify-center items-center">
+            <CountrySelectorBar
+              selectedCountry={selectedCountry}
+              onSelectCountry={onSelectCountry}
+            />
+          </div>
+
+          {/* Hàng 2 — DELIVERY PLATFORMS */}
+          <div className="w-full flex items-center justify-center gap-2">
+            <a
+              href={DELIVERY_LINKS.grab}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#00B14F] hover:bg-[#009A44] text-white text-[10px] font-black uppercase tracking-wider transition-transform active:scale-95 shadow-xs cursor-pointer shrink-0"
+              title="Order on GrabFood"
+            >
+              <span>GrabFood</span>
+            </a>
+            <a
+              href={DELIVERY_LINKS.shopee}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#EE4D2D] hover:bg-[#D73211] text-white text-[10px] font-black uppercase tracking-wider transition-transform active:scale-95 shadow-xs cursor-pointer shrink-0"
+              title="Order on ShopeeFood"
+            >
+              <span>ShopeeFood</span>
+            </a>
+            <a
+              href={DELIVERY_LINKS.xanhsm}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#0088D6] hover:bg-[#0074B7] text-white text-[10px] font-black uppercase tracking-wider transition-transform active:scale-95 shadow-xs cursor-pointer shrink-0"
+              title="Order on Xanh SM"
+            >
+              <span>Xanh SM</span>
+            </a>
           </div>
         </div>
       </header>
@@ -1112,7 +1154,7 @@ export const HomePageUS: React.FC<HomePageUSProps> = ({
                       rel="noopener noreferrer"
                       className="flex-1 py-2.5 rounded-xl bg-[#00B14F] text-white font-black text-[10px] uppercase tracking-wider text-center"
                     >
-                      Order on Grab
+                      Grab
                     </a>
                     <a
                       href={DELIVERY_LINKS.shopee}
@@ -1120,7 +1162,15 @@ export const HomePageUS: React.FC<HomePageUSProps> = ({
                       rel="noopener noreferrer"
                       className="flex-1 py-2.5 rounded-xl bg-[#EE4D2D] text-white font-black text-[10px] uppercase tracking-wider text-center"
                     >
-                      Order on Shopee
+                      Shopee
+                    </a>
+                    <a
+                      href={DELIVERY_LINKS.xanhsm}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 py-2.5 rounded-xl bg-[#0088D6] text-white font-black text-[10px] uppercase tracking-wider text-center"
+                    >
+                      Xanh SM
                     </a>
                   </div>
                 </div>
