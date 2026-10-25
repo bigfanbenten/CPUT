@@ -53,6 +53,11 @@ import { createClient } from '@supabase/supabase-js';
 import { ChevronRight, ChevronDown, ChevronUp, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, MessageSquare, CheckCircle2, Facebook, Mail, Youtube, Users, Vote, Music, VolumeX, Play, Pause, BarChart2, Check, X, RefreshCw, Shuffle, ExternalLink, Trophy, ListTree, Copy, ArrowLeft } from 'lucide-react';
 import Hls from 'hls.js';
 import { AcpPinLock } from './components/AcpPinLock';
+import { CountryCode, getStoredCountry, setStoredCountry } from './countryConfig';
+import { CountrySelectorBar } from './components/CountrySelectorBar';
+import { HomePageKR } from './components/international/HomePageKR';
+import { HomePageJP } from './components/international/HomePageJP';
+import { HomePageUS } from './components/international/HomePageUS';
 
 // --- CẤU HÌNH CỐ ĐỊNH ---
 const DEFAULT_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co';
@@ -988,29 +993,37 @@ const Nav = ({ isAdmin = false, onShowQuickSelect, cartCount, onShowCart, theme,
   );
 };
 
-const ThemeSwitcher = ({ currentTheme, onThemeChange }: any) => {
+const ThemeSwitcher = ({ currentTheme, onThemeChange, selectedCountry, onSelectCountry }: any) => {
   return (
-    <div className="fixed top-0 w-full z-[100] bg-white/95 backdrop-blur-xl border-b border-stone-100 h-10 md:h-12 flex items-center justify-center gap-3 md:gap-8 px-4 overflow-x-auto no-scrollbar shadow-sm transition-all duration-500">
-      <div className="flex items-center gap-2 md:gap-3 shrink-0">
-        <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-amber-800 rounded-full animate-pulse" />
-        <span className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] text-stone-500 whitespace-nowrap">CHỌN MÀU SITE:</span>
-      </div>
-      <div className="flex items-center gap-2 md:gap-4 py-1">
-        {(Object.keys(Theme) as Array<keyof typeof Theme>).map((key) => {
-          const t = Theme[key];
-          const themeData = THEMES[t];
-          const isActive = currentTheme === t;
-          return (
-            <button
-              key={t}
-              onClick={() => onThemeChange(t)}
-              className={`group flex items-center gap-1.5 md:gap-3 px-3 md:px-5 py-1 md:py-1.5 rounded-full transition-all duration-500 border-2 ${isActive ? 'bg-stone-900 border-stone-900 text-white shadow-lg scale-105' : 'bg-white border-stone-100 text-stone-500 hover:border-stone-300 hover:bg-stone-50'}`}
-            >
-              <div className={`w-3 h-3 md:w-4 md:h-4 rounded-full border-2 border-white shadow-sm transition-transform group-hover:scale-110 ${themeData.bg}`} />
-              <span className={`text-[8px] md:text-[10px] font-black uppercase tracking-tighter whitespace-nowrap ${isActive ? 'text-white' : 'text-stone-600'}`}>{themeData.name}</span>
-            </button>
-          );
-        })}
+    <div className="fixed top-0 w-full z-[100] bg-white/95 backdrop-blur-xl border-b border-stone-100 h-10 md:h-12 flex items-center justify-between md:justify-center gap-2 md:gap-8 px-2 md:px-6 overflow-x-auto no-scrollbar shadow-sm transition-all duration-500">
+      {selectedCountry && onSelectCountry && (
+        <CountrySelectorBar
+          selectedCountry={selectedCountry}
+          onSelectCountry={onSelectCountry}
+        />
+      )}
+      <div className="flex items-center gap-2 md:gap-4 py-1 shrink-0">
+        <div className="flex items-center gap-1.5 md:gap-3 shrink-0">
+          <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-amber-800 rounded-full animate-pulse" />
+          <span className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] text-stone-500 whitespace-nowrap">CHỌN MÀU SITE:</span>
+        </div>
+        <div className="flex items-center gap-1.5 md:gap-4 py-1">
+          {(Object.keys(Theme) as Array<keyof typeof Theme>).map((key) => {
+            const t = Theme[key];
+            const themeData = THEMES[t];
+            const isActive = currentTheme === t;
+            return (
+              <button
+                key={t}
+                onClick={() => onThemeChange(t)}
+                className={`group flex items-center gap-1.5 md:gap-3 px-2.5 md:px-5 py-1 md:py-1.5 rounded-full transition-all duration-500 border-2 ${isActive ? 'bg-stone-900 border-stone-900 text-white shadow-lg scale-105' : 'bg-white border-stone-100 text-stone-500 hover:border-stone-300 hover:bg-stone-50'}`}
+              >
+                <div className={`w-3 h-3 md:w-4 md:h-4 rounded-full border-2 border-white shadow-sm transition-transform group-hover:scale-110 ${themeData.bg}`} />
+                <span className={`text-[8px] md:text-[10px] font-black uppercase tracking-tighter whitespace-nowrap ${isActive ? 'text-white' : 'text-stone-600'}`}>{themeData.name}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
@@ -1863,7 +1876,7 @@ const AdminHeroVideoPreview = ({ url }: { url: string }) => {
   );
 };
 
-const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onThemeChange, menuImageUrl, pollData, onVote }: any) => {
+const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onThemeChange, menuImageUrl, pollData, onVote, selectedCountry, onSelectCountry }: any) => {
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const [activeFilter, setActiveFilter] = useState<Category>(Category.All);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -2618,7 +2631,12 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
 
   return (
     <div className={`min-h-screen ${themeData.bg} ${themeData.font} ${themeData.text} transition-colors duration-500`}>
-      <ThemeSwitcher currentTheme={currentTheme} onThemeChange={onThemeChange} />
+      <ThemeSwitcher 
+        currentTheme={currentTheme} 
+        onThemeChange={onThemeChange} 
+        selectedCountry={selectedCountry}
+        onSelectCountry={onSelectCountry}
+      />
       <Nav 
         onShowQuickSelect={() => setShowQuickSelect(true)} 
         cartCount={cartCount}
@@ -6158,6 +6176,13 @@ const App = () => {
     }
   });
 
+  const [selectedCountry, setSelectedCountry] = useState<CountryCode>(() => getStoredCountry());
+
+  const handleSelectCountry = (code: CountryCode) => {
+    setSelectedCountry(code);
+    setStoredCountry(code);
+  };
+
   useEffect(() => {
     const handleHashChange = () => setHash(window.location.hash);
     window.addEventListener('hashchange', handleHashChange);
@@ -6193,6 +6218,48 @@ const App = () => {
     );
   }
 
+  if (selectedCountry === 'KR') {
+    return (
+      <HomePageKR
+        menu={menu}
+        heroSlides={heroSlides}
+        isLoading={isLoading}
+        selectedCountry={selectedCountry}
+        onSelectCountry={handleSelectCountry}
+        currentTheme={currentTheme}
+        onThemeChange={handleThemeChange}
+      />
+    );
+  }
+
+  if (selectedCountry === 'JP') {
+    return (
+      <HomePageJP
+        menu={menu}
+        heroSlides={heroSlides}
+        isLoading={isLoading}
+        selectedCountry={selectedCountry}
+        onSelectCountry={handleSelectCountry}
+        currentTheme={currentTheme}
+        onThemeChange={handleThemeChange}
+      />
+    );
+  }
+
+  if (selectedCountry === 'US') {
+    return (
+      <HomePageUS
+        menu={menu}
+        heroSlides={heroSlides}
+        isLoading={isLoading}
+        selectedCountry={selectedCountry}
+        onSelectCountry={handleSelectCountry}
+        currentTheme={currentTheme}
+        onThemeChange={handleThemeChange}
+      />
+    );
+  }
+
   return (
     <HomePage 
       menu={menu} 
@@ -6204,6 +6271,8 @@ const App = () => {
       menuImageUrl={menuImageUrl}
       pollData={pollData}
       onVote={handleVote}
+      selectedCountry={selectedCountry}
+      onSelectCountry={handleSelectCountry}
     />
   );
 };
