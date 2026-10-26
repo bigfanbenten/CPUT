@@ -59,6 +59,14 @@ import { HomePageKR } from './components/international/HomePageKR';
 import { HomePageJP } from './components/international/HomePageJP';
 import { HomePageUS } from './components/international/HomePageUS';
 import { DELIVERY_LINKS } from './deliveryLinks';
+import { NotificationDuration } from './types';
+import {
+  calculateNotificationExpiration,
+  formatVietnamDateTime,
+  isNotificationExpired,
+  isNotificationActiveAndValid,
+  NOTIFICATION_DURATION_OPTIONS
+} from './services/notificationUtils';
 
 // --- CẤU HÌNH CỐ ĐỊNH ---
 const DEFAULT_URL = 'https://qrzfpeeuohzfquzfiebc.supabase.co';
@@ -2570,20 +2578,56 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   useEffect(() => {
+    let timer: NodeJS.Timeout | null = null;
+
     const fetchActiveNotif = async () => {
-      const { data } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('is_active', true)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-      if (data) {
-        setActiveNotif(data);
-        setShowTetPopup(true);
+      try {
+        const { data, error } = await supabase
+          .from('notifications')
+          .select('*')
+          .eq('is_active', true)
+          .order('created_at', { ascending: false });
+
+        if (error || !data || data.length === 0) {
+          setActiveNotif(null);
+          setShowTetPopup(false);
+          return;
+        }
+
+        // Tìm thông báo hợp lệ gần nhất (thông báo cũ không có expires_at hoặc thông báo mới còn hạn)
+        const validNotif = data.find((n: any) => isNotificationActiveAndValid(n));
+
+        if (validNotif) {
+          setActiveNotif(validNotif);
+          setShowTetPopup(true);
+
+          // Tự động đóng popup khi đến thời điểm hết hạn ngay cả khi người dùng đang mở trang
+          if (validNotif.expires_at) {
+            const remainingMs = new Date(validNotif.expires_at).getTime() - Date.now();
+            if (remainingMs > 0) {
+              timer = setTimeout(() => {
+                setShowTetPopup(false);
+                setActiveNotif(null);
+              }, remainingMs);
+            } else {
+              setShowTetPopup(false);
+              setActiveNotif(null);
+            }
+          }
+        } else {
+          setActiveNotif(null);
+          setShowTetPopup(false);
+        }
+      } catch (err) {
+        console.warn('Lỗi khi tải thông báo trang chủ:', err);
       }
     };
+
     fetchActiveNotif();
+
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
   }, [supabase]);
 
   const [totalViews, setTotalViews] = useState(300);
@@ -3958,6 +4002,8 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
   const [newNotif, setNewNotif] = useState('');
   const [newImageUrl, setNewImageUrl] = useState('');
   const [newFooter, setNewFooter] = useState('XIN CHÚC BẠN VÀ GIA ĐÌNH SỨC KHỎE VÀ PHÁT TÀI.');
+  const [selectedDuration, setSelectedDuration] = useState<NotificationDuration | null>(null);
+  const [isSubmittingNotif, setIsSubmittingNotif] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   // Phân trang danh sách góp ý (ACP -> GÓP Ý, tối đa 12 bản ghi/trang)
@@ -4432,29 +4478,42 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
   const handleAddNotif = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     
+    if (isSubmittingNotif) return;
+
     const message = newNotif.trim();
     if (!message) {
       alert("Vui lòng nhập nội dung thông báo.");
       return;
     }
 
+    if (!selectedDuration) {
+      alert("Vui lòng chọn thời gian hiển thị thông báo:\n3 NGÀY | 1 TUẦN | 2 TUẦN | 1 THÁNG | 2 THÁNG");
+      return;
+    }
+
     const imageUrl = newImageUrl.trim() || null;
     const footer = newFooter.trim();
 
-    console.log("Attempting to create notification:", message, "image_url:", imageUrl);
-    
+    setIsSubmittingNotif(true);
+
     try {
-      // Lưu thông báo trực tiếp với đầy đủ trường message, footer, image_url
+      // Thời gian bắt đầu tính chính xác từ thời điểm tạo thông báo thành công
+      const creationDate = new Date();
+      const expiresDate = calculateNotificationExpiration(creationDate, selectedDuration);
+      const expiresAtIso = expiresDate.toISOString();
+
       const payload: {
         message: string;
         footer: string;
         image_url: string | null;
         is_active: boolean;
+        expires_at: string;
       } = {
         message,
         footer,
         image_url: imageUrl,
-        is_active: true
+        is_active: true,
+        expires_at: expiresAtIso
       };
 
       const { data, error } = await supabase
@@ -4465,7 +4524,11 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
       
       if (error) {
         console.error('Supabase Error:', error);
-        alert(`Lỗi khi lưu thông báo vào cơ sở dữ liệu: ${error.message}\n(Mã lỗi: ${error.code || 'không rõ'})`);
+        if (error.code === '42703' || error.message?.includes('expires_at')) {
+          alert("LỖI CƠ SỞ DỮ LIỆU: Bảng 'notifications' chưa có cột 'expires_at'.\n\nVui lòng mở Supabase Dashboard -> SQL Editor và chạy câu lệnh migration sau:\nALTER TABLE public.notifications ADD COLUMN IF NOT EXISTS expires_at TIMESTAMPTZ NULL;\nCREATE INDEX IF NOT EXISTS idx_notifications_is_active_expires_at ON public.notifications (is_active, expires_at);");
+        } else {
+          alert(`Lỗi khi lưu thông báo vào cơ sở dữ liệu: ${error.message}\n(Mã lỗi: ${error.code || 'không rõ'})`);
+        }
         return;
       }
 
@@ -4475,13 +4538,16 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
         setNewNotif('');
         setNewImageUrl('');
         setNewFooter('XIN CHÚC BẠN VÀ GIA ĐÌNH SỨC KHỎE VÀ PHÁT TÀI.');
-        alert("Chúc mừng! Thông báo đã được tạo và đang hiển thị.");
+        setSelectedDuration(null); // Không chọn mặc định cho lần tạo sau
+        alert(`Chúc mừng! Thông báo đã được tạo thành công.\nThời hạn hiển thị: đến ${formatVietnamDateTime(expiresAtIso)} (Giờ Việt Nam).`);
       } else {
         alert("Không nhận được phản hồi từ máy chủ, vui lòng thử lại.");
       }
     } catch (err: any) {
       console.error('Unexpected Exception:', err);
       alert(`Đã xảy ra lỗi không mong muốn: ${err.message || 'Vui lòng kiểm tra kết nối mạng.'}`);
+    } finally {
+      setIsSubmittingNotif(false);
     }
   };
 
@@ -5726,54 +5792,110 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
                       placeholder="Ví dụ: Đặt hàng ngay tại https://grabfoodcantho.online/ hoặc CHÚC MỪNG NĂM MỚI..."
                     />
                   </div>
+                  {/* THỜI GIAN HIỂN THỊ THÔNG BÁO: 5 NÚT LỰA CHỌN */}
+                  <div className="flex flex-col gap-2 pt-1">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-amber-800 ml-2 flex items-center gap-1.5">
+                      <span>⏱️ THỜI GIAN HIỂN THỊ THÔNG BÁO:</span>
+                      <span className="text-red-500 font-bold">* (Bắt buộc chọn 1 thời hạn)</span>
+                    </label>
+                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 p-2 bg-stone-100 rounded-2xl border border-stone-200">
+                      {NOTIFICATION_DURATION_OPTIONS.map((opt) => {
+                        const isSelected = selectedDuration === opt.id;
+                        return (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            onClick={() => setSelectedDuration(opt.id)}
+                            className={`flex flex-col items-center justify-center py-3 px-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                              isSelected
+                                ? 'bg-amber-800 text-white shadow-md scale-[1.02] ring-2 ring-amber-600'
+                                : 'bg-white hover:bg-amber-50 text-stone-700 hover:text-stone-900 border border-stone-200/70 shadow-xs'
+                            }`}
+                          >
+                            <span className="tracking-wider uppercase">{opt.label}</span>
+                            <span className={`text-[9px] font-medium mt-0.5 ${isSelected ? 'text-amber-200' : 'text-stone-400'}`}>
+                              {opt.sublabel}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {!selectedDuration && (
+                      <p className="text-[10px] text-amber-800/80 italic font-bold ml-2">
+                        * Vui lòng chọn 1 trong 5 thời hạn hiển thị trước khi nhấn Tạo mới.
+                      </p>
+                    )}
+                  </div>
+
                   <button 
                     type="submit"
-                    className="bg-amber-800 text-white px-10 py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg hover:bg-stone-900 transition-all active:scale-95 mt-2"
+                    disabled={isSubmittingNotif}
+                    className="bg-amber-800 text-white px-10 py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg hover:bg-stone-900 transition-all active:scale-95 mt-2 disabled:opacity-50 cursor-pointer"
                   >
-                    + TẠO MỚI THÔNG BÁO
+                    {isSubmittingNotif ? 'ĐANG LƯU VÀO HỆ THỐNG...' : '+ TẠO MỚI THÔNG BÁO'}
                   </button>
                 </form>
               </div>
 
               <div className="grid gap-4">
                 <h3 className="text-[10px] font-black uppercase tracking-widest text-stone-400 mt-6">Danh sách thông báo</h3>
-                {notifications.map((n) => (
-                  <div key={n.id} className={`p-6 rounded-[30px] border flex flex-col md:flex-row gap-4 items-start md:items-center justify-between transition-all ${n.is_active ? 'bg-amber-50 border-amber-200' : 'bg-white border-stone-100 opacity-60'}`}>
-                    <div className="flex-1 flex gap-4 items-start">
-                      {n.image_url && (
-                        <img 
-                          src={n.image_url} 
-                          alt="Minh họa" 
-                          className="w-16 h-16 md:w-20 md:h-20 object-cover rounded-2xl border border-amber-200 shrink-0" 
-                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
-                        />
-                      )}
-                      <div className="flex-1">
-                        <p className={`text-lg font-bold ${n.is_active ? 'text-amber-900' : 'text-stone-400'}`}>{n.message}</p>
-                        {n.footer && (
-                          <div className="text-xs italic text-amber-600 font-bold mt-1">
-                            {renderSafeFooterWithLinks(n.footer)}
-                          </div>
+                {notifications.map((n) => {
+                  const isExpired = isNotificationExpired(n);
+                  return (
+                    <div key={n.id} className={`p-6 rounded-[30px] border flex flex-col md:flex-row gap-4 items-start md:items-center justify-between transition-all ${isExpired ? 'bg-stone-50 border-stone-200 opacity-70' : n.is_active ? 'bg-amber-50 border-amber-200' : 'bg-white border-stone-100 opacity-60'}`}>
+                      <div className="flex-1 flex gap-4 items-start">
+                        {n.image_url && (
+                          <img 
+                            src={n.image_url} 
+                            alt="Minh họa" 
+                            className="w-16 h-16 md:w-20 md:h-20 object-cover rounded-2xl border border-amber-200 shrink-0" 
+                            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                          />
                         )}
-                        <span className="text-[9px] font-black uppercase tracking-widest text-stone-300 block mt-1">{new Date(n.created_at).toLocaleString('vi-VN')}</span>
+                        <div className="flex-1">
+                          <p className={`text-lg font-bold ${isExpired ? 'text-stone-600' : n.is_active ? 'text-amber-900' : 'text-stone-400'}`}>{n.message}</p>
+                          {n.footer && (
+                            <div className="text-xs italic text-amber-600 font-bold mt-1">
+                              {renderSafeFooterWithLinks(n.footer)}
+                            </div>
+                          )}
+                          <div className="flex flex-wrap items-center gap-2 mt-2">
+                            <span className="text-[9px] font-black uppercase tracking-widest text-stone-400">
+                              Đăng lúc: {formatVietnamDateTime(n.created_at) || new Date(n.created_at).toLocaleString('vi-VN')}
+                            </span>
+                            {n.expires_at && (
+                              <>
+                                <span className="text-stone-300">•</span>
+                                <span className={`text-[9px] font-black uppercase tracking-wider ${isExpired ? 'text-red-600 font-extrabold' : 'text-amber-800'}`}>
+                                  Hết hạn: {formatVietnamDateTime(n.expires_at)}
+                                </span>
+                              </>
+                            )}
+                            {isExpired && (
+                              <span className="px-2.5 py-0.5 rounded-full bg-red-100 text-red-700 text-[8px] font-black uppercase tracking-widest border border-red-200 shadow-2xs">
+                                ⚠️ HẾT HẠN
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4 self-end md:self-center">
+                        <div className="flex items-center gap-2">
+                          <span className={`text-[9px] font-black uppercase tracking-widest ${n.is_active ? 'text-green-600' : 'text-stone-300'}`}>
+                            {n.is_active ? 'ĐANG BẬT' : 'ĐÃ TẮT'}
+                          </span>
+                          <button 
+                            onClick={() => toggleNotif(n.id, n.is_active)}
+                            className={`w-14 h-8 rounded-full relative transition-all ${n.is_active ? 'bg-green-500' : 'bg-stone-200'}`}
+                          >
+                            <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all ${n.is_active ? 'right-1' : 'left-1'}`}></div>
+                          </button>
+                        </div>
+                        <button onClick={() => deleteNotif(n.id)} className="w-10 h-10 bg-red-50 text-red-500 rounded-xl font-bold hover:bg-red-100 transition-colors cursor-pointer">×</button>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4 self-end md:self-center">
-                      <div className="flex items-center gap-2">
-                        <span className={`text-[9px] font-black uppercase tracking-widest ${n.is_active ? 'text-green-600' : 'text-stone-300'}`}>
-                          {n.is_active ? 'ĐANG BẬT' : 'ĐÃ TẮT'}
-                        </span>
-                        <button 
-                          onClick={() => toggleNotif(n.id, n.is_active)}
-                          className={`w-14 h-8 rounded-full relative transition-all ${n.is_active ? 'bg-green-500' : 'bg-stone-200'}`}
-                        >
-                          <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all ${n.is_active ? 'right-1' : 'left-1'}`}></div>
-                        </button>
-                      </div>
-                      <button onClick={() => deleteNotif(n.id)} className="w-10 h-10 bg-red-50 text-red-500 rounded-xl font-bold">×</button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           ) : null}

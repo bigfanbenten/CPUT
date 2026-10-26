@@ -1,8 +1,13 @@
+export type NotificationDuration = '3_days' | '1_week' | '2_weeks' | '1_month' | '2_months';
+
 export interface Notification {
   id: string;
   message: string;
   is_active: boolean;
   created_at: string;
+  footer?: string;
+  image_url?: string | null;
+  expires_at?: string | null;
 }
 
 export interface Dish {

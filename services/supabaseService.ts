@@ -8,6 +8,8 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+import { isNotificationActiveAndValid } from './notificationUtils';
+
 export const supabaseService = {
   // Notifications
   async getActiveNotification(): Promise<Notification | null> {
@@ -15,12 +17,11 @@ export const supabaseService = {
       .from('notifications')
       .select('*')
       .eq('is_active', true)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
+      .order('created_at', { ascending: false });
 
-    if (error) return null;
-    return data;
+    if (error || !data || data.length === 0) return null;
+    const active = data.find((n: Notification) => isNotificationActiveAndValid(n));
+    return active || null;
   },
 
   async getAllNotifications(): Promise<Notification[]> {
@@ -33,10 +34,20 @@ export const supabaseService = {
     return data || [];
   },
 
-  async createNotification(message: string): Promise<Notification | null> {
+  async createNotification(
+    message: string,
+    footer?: string,
+    imageUrl?: string | null,
+    expiresAt?: string | null
+  ): Promise<Notification | null> {
+    const payload: any = { message, is_active: true };
+    if (footer) payload.footer = footer;
+    if (imageUrl) payload.image_url = imageUrl;
+    if (expiresAt) payload.expires_at = expiresAt;
+
     const { data, error } = await supabase
       .from('notifications')
-      .insert([{ message, is_active: true }])
+      .insert([payload])
       .select()
       .single();
 
