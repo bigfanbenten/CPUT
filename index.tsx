@@ -3132,6 +3132,39 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
         )}
       </header>
 
+      {/* Dedicated Halloween Haunted Mansion Transition Atmosphere Zone (VN Homepage) */}
+      {festivalEvent === 'halloween' && (
+        <section 
+          className="relative w-full overflow-hidden border-y-2 border-orange-600/40 shadow-[inset_0_20px_40px_rgba(0,0,0,0.9),inset_0_-20px_40px_rgba(0,0,0,0.9)] bg-[#08060D]"
+          aria-label="Không gian lễ hội Halloween Cơm Phần Út Trinh"
+        >
+          <div 
+            className="w-full h-48 sm:h-56 md:h-64 lg:h-72 bg-cover bg-no-repeat relative flex items-center justify-center text-center px-4"
+            style={{
+              backgroundImage: `linear-gradient(180deg, rgba(8,6,13,0.7) 0%, rgba(8,6,13,0.25) 45%, rgba(8,6,13,0.88) 100%), url('/assets/halloween/haunted_mansion_scene.jpg')`,
+              backgroundPosition: 'center 30%'
+            }}
+          >
+            {/* Drifting Mist and Atmosphere Overlay */}
+            <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_bottom,rgba(147,51,234,0.2)_0%,transparent_65%)]" />
+            
+            <div className="relative z-10 max-w-3xl mx-auto space-y-2 py-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-950/85 border border-orange-500/50 text-orange-300 text-[10px] md:text-xs font-black uppercase tracking-widest shadow-lg">
+                <span>🏰</span>
+                <span>AMERICAN GOTHIC HAUNTED MANSION</span>
+                <span>🌕</span>
+              </div>
+              <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black text-[#FFF7ED] uppercase tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)]">
+                KHÔNG GIAN LỄ HỘI HALLOWEEN ÚT TRINH
+              </h3>
+              <p className="text-xs sm:text-sm md:text-base text-[#FDBA74] font-medium tracking-wide drop-shadow-[0_1px_8px_rgba(0,0,0,0.95)]">
+                Mở nắp cơm nóng hổi giữa khung cảnh biệt thự ma điện ảnh kỳ bí
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Menu List */}
       <main id="menu" className="max-w-7xl mx-auto py-24 px-6">
         <div className="text-center mb-20 space-y-6">
@@ -4001,7 +4034,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
   );
 };
 
-const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase, theme, onThemeChange, menuImageUrl, setMenuImageUrl, pollData, onSavePoll, onStartPreviewFestival, activeFestival }: any) => {
+const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase, theme, onThemeChange, menuImageUrl, setMenuImageUrl, pollData, onSavePoll, onStartPreviewFestival, activeFestival, onSaveFestival }: any) => {
   const [activeTab, setActiveTab] = useState<'menu' | 'hero' | 'notifications' | 'quick' | 'guestbook' | 'stats' | 'poll' | 'festival'>('menu');
   const themeData = THEMES[theme as Theme] || THEMES[Theme.White];
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -6145,6 +6178,7 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
             <FestivalAdminTab 
               onStartPreview={onStartPreviewFestival} 
               activeFestival={activeFestival}
+              onSaveFestival={onSaveFestival}
             />
           )}
         </div>
@@ -6436,6 +6470,41 @@ const App = () => {
     window.location.hash = '#ACP1122';
   };
 
+  const handleSaveFestival = async (festival: FestivalEventId): Promise<{ success: boolean; error?: string }> => {
+    setIsLoading(true);
+    try {
+      const { error } = await supabase
+        .from('site_stats')
+        .update({ active_festival: festival })
+        .eq('id', 1);
+
+      if (error) {
+        console.error("Lỗi cập nhật active_festival lên site_stats:", error);
+        if (error.code === '42703' || error.message.includes('column') || error.message.includes('active_festival')) {
+          return {
+            success: false,
+            error: `Cột "active_festival" chưa tồn tại trong bảng site_stats trên Supabase (Mã lỗi: ${error.code || '42703'}). Admin cần chạy lệnh SQL bổ sung cột trong Supabase SQL Editor.`
+          };
+        }
+        return {
+          success: false,
+          error: error.message || "Lỗi cập nhật cơ sở dữ liệu."
+        };
+      }
+
+      setPublicFestival(festival);
+      return { success: true };
+    } catch (err: any) {
+      console.error("Lỗi khi lưu sự kiện lễ hội:", err);
+      return {
+        success: false,
+        error: err.message || "Lỗi kết nối máy chủ Supabase."
+      };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     const handleHashChange = () => setHash(window.location.hash);
     window.addEventListener('hashchange', handleHashChange);
@@ -6469,6 +6538,7 @@ const App = () => {
         onSavePoll={handleSavePoll}
         onStartPreviewFestival={handleStartPreviewFestival}
         activeFestival={publicFestival}
+        onSaveFestival={handleSaveFestival}
       />
     );
   }

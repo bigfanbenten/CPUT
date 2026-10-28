@@ -1,18 +1,22 @@
 import React, { useState } from 'react';
 import { FestivalEventId, FESTIVAL_EVENTS, FestivalEventConfig } from '../../types/festival';
-import { Sparkles, Eye, CheckCircle2, AlertTriangle, ShieldCheck, Palette, Wand2, Calendar } from 'lucide-react';
+import { Sparkles, Eye, CheckCircle2, AlertTriangle, Palette, Wand2, Calendar, Loader2, Check } from 'lucide-react';
 
 interface FestivalAdminTabProps {
   onStartPreview: (event: FestivalEventId, enableAnimations: boolean) => void;
   activeFestival?: FestivalEventId;
+  onSaveFestival?: (event: FestivalEventId) => Promise<{ success: boolean; error?: string }>;
 }
 
 export const FestivalAdminTab: React.FC<FestivalAdminTabProps> = ({
   onStartPreview,
   activeFestival = 'default',
+  onSaveFestival,
 }) => {
-  const [selectedEventId, setSelectedEventId] = useState<FestivalEventId>('halloween');
+  const [selectedEventId, setSelectedEventId] = useState<FestivalEventId>(activeFestival !== 'default' ? activeFestival : 'halloween');
   const [enableAnimations, setEnableAnimations] = useState<boolean>(true);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [saveStatus, setSaveStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   const eventList: FestivalEventConfig[] = [
     FESTIVAL_EVENTS.halloween,
@@ -23,9 +27,52 @@ export const FestivalAdminTab: React.FC<FestivalAdminTabProps> = ({
 
   const currentConfig = FESTIVAL_EVENTS[selectedEventId];
   const activeConfig = FESTIVAL_EVENTS[activeFestival];
+  const isAlreadyActive = selectedEventId === activeFestival;
 
   const handlePreviewClick = () => {
     onStartPreview(selectedEventId, enableAnimations);
+  };
+
+  const handleSubmitClick = async () => {
+    const confirmMessage = `Áp dụng giao diện "${currentConfig.name}" cho website?`;
+    if (!window.confirm(confirmMessage)) {
+      return;
+    }
+
+    if (!onSaveFestival) {
+      alert("Hệ thống chưa kết nối hàm lưu sự kiện.");
+      return;
+    }
+
+    setIsSaving(true);
+    setSaveStatus(null);
+
+    try {
+      const result = await onSaveFestival(selectedEventId);
+      if (result.success) {
+        setSaveStatus({
+          type: 'success',
+          message: `Đã kích hoạt thành công giao diện "${currentConfig.name}" cho toàn bộ website công khai!`
+        });
+        alert(`🎉 THÀNH CÔNG!\n\nĐã áp dụng giao diện "${currentConfig.name}" cho website www.comphanuttrinh.online trên toàn bộ 4 Quốc gia (VN, KR, JP, US).`);
+      } else {
+        const errMsg = result.error || "Không thể cập nhật cơ sở dữ liệu Supabase.";
+        setSaveStatus({
+          type: 'error',
+          message: errMsg
+        });
+        alert(`⚠️ CHƯA THỂ LƯU SỰ KIỆN LÊN SUPABASE:\n\n${errMsg}`);
+      }
+    } catch (err: any) {
+      const msg = err?.message || "Lỗi kết nối máy chủ Supabase.";
+      setSaveStatus({
+        type: 'error',
+        message: msg
+      });
+      alert(`❌ LỖI HỆ THỐNG: ${msg}`);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -46,16 +93,19 @@ export const FestivalAdminTab: React.FC<FestivalAdminTabProps> = ({
           </p>
         </div>
 
-        {/* Security & Active Status Badge */}
+        {/* Public Status Badge */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-stone-100 border border-stone-300 text-[10px] font-bold text-stone-700">
-            <span className="text-stone-400 uppercase tracking-wider">Đang công khai:</span>
-            <span className="font-black text-amber-900 uppercase">{activeConfig.name}</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-300 text-[10px] font-bold text-emerald-900 shadow-2xs">
+            <CheckCircle2 size={14} className="text-emerald-600" />
+            <span className="text-emerald-700 uppercase tracking-wider">ĐANG CÔNG KHAI:</span>
+            <span className="font-black text-emerald-950 uppercase">{activeConfig.name}</span>
           </div>
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-50 border border-amber-300 text-[10px] font-bold text-amber-800">
-            <ShieldCheck size={14} className="text-amber-700" />
-            <span>SUBMIT: TẠM KHÓA (CHỜ PHÊ DUYỆT MIGRATION)</span>
-          </div>
+
+          {activeFestival !== 'default' && (
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-amber-100/70 border border-amber-300 text-[9px] font-black uppercase tracking-wider text-amber-900">
+              <span>🔥 SỰ KIỆN ĐANG HOẠT ĐỘNG</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -72,6 +122,8 @@ export const FestivalAdminTab: React.FC<FestivalAdminTabProps> = ({
           <div className="space-y-3">
             {eventList.map((evt) => {
               const isSelected = selectedEventId === evt.id;
+              const isEventActive = activeFestival === evt.id;
+
               return (
                 <label
                   key={evt.id}
@@ -103,6 +155,12 @@ export const FestivalAdminTab: React.FC<FestivalAdminTabProps> = ({
                           <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md border ${evt.badgeBg} ${evt.badgeText}`}>
                             {evt.styleName}
                           </span>
+                          {isEventActive && (
+                            <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-300">
+                              <Check size={10} />
+                              <span>ĐANG ÁP DỤNG</span>
+                            </span>
+                          )}
                         </div>
                         <p className="text-xs text-stone-600 mt-1 leading-relaxed">
                           {evt.themeDescription}
@@ -187,40 +245,75 @@ export const FestivalAdminTab: React.FC<FestivalAdminTabProps> = ({
             <button
               type="button"
               onClick={handlePreviewClick}
-              className="w-full bg-amber-700 hover:bg-amber-600 text-white py-4 px-6 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl flex items-center justify-center gap-2.5 transition-all active:scale-98 cursor-pointer hover:shadow-amber-900/20"
+              className="w-full bg-stone-800 hover:bg-stone-700 text-white py-3.5 px-6 rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg flex items-center justify-center gap-2.5 transition-all active:scale-98 cursor-pointer border border-stone-700"
               title="Xem trước giao diện sự kiện trên cả 4 Homepage (VN, KR, JP, US) mà không ảnh hưởng website thật"
             >
               <Eye size={16} />
-              <span>PREVIEW — XEM TRƯỚC</span>
+              <span>PREVIEW — XEM TRƯỚC RIÊNG ADMIN</span>
             </button>
 
-            {/* Button SUBMIT (Strictly Disabled until migration approved) */}
+            {/* Button SUBMIT (Official Public Activation) */}
             <div className="space-y-2">
               <button
                 type="button"
-                disabled={true}
-                className="w-full bg-stone-300 text-stone-500 py-3.5 px-6 rounded-2xl text-xs font-black uppercase tracking-widest shadow-none flex items-center justify-center gap-2 cursor-not-allowed opacity-60 border border-stone-300"
-                title="Nút SUBMIT đang được vô hiệu hóa theo tiêu chuẩn an toàn bảo mật. Cần Admin phê duyệt migration SQL trước khi mở quyền ghi."
+                onClick={handleSubmitClick}
+                disabled={isSaving}
+                className={`w-full py-4 px-6 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl flex items-center justify-center gap-2.5 transition-all active:scale-98 cursor-pointer ${
+                  isAlreadyActive
+                    ? 'bg-emerald-700 hover:bg-emerald-800 text-white shadow-emerald-950/20'
+                    : 'bg-amber-700 hover:bg-amber-600 text-white shadow-amber-950/20'
+                }`}
+                title="Áp dụng chính thức giao diện này cho tất cả khách truy cập website www.comphanuttrinh.online"
               >
-                <CheckCircle2 size={16} />
-                <span>SUBMIT — ÁP DỤNG SỰ KIỆN (TẠM KHÓA AN TOÀN)</span>
+                {isSaving ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    <span>ĐANG ĐỒNG BỘ LÊN SUPABASE...</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 size={16} />
+                    <span>
+                      {isAlreadyActive 
+                        ? `ĐANG ÁP DỤNG: ${currentConfig.name}` 
+                        : `SUBMIT — ÁP DỤNG ${currentConfig.name.toUpperCase()}`}
+                    </span>
+                  </>
+                )}
               </button>
 
-              {/* Security & Audit Notice banner */}
-              <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-300 text-amber-950 flex items-start gap-2 text-[11px] leading-relaxed">
-                <AlertTriangle size={16} className="text-amber-800 shrink-0 mt-0.5" />
-                <div className="space-y-1">
-                  <p className="font-bold text-amber-900">
-                    BẢO MẬT GIAI ĐOẠN 3 — ĐIỀU KIỆN DỪNG ĐƯỢC KÍCH HOẠT:
-                  </p>
-                  <p className="text-stone-700">
-                    Theo kết quả Audit, cột <code className="bg-amber-100 px-1 py-0.5 rounded font-mono text-[10px]">active_festival</code> chưa tồn tại trong bảng <code className="bg-amber-100 px-1 py-0.5 rounded font-mono text-[10px]">site_stats</code> và tài khoản client chỉ sở hữu Anon Key.
-                  </p>
-                  <p className="text-stone-700">
-                    Để chống giả mạo ghi dữ liệu từ phía khách truy cập, nút <strong>SUBMIT</strong> được giữ khóa an toàn cho đến khi Admin thực thi migration bảo mật <code className="bg-amber-100 px-1 py-0.5 rounded font-mono text-[10px]">supabase/migrations/20261028_add_active_festival_to_site_stats.sql</code> trong Supabase SQL Editor.
-                  </p>
+              {/* Status Message Banner if any */}
+              {saveStatus && (
+                <div
+                  className={`p-3.5 rounded-xl border text-[11px] leading-relaxed flex items-start gap-2.5 ${
+                    saveStatus.type === 'success'
+                      ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
+                      : 'bg-rose-50 border-rose-300 text-rose-900'
+                  }`}
+                >
+                  {saveStatus.type === 'success' ? (
+                    <CheckCircle2 size={16} className="text-emerald-700 shrink-0 mt-0.5" />
+                  ) : (
+                    <AlertTriangle size={16} className="text-rose-700 shrink-0 mt-0.5" />
+                  )}
+                  <div className="space-y-1">
+                    <p className="font-bold">
+                      {saveStatus.type === 'success' ? 'ĐỒNG BỘ THÀNH CÔNG:' : 'THÔNG BÁO TỪ SUPABASE:'}
+                    </p>
+                    <p className="font-mono text-[10px] break-words">
+                      {saveStatus.message}
+                    </p>
+                    {saveStatus.type === 'error' && (
+                      <p className="text-[10px] text-stone-600 font-sans mt-1">
+                        👉 Để kích hoạt quyền ghi cho cột này, Admin vui lòng mở <strong>Supabase SQL Editor</strong> và chạy lệnh:<br />
+                        <code className="bg-stone-200/80 px-1 py-0.5 rounded font-mono text-[10px] block mt-1 select-all">
+                          ALTER TABLE public.site_stats ADD COLUMN IF NOT EXISTS active_festival TEXT DEFAULT 'default';
+                        </code>
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
