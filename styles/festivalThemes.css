@@ -1,0 +1,1189 @@
+/* ==========================================================================
+   CPUT INTERNATIONAL — FESTIVAL THEME ENGINE (FULL VISUAL TRANSFORMATION)
+   Strictly scoped by [data-festival="..."] on 4 Homepages (VN, KR, JP, US)
+   HOTFIX #2.4: WCAG AA CONTRAST HARDENING FOR DARK CARDS & LIGHT SURFACES
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. HALLOWEEN — AMERICAN CINEMATIC HORROR
+   Palette: Obsidian Shadow (#060309), Deep Smoke Purple (#160C22), Pumpkin Ember (#EA580C)
+   -------------------------------------------------------------------------- */
+[data-festival="halloween"] {
+  background-color: #08060D !important;
+  background-image: 
+    linear-gradient(180deg, rgba(8, 6, 13, 0.84) 0%, rgba(14, 8, 24, 0.8) 40%, rgba(8, 6, 13, 0.94) 100%),
+    url('/assets/halloween/haunted_mansion_scene.jpg') !important;
+  background-attachment: fixed !important;
+  background-size: cover !important;
+  background-position: center top !important;
+  background-repeat: no-repeat !important;
+  color: #FFF7ED !important;
+}
+
+/* Sections & Containers in Halloween */
+[data-festival="halloween"] main,
+[data-festival="halloween"] section {
+  background-color: transparent !important;
+}
+
+/* Header & Sticky Nav in Halloween (Dark Haunted Manor Stone with Rim Glow - Excluding VN Hero Video!) */
+[data-festival="halloween"] header:not(.hero-cinematic-header),
+[data-festival="halloween"] nav,
+[data-festival="halloween"] nav.fixed,
+[data-festival="halloween"] header.sticky:not(.hero-cinematic-header),
+[data-festival="halloween"] header[class*="sticky"]:not(.hero-cinematic-header),
+[data-festival="halloween"] nav[class*="bg-white"],
+[data-festival="halloween"] header[class*="bg-slate-50"] {
+  background-color: rgba(9, 5, 15, 0.98) !important;
+  background-image: linear-gradient(180deg, rgba(88, 28, 135, 0.35) 0%, rgba(9, 5, 15, 0.98) 100%) !important;
+  border-bottom: 2px solid rgba(234, 88, 12, 0.45) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.95), 0 0 25px rgba(147, 51, 234, 0.25) !important;
+}
+
+[data-festival="halloween"] header:not(.hero-cinematic-header) span,
+[data-festival="halloween"] nav span,
+[data-festival="halloween"] nav a,
+[data-festival="halloween"] nav button,
+[data-festival="halloween"] header:not(.hero-cinematic-header) div:not([class*="badge"]),
+[data-festival="halloween"] header:not(.hero-cinematic-header) a,
+[data-festival="halloween"] header:not(.hero-cinematic-header) button {
+  color: #FFF7ED !important;
+}
+
+[data-festival="halloween"] nav button:hover,
+[data-festival="halloween"] nav a:hover,
+[data-festival="halloween"] header:not(.hero-cinematic-header) button:hover,
+[data-festival="halloween"] header:not(.hero-cinematic-header) a:hover {
+  color: #FDBA74 !important;
+}
+
+/* Search input & icons in US & JP Navigation */
+[data-festival="halloween"] nav input,
+[data-festival="halloween"] header input {
+  background-color: rgba(20, 11, 32, 0.95) !important;
+  border: 1px solid rgba(147, 51, 234, 0.5) !important;
+  color: #FFF7ED !important;
+}
+[data-festival="halloween"] nav input::placeholder,
+[data-festival="halloween"] header input::placeholder {
+  color: #A8A29E !important;
+}
+[data-festival="halloween"] nav button[class*="bg-slate-"],
+[data-festival="halloween"] header button[class*="bg-slate-"] {
+  background-color: rgba(30, 15, 48, 0.8) !important;
+  color: #FFF7ED !important;
+}
+
+/* --------------------------------------------------------------------------
+   HALLOWEEN DARK GOTHIC HERO — REAL CINEMATIC HAUNTED MANSION (KR, JP, US)
+   Uses the photorealistic American Victorian Haunted Mansion asset with glowing amber windows
+   -------------------------------------------------------------------------- */
+[data-festival="halloween"] section[class*="from-[#FAF7F2]"],
+[data-festival="halloween"] section[class*="from-[#FFFDF9]"],
+[data-festival="halloween"] section[class*="from-[#FDFCF7]"],
+[data-festival="halloween"] section[class*="bg-gradient-to-b"] {
+  background-color: #08060D !important;
+  background-image: 
+    linear-gradient(90deg, rgba(8, 6, 13, 0.92) 0%, rgba(8, 6, 13, 0.78) 38%, rgba(8, 6, 13, 0.22) 68%, rgba(8, 6, 13, 0.65) 100%),
+    url('/assets/halloween/haunted_mansion_scene.jpg') !important;
+  background-size: cover !important;
+  background-position: center 36% !important;
+  background-repeat: no-repeat !important;
+  border-bottom: 2px solid rgba(234, 88, 12, 0.45) !important;
+  box-shadow: inset 0 -40px 60px rgba(0, 0, 0, 0.85), inset 0 20px 40px rgba(0, 0, 0, 0.8) !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+/* Delicate, slow-moving gothic mist veil across the bottom of the Hero */
+[data-festival="halloween"] section[class*="from-[#FAF7F2]"]::before,
+[data-festival="halloween"] section[class*="from-[#FFFDF9]"]::before,
+[data-festival="halloween"] section[class*="from-[#FDFCF7]"]::before,
+[data-festival="halloween"] section[class*="bg-gradient-to-b"]::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  pointer-events: none !important;
+  background: 
+    radial-gradient(ellipse 110% 45% at 50% 95%, rgba(88, 28, 135, 0.25) 0%, transparent 65%),
+    radial-gradient(ellipse 70% 35% at 80% 85%, rgba(234, 88, 12, 0.12) 0%, transparent 60%) !important;
+  animation: festHeroMistDrift 20s ease-in-out infinite alternate !important;
+  z-index: 1 !important;
+}
+
+@keyframes festHeroMistDrift {
+  0% {
+    opacity: 0.55;
+    transform: scale(1) translateX(0);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.02) translateX(10px);
+  }
+  100% {
+    opacity: 0.55;
+    transform: scale(1) translateX(-6px);
+  }
+}
+
+/* Ensure content sits cleanly above the subtle mist layer */
+[data-festival="halloween"] section[class*="from-[#FAF7F2]"] > div,
+[data-festival="halloween"] section[class*="from-[#FFFDF9]"] > div,
+[data-festival="halloween"] section[class*="from-[#FDFCF7]"] > div,
+[data-festival="halloween"] section[class*="bg-gradient-to-b"] > div {
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+/* JP Washoku Nav Bar under header */
+[data-festival="halloween"] div[class*="bg-[#FFFDF9]"][class*="border-t"] {
+  background: linear-gradient(180deg, rgba(15, 8, 26, 0.98) 0%, rgba(9, 4, 16, 0.98) 100%) !important;
+  border-top-color: rgba(147, 51, 234, 0.3) !important;
+  border-bottom: 1px solid rgba(234, 88, 12, 0.3) !important;
+}
+
+[data-festival="halloween"] div[class*="bg-[#FFFDF9]"][class*="border-t"] h1,
+[data-festival="halloween"] div[class*="bg-[#FFFDF9]"][class*="border-t"] span {
+  color: #fff7ed !important;
+}
+
+/* --------------------------------------------------------------------------
+   HALLOWEEN HERO TYPOGRAPHY HARDENING
+   Guarantees minimum WCAG AA: Primary #FFF7ED, Secondary #FDBA74, Desc #E7E5E4
+   -------------------------------------------------------------------------- */
+
+/* Hero Primary Headings (KR, JP, US, VN) */
+[data-festival="halloween"] section[class*="from-"] h1,
+[data-festival="halloween"] section[class*="from-"] h2,
+[data-festival="halloween"] section[class*="bg-gradient-to-b"] h1,
+[data-festival="halloween"] section[class*="bg-gradient-to-b"] h2,
+[data-festival="halloween"] section[class*="from-"] .font-black.text-3xl,
+[data-festival="halloween"] section[class*="from-"] .font-black.text-4xl,
+[data-festival="halloween"] section[class*="from-"] .font-black.text-5xl,
+[data-festival="halloween"] section[class*="from-"] .font-black.text-6xl,
+[data-festival="halloween"] section[class*="from-"] .font-black.text-7xl {
+  color: #fff7ed !important;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.8), 0 0 22px rgba(147, 51, 234, 0.25) !important;
+  opacity: 1 !important;
+}
+
+/* Hero Secondary Headings / Slogans / Calligraphy Accents */
+/* KR: 뚜껑을 열면, 바로 맛있다! ♡ */
+/* JP: ベトナム・カントーの味を, 開けた瞬間、おいしさが広がる。 */
+/* US: Authentic, MEALS */
+[data-festival="halloween"] section[class*="from-"] [class*="text-[#C4141A]"],
+[data-festival="halloween"] section[class*="from-"] [class*="text-[#C5301E]"],
+[data-festival="halloween"] section[class*="from-"] .font-serif-custom.italic,
+[data-festival="halloween"] section[class*="from-"] p.font-jp-serif.text-xl,
+[data-festival="halloween"] section[class*="from-"] p.font-jp-serif.text-2xl,
+[data-festival="halloween"] section[class*="from-"] p.font-jp-serif.text-3xl {
+  color: #fdba74 !important; /* Luminous warm pumpkin amber (> 9.5:1) */
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.8), 0 0 14px rgba(234, 88, 12, 0.3) !important;
+  opacity: 1 !important;
+}
+
+/* "by Út Trinh" in US Hero */
+[data-festival="halloween"] section[class*="from-"] span.font-serif-custom.italic.text-slate-700 {
+  color: #fff7ed !important;
+  opacity: 1 !important;
+}
+
+/* Brand Name / Tagline / Subtitle in KR, JP, US */
+/* KR: CƠM PHẦN ÚT TRINH (#935220) */
+/* JP: CƠM PHẦN ÚT TRINH (#934c1b) */
+[data-festival="halloween"] section[class*="from-"] [class*="text-[#935220]"],
+[data-festival="halloween"] section[class*="from-"] [class*="text-[#934c1b]"] {
+  color: #fed7aa !important; /* Luminous amber cream (> 11.5:1) */
+  letter-spacing: 0.2em !important;
+  opacity: 1 !important;
+}
+
+/* Slogan text in KR: "뚜껑을 열면, 바로 맛있다! ♡" */
+[data-festival="halloween"] section[class*="from-"] span.text-2xl.font-black,
+[data-festival="halloween"] section[class*="from-"] span.text-3xl.font-black,
+[data-festival="halloween"] section[class*="from-"] span.text-4xl.font-black {
+  color: #fff7ed !important;
+  opacity: 1 !important;
+}
+
+/* Slogan Leaf icon in KR Hero */
+[data-festival="halloween"] section[class*="from-"] svg.text-emerald-600 {
+  color: #34d399 !important;
+  fill: #34d399 !important;
+}
+
+/* Hero Descriptions & Taglines */
+/* KR: 베트남 껀터(Cần Thơ) 전통 가정식... */
+/* JP: ベトナム南部カントーの伝統家庭料理を... */
+/* US: Fresh Ingredients | Homemade Taste | Great Value */
+[data-festival="halloween"] section[class*="from-"] p.text-stone-500,
+[data-festival="halloween"] section[class*="from-"] p.text-stone-600,
+[data-festival="halloween"] section[class*="from-"] p.text-slate-500,
+[data-festival="halloween"] section[class*="from-"] p.text-slate-600,
+[data-festival="halloween"] section[class*="from-"] p.font-medium,
+[data-festival="halloween"] section[class*="from-"] p.font-bold {
+  color: #e7e5e4 !important; /* Crisp light stone white-gray (> 12.5:1) */
+  opacity: 1 !important;
+}
+
+/* US Tagline pipe separators: " | " */
+[data-festival="halloween"] section[class*="from-"] span.text-slate-300 {
+  color: #ea580c !important; /* Glowing pumpkin orange separator */
+  opacity: 1 !important;
+  font-weight: bold !important;
+}
+
+/* JP Decorative underline below title */
+[data-festival="halloween"] section[class*="from-"] div.w-48.h-1 {
+  background: linear-gradient(90deg, #ea580c 0%, #c2410c 60%, transparent 100%) !important;
+}
+
+/* JP Sakura petals (hide in Halloween Horror) */
+[data-festival="halloween"] section[class*="from-"] .text-rose-200\/40 {
+  display: none !important;
+}
+
+/* Hero Mascot / Bento Background Glow behind dish images (KR, US) */
+[data-festival="halloween"] section[class*="from-"] .from-amber-200\/40 {
+  background: radial-gradient(circle, rgba(147, 51, 234, 0.4) 0%, rgba(234, 88, 12, 0.2) 60%, transparent 75%) !important;
+}
+
+/* Dish & Bento images: 100% full brightness, NEVER darkened */
+[data-festival="halloween"] section[class*="from-"] img {
+  filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.75)) !important;
+  opacity: 1 !important;
+}
+
+/* Hero 3 Feature Badges in KR, JP, US Hero - Preserve high-contrast white text */
+[data-festival="halloween"] section[class*="from-"] .rounded-2xl span.text-stone-800,
+[data-festival="halloween"] section[class*="from-"] .rounded-2xl span.text-stone-900,
+[data-festival="halloween"] section[class*="from-"] .rounded-2xl span.text-slate-900 {
+  color: #fff7ed !important;
+  font-weight: 900 !important;
+}
+
+[data-festival="halloween"] section[class*="from-"] .rounded-2xl span.text-stone-400,
+[data-festival="halloween"] section[class*="from-"] .rounded-2xl span.text-stone-500,
+[data-festival="halloween"] section[class*="from-"] .rounded-2xl span.text-slate-500 {
+  color: #d6d3d1 !important;
+}
+
+/* Hero Action Button for Takeaway (US) */
+[data-festival="halloween"] section[class*="from-"] button.bg-\[\#0F203C\] {
+  background: linear-gradient(135deg, rgba(88, 28, 135, 0.75) 0%, rgba(20, 11, 32, 0.95) 100%) !important;
+  border: 1px solid rgba(147, 51, 234, 0.5) !important;
+  color: #ffffff !important;
+}
+
+/* Dish Cards, Service Cards & Panels in Halloween (Deep Haunted Obsidian with Eerie Rim Light) */
+[data-festival="halloween"] .rounded-\[40px\],
+[data-festival="halloween"] div[class*="rounded-\[40px\]"],
+[data-festival="halloween"] .rounded-\[32px\],
+[data-festival="halloween"] div[class*="rounded-\[32px\]"],
+[data-festival="halloween"] .rounded-\[28px\],
+[data-festival="halloween"] div[class*="rounded-\[28px\]"],
+[data-festival="halloween"] .rounded-\[26px\],
+[data-festival="halloween"] div[class*="rounded-\[26px\]"],
+[data-festival="halloween"] .rounded-\[24px\],
+[data-festival="halloween"] div[class*="rounded-\[24px\]"],
+[data-festival="halloween"] .rounded-3xl,
+[data-festival="halloween"] .rounded-2xl,
+[data-festival="halloween"] div[class*="rounded-3xl"],
+[data-festival="halloween"] div[class*="rounded-2xl"] {
+  background: linear-gradient(155deg, rgba(20, 11, 32, 0.97) 0%, rgba(9, 5, 16, 0.98) 100%) !important;
+  border: 1px solid rgba(147, 51, 234, 0.38) !important;
+  box-shadow: 0 14px 30px -5px rgba(0, 0, 0, 0.85), 0 0 20px rgba(126, 34, 206, 0.2) !important;
+  color: #fff7ed !important;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease, border-color 0.35s ease;
+}
+
+[data-festival="halloween"] .rounded-3xl:hover,
+[data-festival="halloween"] .rounded-2xl:hover,
+[data-festival="halloween"] .rounded-\[40px\]:hover,
+[data-festival="halloween"] .rounded-\[28px\]:hover,
+[data-festival="halloween"] .rounded-\[26px\]:hover,
+[data-festival="halloween"] .rounded-\[24px\]:hover {
+  border-color: #ea580c !important;
+  box-shadow: 0 18px 42px -5px rgba(0, 0, 0, 0.9), 0 0 30px rgba(234, 88, 12, 0.4), inset 0 0 15px rgba(126, 34, 206, 0.15) !important;
+  transform: translateY(-3px);
+}
+
+/* Headings & Dish Titles in Halloween */
+[data-festival="halloween"] h1,
+[data-festival="halloween"] h2,
+[data-festival="halloween"] h3 {
+  color: #fff7ed !important;
+  text-shadow: 0 0 20px rgba(234, 88, 12, 0.45), 0 0 12px rgba(147, 51, 234, 0.35) !important;
+}
+
+[data-festival="halloween"] h4 {
+  color: #fed7aa !important;
+}
+
+[data-festival="halloween"] p {
+  color: #d6d3d1 !important;
+}
+
+/* Prices & Accents in Halloween */
+[data-festival="halloween"] [class*="text-amber-"],
+[data-festival="halloween"] [class*="text-red-"],
+[data-festival="halloween"] [class*="text-rose-"],
+[data-festival="halloween"] [class*="text-\[\#C4141A\]"] {
+  color: #fb923c !important;
+  text-shadow: 0 0 12px rgba(249, 115, 22, 0.65) !important;
+}
+
+/* Buttons in Halloween (Pumpkin Ember Glow) */
+[data-festival="halloween"] button.bg-amber-800,
+[data-festival="halloween"] button.bg-amber-700,
+[data-festival="halloween"] button.bg-red-600,
+[data-festival="halloween"] button.bg-\[\#C5301E\],
+[data-festival="halloween"] button.bg-\[\#0F203C\],
+[data-festival="halloween"] button.bg-\[\#FEF3C7\],
+[data-festival="halloween"] button[class*="bg-amber-8"],
+[data-festival="halloween"] button[class*="bg-amber-9"],
+[data-festival="halloween"] button[class*="bg-amber-7"] {
+  background: linear-gradient(135deg, #ea580c 0%, #9a3412 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(253, 186, 116, 0.55) !important;
+  box-shadow: 0 4px 20px rgba(234, 88, 12, 0.55), 0 0 12px rgba(249, 115, 22, 0.35) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7) !important;
+}
+
+[data-festival="halloween"] button:hover {
+  box-shadow: 0 6px 28px rgba(234, 88, 12, 0.8), 0 0 18px rgba(168, 85, 247, 0.45) !important;
+}
+
+/* Footer in Halloween (Seamless Dark Gothic Estate with High Contrast) */
+[data-festival="halloween"] footer {
+  background: linear-gradient(180deg, #090510 0%, #040206 100%) !important;
+  border-top: 2px solid rgba(234, 88, 12, 0.45) !important;
+  color: #D6D3D1 !important;
+}
+
+[data-festival="halloween"] footer div[class*="border-t"],
+[data-festival="halloween"] footer div[class*="border-slate-"] {
+  border-top-color: rgba(147, 51, 234, 0.25) !important;
+}
+
+[data-festival="halloween"] footer p,
+[data-festival="halloween"] footer span,
+[data-festival="halloween"] footer a {
+  color: #D6D3D1 !important;
+}
+
+[data-festival="halloween"] footer h4,
+[data-festival="halloween"] footer h3 {
+  color: #FFF7ED !important;
+}
+
+/* Hide gray skyline watermark image that created an unsightly gray band across the footer */
+[data-festival="halloween"] img[src*="skyline-watermark"] {
+  display: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   2. CHRISTMAS — PREMIUM CHRISTMAS WONDERLAND
+   Palette: Rich Wine Red (#991B1B), Pine Green (#064E3B), Warm Gold (#F59E0B)
+   -------------------------------------------------------------------------- */
+[data-festival="christmas"] {
+  background-color: #0b140e !important;
+  background-image: 
+    radial-gradient(ellipse 90% 60% at 50% -15%, rgba(185, 28, 28, 0.4), transparent 70%),
+    radial-gradient(ellipse 70% 50% at 50% 100%, rgba(5, 150, 105, 0.25), transparent 70%),
+    linear-gradient(180deg, #17090c 0%, #0f1c14 40%, #0a140e 80%, #050a07 100%) !important;
+  color: #f1f5f9 !important;
+}
+
+/* Sections & Containers in Christmas */
+[data-festival="christmas"] main,
+[data-festival="christmas"] section {
+  background-color: transparent !important;
+}
+
+/* Header & Sticky Nav in Christmas */
+[data-festival="christmas"] header,
+[data-festival="christmas"] nav.fixed,
+[data-festival="christmas"] header.sticky,
+[data-festival="christmas"] header[class*="sticky"] {
+  background-color: rgba(11, 20, 15, 0.94) !important;
+  background-image: linear-gradient(180deg, rgba(185, 28, 28, 0.3) 0%, rgba(11, 20, 15, 0.96) 100%) !important;
+  border-bottom: 2px solid #dc2626 !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.85), 0 0 25px rgba(220, 38, 38, 0.35) !important;
+}
+
+[data-festival="christmas"] header span,
+[data-festival="christmas"] nav.fixed span,
+[data-festival="christmas"] header div:not([class*="badge"]),
+[data-festival="christmas"] header a {
+  color: #f8fafc !important;
+}
+
+/* Dish Cards, Service Cards & Panels in Christmas */
+[data-festival="christmas"] .rounded-\[40px\],
+[data-festival="christmas"] div[class*="rounded-\[40px\]"],
+[data-festival="christmas"] .rounded-\[32px\],
+[data-festival="christmas"] div[class*="rounded-\[32px\]"],
+[data-festival="christmas"] .rounded-\[28px\],
+[data-festival="christmas"] div[class*="rounded-\[28px\]"],
+[data-festival="christmas"] .rounded-\[26px\],
+[data-festival="christmas"] div[class*="rounded-\[26px\]"],
+[data-festival="christmas"] .rounded-\[24px\],
+[data-festival="christmas"] div[class*="rounded-\[24px\]"],
+[data-festival="christmas"] .rounded-3xl,
+[data-festival="christmas"] .rounded-2xl,
+[data-festival="christmas"] div[class*="rounded-3xl"],
+[data-festival="christmas"] div[class*="rounded-2xl"] {
+  background: linear-gradient(145deg, #152219 0%, #0d1711 100%) !important;
+  border: 1px solid rgba(220, 38, 38, 0.45) !important;
+  box-shadow: 0 12px 28px -5px rgba(0, 0, 0, 0.75), 0 0 18px rgba(16, 185, 129, 0.2) !important;
+  color: #f8fafc !important;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+[data-festival="christmas"] .rounded-3xl:hover,
+[data-festival="christmas"] .rounded-2xl:hover,
+[data-festival="christmas"] .rounded-\[40px\]:hover,
+[data-festival="christmas"] .rounded-\[28px\]:hover,
+[data-festival="christmas"] .rounded-\[26px\]:hover,
+[data-festival="christmas"] .rounded-\[24px\]:hover {
+  border-color: #f59e0b !important;
+  box-shadow: 0 18px 40px -5px rgba(0, 0, 0, 0.85), 0 0 30px rgba(245, 158, 11, 0.5) !important;
+  transform: translateY(-3px);
+}
+
+/* Headings & Dish Titles in Christmas */
+[data-festival="christmas"] h1,
+[data-festival="christmas"] h2,
+[data-festival="christmas"] h3 {
+  color: #ffffff !important;
+  text-shadow: 0 0 20px rgba(220, 38, 38, 0.5), 0 0 10px rgba(245, 158, 11, 0.35) !important;
+}
+
+[data-festival="christmas"] h4 {
+  color: #fef08a !important;
+}
+
+[data-festival="christmas"] p {
+  color: #d6d3d1 !important;
+}
+
+/* Prices & Accents in Christmas */
+[data-festival="christmas"] [class*="text-amber-"],
+[data-festival="christmas"] [class*="text-red-"],
+[data-festival="christmas"] [class*="text-rose-"],
+[data-festival="christmas"] [class*="text-\[\#C4141A\]"] {
+  color: #facc15 !important;
+  text-shadow: 0 0 10px rgba(250, 204, 21, 0.6) !important;
+}
+
+/* Buttons in Christmas (Holiday Ruby Red & Gold) */
+[data-festival="christmas"] button.bg-amber-800,
+[data-festival="christmas"] button.bg-amber-700,
+[data-festival="christmas"] button.bg-red-600,
+[data-festival="christmas"] button.bg-\[\#C5301E\],
+[data-festival="christmas"] button.bg-\[\#0F203C\],
+[data-festival="christmas"] button.bg-\[\#FEF3C7\],
+[data-festival="christmas"] button[class*="bg-amber-8"],
+[data-festival="christmas"] button[class*="bg-amber-9"],
+[data-festival="christmas"] button[class*="bg-amber-7"] {
+  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(254, 202, 202, 0.6) !important;
+  box-shadow: 0 4px 20px rgba(220, 38, 38, 0.55), 0 0 12px rgba(245, 158, 11, 0.3) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6) !important;
+}
+
+[data-festival="christmas"] button:hover {
+  box-shadow: 0 6px 25px rgba(220, 38, 38, 0.8), 0 0 18px rgba(245, 158, 11, 0.5) !important;
+}
+
+/* Footer in Christmas */
+[data-festival="christmas"] footer {
+  background: linear-gradient(180deg, #09120c 0%, #030805 100%) !important;
+  border-top: 2px solid #dc2626 !important;
+  color: #cbd5e1 !important;
+}
+
+/* --------------------------------------------------------------------------
+   3. HAPPY NEW YEAR — PREMIUM GOLDEN CELEBRATION
+   Palette: Imperial Gold (#D97706), Obsidian Black (#080603), Lucky Red (#DC2626)
+   -------------------------------------------------------------------------- */
+[data-festival="newyear"] {
+  background-color: #080603 !important;
+  background-image: 
+    radial-gradient(ellipse 90% 60% at 50% -15%, rgba(217, 119, 6, 0.4), transparent 70%),
+    radial-gradient(ellipse 70% 50% at 50% 100%, rgba(220, 38, 38, 0.25), transparent 70%),
+    linear-gradient(180deg, #1c1305 0%, #100c03 40%, #0a0702 80%, #040301 100%) !important;
+  color: #fffbeb !important;
+}
+
+/* Sections & Containers in New Year */
+[data-festival="newyear"] main,
+[data-festival="newyear"] section {
+  background-color: transparent !important;
+}
+
+/* Header & Sticky Nav in New Year */
+[data-festival="newyear"] header,
+[data-festival="newyear"] nav.fixed,
+[data-festival="newyear"] header.sticky,
+[data-festival="newyear"] header[class*="sticky"] {
+  background-color: rgba(14, 11, 4, 0.94) !important;
+  background-image: linear-gradient(180deg, rgba(217, 119, 6, 0.3) 0%, rgba(14, 11, 4, 0.96) 100%) !important;
+  border-bottom: 2px solid #f59e0b !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.9), 0 0 28px rgba(245, 158, 11, 0.4) !important;
+}
+
+[data-festival="newyear"] header span,
+[data-festival="newyear"] nav.fixed span,
+[data-festival="newyear"] header div:not([class*="badge"]),
+[data-festival="newyear"] header a {
+  color: #fffbeb !important;
+}
+
+/* Dish Cards, Service Cards & Panels in New Year */
+[data-festival="newyear"] .rounded-\[40px\],
+[data-festival="newyear"] div[class*="rounded-\[40px\]"],
+[data-festival="newyear"] .rounded-\[32px\],
+[data-festival="newyear"] div[class*="rounded-\[32px\]"],
+[data-festival="newyear"] .rounded-\[28px\],
+[data-festival="newyear"] div[class*="rounded-\[28px\]"],
+[data-festival="newyear"] .rounded-\[26px\],
+[data-festival="newyear"] div[class*="rounded-\[26px\]"],
+[data-festival="newyear"] .rounded-\[24px\],
+[data-festival="newyear"] div[class*="rounded-\[24px\]"],
+[data-festival="newyear"] .rounded-3xl,
+[data-festival="newyear"] .rounded-2xl,
+[data-festival="newyear"] div[class*="rounded-3xl"],
+[data-festival="newyear"] div[class*="rounded-2xl"] {
+  background: linear-gradient(145deg, #1d1508 0%, #110d04 100%) !important;
+  border: 1px solid rgba(245, 158, 11, 0.5) !important;
+  box-shadow: 0 12px 28px -5px rgba(0, 0, 0, 0.75), 0 0 20px rgba(245, 158, 11, 0.25) !important;
+  color: #fffbeb !important;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+[data-festival="newyear"] .rounded-3xl:hover,
+[data-festival="newyear"] .rounded-2xl:hover,
+[data-festival="newyear"] .rounded-\[40px\]:hover,
+[data-festival="newyear"] .rounded-\[28px\]:hover,
+[data-festival="newyear"] .rounded-\[26px\]:hover,
+[data-festival="newyear"] .rounded-\[24px\]:hover {
+  border-color: #fbbf24 !important;
+  box-shadow: 0 18px 40px -5px rgba(0, 0, 0, 0.85), 0 0 35px rgba(251, 191, 36, 0.6) !important;
+  transform: translateY(-3px);
+}
+
+/* Headings & Dish Titles in New Year */
+[data-festival="newyear"] h1,
+[data-festival="newyear"] h2,
+[data-festival="newyear"] h3 {
+  color: #fffbeb !important;
+  text-shadow: 0 0 22px rgba(245, 158, 11, 0.55), 0 0 12px rgba(220, 38, 38, 0.4) !important;
+}
+
+[data-festival="newyear"] h4 {
+  color: #fde047 !important;
+}
+
+[data-festival="newyear"] p {
+  color: #d6d3d1 !important;
+}
+
+/* Prices & Accents in New Year */
+[data-festival="newyear"] [class*="text-amber-"],
+[data-festival="newyear"] [class*="text-red-"],
+[data-festival="newyear"] [class*="text-rose-"],
+[data-festival="newyear"] [class*="text-\[\#C4141A\]"] {
+  color: #fbbf24 !important;
+  text-shadow: 0 0 12px rgba(250, 204, 21, 0.7) !important;
+}
+
+/* Buttons in New Year (Imperial Gold Spark) */
+[data-festival="newyear"] button.bg-amber-800,
+[data-festival="newyear"] button.bg-amber-700,
+[data-festival="newyear"] button.bg-red-600,
+[data-festival="newyear"] button.bg-\[\#C5301E\],
+[data-festival="newyear"] button.bg-\[\#0F203C\],
+[data-festival="newyear"] button.bg-\[\#FEF3C7\],
+[data-festival="newyear"] button[class*="bg-amber-8"],
+[data-festival="newyear"] button[class*="bg-amber-9"],
+[data-festival="newyear"] button[class*="bg-amber-7"] {
+  background: linear-gradient(135deg, #d97706 0%, #92400e 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(253, 230, 138, 0.65) !important;
+  box-shadow: 0 4px 20px rgba(217, 119, 6, 0.6), 0 0 14px rgba(245, 158, 11, 0.4) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6) !important;
+}
+
+[data-festival="newyear"] button:hover {
+  box-shadow: 0 6px 28px rgba(217, 119, 6, 0.85), 0 0 20px rgba(251, 191, 36, 0.6) !important;
+}
+
+/* Footer in New Year */
+[data-festival="newyear"] footer {
+  background: linear-gradient(180deg, #090703 0%, #030201 100%) !important;
+  border-top: 2px solid #d97706 !important;
+  color: #cbd5e1 !important;
+}
+
+/* ==========================================================================
+   4. SYSTEMIC TEXT CONTRAST HARDENING (WCAG AA & AAA COMPLIANCE)
+   Applies across all 3 Festival Themes on VN, KR, JP, US Homepages
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   4A. DARK SURFACE PRIMARY TEXT OVERRIDES
+   Resolves: Dark charcoal, navy, and brown text on dark festival backgrounds
+   -------------------------------------------------------------------------- */
+[data-festival="halloween"] [class*="text-stone-9"],
+[data-festival="halloween"] [class*="text-stone-8"],
+[data-festival="halloween"] [class*="text-stone-7"],
+[data-festival="halloween"] [class*="text-slate-9"],
+[data-festival="halloween"] [class*="text-slate-8"],
+[data-festival="halloween"] [class*="text-slate-7"],
+[data-festival="halloween"] [class*="text-gray-9"],
+[data-festival="halloween"] [class*="text-gray-8"],
+[data-festival="halloween"] [class*="text-neutral-9"],
+[data-festival="halloween"] [class*="text-neutral-8"],
+[data-festival="halloween"] [class*="text-zinc-9"],
+[data-festival="halloween"] [class*="text-zinc-8"],
+[data-festival="halloween"] [class*="text-[#3c2212]"],
+[data-festival="halloween"] [class*="text-[#2c1d11]"],
+[data-festival="halloween"] [class*="text-[#241a13]"],
+[data-festival="halloween"] [class*="text-[#2a1c12]"],
+[data-festival="halloween"] [class*="text-[#2e1c10]"],
+[data-festival="halloween"] [class*="text-[#0F203C]"],
+[data-festival="halloween"] [class*="text-[#1E293B]"] {
+  color: #fff7ed !important;
+}
+
+[data-festival="christmas"] [class*="text-stone-9"],
+[data-festival="christmas"] [class*="text-stone-8"],
+[data-festival="christmas"] [class*="text-stone-7"],
+[data-festival="christmas"] [class*="text-slate-9"],
+[data-festival="christmas"] [class*="text-slate-8"],
+[data-festival="christmas"] [class*="text-slate-7"],
+[data-festival="christmas"] [class*="text-gray-9"],
+[data-festival="christmas"] [class*="text-gray-8"],
+[data-festival="christmas"] [class*="text-neutral-9"],
+[data-festival="christmas"] [class*="text-neutral-8"],
+[data-festival="christmas"] [class*="text-zinc-9"],
+[data-festival="christmas"] [class*="text-zinc-8"],
+[data-festival="christmas"] [class*="text-[#3c2212]"],
+[data-festival="christmas"] [class*="text-[#2c1d11]"],
+[data-festival="christmas"] [class*="text-[#241a13]"],
+[data-festival="christmas"] [class*="text-[#2a1c12]"],
+[data-festival="christmas"] [class*="text-[#2e1c10]"],
+[data-festival="christmas"] [class*="text-[#0F203C]"],
+[data-festival="christmas"] [class*="text-[#1E293B]"] {
+  color: #ffffff !important;
+}
+
+[data-festival="newyear"] [class*="text-stone-9"],
+[data-festival="newyear"] [class*="text-stone-8"],
+[data-festival="newyear"] [class*="text-stone-7"],
+[data-festival="newyear"] [class*="text-slate-9"],
+[data-festival="newyear"] [class*="text-slate-8"],
+[data-festival="newyear"] [class*="text-slate-7"],
+[data-festival="newyear"] [class*="text-gray-9"],
+[data-festival="newyear"] [class*="text-gray-8"],
+[data-festival="newyear"] [class*="text-neutral-9"],
+[data-festival="newyear"] [class*="text-neutral-8"],
+[data-festival="newyear"] [class*="text-zinc-9"],
+[data-festival="newyear"] [class*="text-zinc-8"],
+[data-festival="newyear"] [class*="text-[#3c2212]"],
+[data-festival="newyear"] [class*="text-[#2c1d11]"],
+[data-festival="newyear"] [class*="text-[#241a13]"],
+[data-festival="newyear"] [class*="text-[#2a1c12]"],
+[data-festival="newyear"] [class*="text-[#2e1c10]"],
+[data-festival="newyear"] [class*="text-[#0F203C]"],
+[data-festival="newyear"] [class*="text-[#1E293B]"] {
+  color: #fffbeb !important;
+}
+
+/* --------------------------------------------------------------------------
+   4B. SECONDARY & MUTED TEXT OVERRIDES
+   Ensures descriptions and meta info maintain >= 8.5:1 contrast ratio
+   -------------------------------------------------------------------------- */
+[data-festival] [class*="text-stone-6"],
+[data-festival] [class*="text-stone-5"],
+[data-festival] [class*="text-stone-4"],
+[data-festival] [class*="text-slate-6"],
+[data-festival] [class*="text-slate-5"],
+[data-festival] [class*="text-slate-4"],
+[data-festival] [class*="text-gray-6"],
+[data-festival] [class*="text-gray-5"],
+[data-festival] [class*="text-gray-4"],
+[data-festival] [class*="text-neutral-5"],
+[data-festival] [class*="text-neutral-4"] {
+  color: #d6d3d1 !important;
+}
+
+/* Brand subtitles and uppercase taglines */
+[data-festival="halloween"] [class*="text-[#935220]"],
+[data-festival="halloween"] [class*="text-[#934c1b]"] {
+  color: #fed7aa !important;
+}
+
+[data-festival="christmas"] [class*="text-[#935220]"],
+[data-festival="christmas"] [class*="text-[#934c1b]"] {
+  color: #fecaca !important;
+}
+
+[data-festival="newyear"] [class*="text-[#935220]"],
+[data-festival="newyear"] [class*="text-[#934c1b]"] {
+  color: #fde68a !important;
+}
+
+/* --------------------------------------------------------------------------
+   4C. CARD INTERNAL PANELS & SUB-FOOTERS
+   Ensures card bottoms and sub-blocks do not clash with dark containers
+   -------------------------------------------------------------------------- */
+[data-festival] [class*="rounded"] div[class*="bg-[#FFFDF9]"],
+[data-festival] [class*="rounded"] div[class*="bg-[#FAF6EE]"],
+[data-festival] [class*="rounded"] div[class*="bg-[#FAF7F2]"],
+[data-festival] [class*="rounded"] div[class*="bg-[#FDFCF7]"],
+[data-festival] [class*="rounded"] div[class*="bg-stone-50"],
+[data-festival] [class*="rounded"] div[class*="bg-slate-50"],
+[data-festival] [class*="rounded"] div[class*="bg-white"] {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+[data-festival] [class*="rounded"] .border-stone-100,
+[data-festival] [class*="rounded"] .border-stone-200,
+[data-festival] [class*="rounded"] .border-slate-100,
+[data-festival] [class*="rounded"] .border-slate-200,
+[data-festival] [class*="rounded"] .border-\[\#EDE5D8\],
+[data-festival] [class*="rounded"] .border-\[\#EBE3D5\],
+[data-festival] [class*="rounded"] .border-\[\#EFE8DD\] {
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* --------------------------------------------------------------------------
+   4D. ICON & FEATURE BADGES
+   Prevents washed out badges in Hero sections and feature pills
+   -------------------------------------------------------------------------- */
+[data-festival] .w-8.h-8.rounded-full[class*="bg-emerald-"],
+[data-festival] .w-8.h-8.rounded-full[class*="bg-rose-"],
+[data-festival] .w-8.h-8.rounded-full[class*="bg-amber-"],
+[data-festival] .w-10.h-10.rounded-full[class*="bg-"] {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+[data-festival] svg.text-emerald-700,
+[data-festival] svg.text-emerald-600,
+[data-festival] svg.text-\[\#10B981\] {
+  color: #34d399 !important;
+  fill: #34d399 !important;
+}
+
+[data-festival] svg.text-rose-600,
+[data-festival] svg.text-rose-700,
+[data-festival] svg.text-\[\#EF4444\] {
+  color: #fb7185 !important;
+  fill: #fb7185 !important;
+}
+
+[data-festival] svg.text-amber-700,
+[data-festival] svg.text-amber-600,
+[data-festival] svg.text-\[\#F59E0B\] {
+  color: #fbbf24 !important;
+  fill: #fbbf24 !important;
+}
+
+/* --------------------------------------------------------------------------
+   4E. CATEGORY & FILTER BUTTONS
+   Distinguishes active from inactive tabs with high-contrast text and luminous glow
+   -------------------------------------------------------------------------- */
+/* Inactive category tabs across all homepages */
+[data-festival] button:not([class*="bg-amber-8"]):not([class*="bg-red-"]):not([class*="bg-emerald-"]):not([class*="scale-102"]):not([class*="border-amber-400"])[class*="rounded-2xl"],
+[data-festival] button[class*="hover:bg-stone-50"][class*="rounded-2xl"] {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  color: #e2e8f0 !important;
+}
+
+[data-festival] button[class*="hover:bg-stone-50"][class*="rounded-2xl"] span:last-child {
+  color: #a8a29e !important;
+}
+
+/* Active category tabs in Halloween */
+[data-festival="halloween"] button[class*="border-amber-400"],
+[data-festival="halloween"] button[class*="scale-102"] {
+  background: linear-gradient(135deg, rgba(234, 88, 12, 0.3) 0%, rgba(88, 28, 135, 0.45) 100%) !important;
+  border: 2px solid #ea580c !important;
+  box-shadow: 0 0 16px rgba(234, 88, 12, 0.4) !important;
+  color: #fff7ed !important;
+}
+
+[data-festival="halloween"] button[class*="border-amber-400"] span,
+[data-festival="halloween"] button[class*="scale-102"] span {
+  color: #fff7ed !important;
+}
+
+/* Active category tabs in Christmas */
+[data-festival="christmas"] button[class*="border-amber-400"],
+[data-festival="christmas"] button[class*="scale-102"] {
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.3) 0%, rgba(5, 150, 105, 0.4) 100%) !important;
+  border: 2px solid #dc2626 !important;
+  box-shadow: 0 0 16px rgba(220, 38, 38, 0.4) !important;
+  color: #ffffff !important;
+}
+
+[data-festival="christmas"] button[class*="border-amber-400"] span,
+[data-festival="christmas"] button[class*="scale-102"] span {
+  color: #ffffff !important;
+}
+
+/* Active category tabs in New Year */
+[data-festival="newyear"] button[class*="border-amber-400"],
+[data-festival="newyear"] button[class*="scale-102"] {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.32) 0%, rgba(180, 83, 9, 0.45) 100%) !important;
+  border: 2px solid #f59e0b !important;
+  box-shadow: 0 0 18px rgba(245, 158, 11, 0.45) !important;
+  color: #fffbeb !important;
+}
+
+[data-festival="newyear"] button[class*="border-amber-400"] span,
+[data-festival="newyear"] button[class*="scale-102"] span {
+  color: #fffbeb !important;
+}
+
+/* Secondary Action Buttons ("View All Menu", "Tất cả") */
+[data-festival] button[class*="rounded-full"][class*="border-stone-300"],
+[data-festival] button[class*="rounded-full"][class*="bg-white"] {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  color: #fff7ed !important;
+}
+
+[data-festival] button[class*="rounded-full"][class*="border-stone-300"]:hover,
+[data-festival] button[class*="rounded-full"][class*="bg-white"]:hover {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  border-color: rgba(255, 255, 255, 0.45) !important;
+  color: #ffffff !important;
+}
+
+/* --------------------------------------------------------------------------
+   4F. MODALS & POPUPS CONTRAST
+   Location modal, Takeaway modal, Dish modal, Cart modal in Festival Themes
+   -------------------------------------------------------------------------- */
+[data-festival="halloween"] div[class*="max-w-"][class*="rounded-"],
+[data-festival="halloween"] div[role="dialog"] {
+  background: #0f0819 !important;
+  border: 1px solid rgba(147, 51, 234, 0.45) !important;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 30px rgba(147, 51, 234, 0.25) !important;
+  color: #fff7ed !important;
+}
+
+[data-festival="christmas"] div[class*="max-w-"][class*="rounded-"],
+[data-festival="christmas"] div[role="dialog"] {
+  background: #0d1711 !important;
+  border: 1px solid rgba(220, 38, 38, 0.5) !important;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 30px rgba(220, 38, 38, 0.25) !important;
+  color: #ffffff !important;
+}
+
+[data-festival="newyear"] div[class*="max-w-"][class*="rounded-"],
+[data-festival="newyear"] div[role="dialog"] {
+  background: #140e04 !important;
+  border: 1px solid rgba(245, 158, 11, 0.55) !important;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 30px rgba(245, 158, 11, 0.3) !important;
+  color: #fffbeb !important;
+}
+
+/* Modal close and secondary buttons */
+[data-festival] div[class*="max-w-"] button[class*="bg-stone-100"],
+[data-festival] div[class*="max-w-"] button[class*="bg-stone-200"] {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+[data-festival] div[class*="max-w-"] .border-stone-100,
+[data-festival] div[class*="max-w-"] .border-slate-100,
+[data-festival] div[class*="max-w-"] .border-stone-200,
+[data-festival] div[class*="max-w-"] .border-slate-200 {
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* --------------------------------------------------------------------------
+   4G. LIGHT SURFACE SAFEGUARD (WCAG AA)
+   Prevents pale yellow headings or low contrast text on any light container
+   -------------------------------------------------------------------------- */
+[data-festival="newyear"] .bg-white h1,
+[data-festival="newyear"] .bg-white h2,
+[data-festival="newyear"] .bg-white h3,
+[data-festival="newyear"] .bg-white h4,
+[data-festival="newyear"] [class*="bg-amber-50"] h1,
+[data-festival="newyear"] [class*="bg-amber-50"] h2,
+[data-festival="newyear"] [class*="bg-amber-50"] h3,
+[data-festival="newyear"] [class*="bg-orange-50"] h1,
+[data-festival="newyear"] [class*="bg-orange-50"] h2,
+[data-festival="newyear"] [class*="bg-orange-50"] h3 {
+  color: #78350f !important; /* Deep Imperial Bronze (WCAG contrast > 8.5:1 on light surfaces) */
+  text-shadow: none !important;
+}
+
+[data-festival="halloween"] .bg-white h1,
+[data-festival="halloween"] .bg-white h2,
+[data-festival="halloween"] .bg-white h3,
+[data-festival="halloween"] .bg-stone-50 h1,
+[data-festival="halloween"] .bg-stone-50 h2,
+[data-festival="halloween"] .bg-stone-50 h3 {
+  color: #451a03 !important; /* Deep Roasted Bronze (WCAG contrast > 11:1) */
+  text-shadow: none !important;
+}
+
+[data-festival="christmas"] .bg-white h1,
+[data-festival="christmas"] .bg-white h2,
+[data-festival="christmas"] .bg-white h3,
+[data-festival="christmas"] .bg-stone-50 h1,
+[data-festival="christmas"] .bg-stone-50 h2,
+[data-festival="christmas"] .bg-stone-50 h3 {
+  color: #7f1d1d !important; /* Deep Wine Crimson (WCAG contrast > 9:1) */
+  text-shadow: none !important;
+}
+
+/* Any yellow utility text rendered on light surfaces */
+[data-festival] [class*="bg-white"] [class*="text-yellow-"],
+[data-festival] [class*="bg-amber-50"] [class*="text-yellow-"],
+[data-festival] [class*="bg-orange-50"] [class*="text-yellow-"],
+[data-festival] [class*="bg-stone-50"] [class*="text-yellow-"] {
+  color: #92400e !important;
+}
+
+/* --------------------------------------------------------------------------
+   4H. TOP NAVIGATION & COUNTRY SELECTOR BAR
+   High contrast for country flags, labels, and opening hours
+   -------------------------------------------------------------------------- */
+[data-festival] header [class*="bg-white/80"],
+[data-festival] header [class*="bg-white/90"] {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  color: #fff7ed !important;
+}
+
+[data-festival] [role="group"][aria-label="Chọn quốc gia"] {
+  background-color: rgba(0, 0, 0, 0.45) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+}
+
+[data-festival] [role="group"][aria-label="Chọn quốc gia"] span.text-stone-600 {
+  color: #cbd5e1 !important;
+}
+
+[data-festival] [role="group"][aria-label="Chọn quốc gia"] button[class*="bg-white/80"] {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+  color: #fff7ed !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* --------------------------------------------------------------------------
+   CRITICAL SAFEGUARDS: CINEMATIC HERO & MUSIC EXCLUSIONS
+   Ensure Hero video, subtitles, indicators and ACP are 100% untouched
+   -------------------------------------------------------------------------- */
+[data-festival] .hero-cinematic-header {
+  background-color: #0c0a09 !important;
+}
+
+[data-festival] .hero-cinematic-header * {
+  /* Do not override text colors or backgrounds inside the Hero Cinematic player */
+  text-shadow: none;
+}
+
+/* --------------------------------------------------------------------------
+   KEYFRAME ANIMATIONS FOR ATMOSPHERIC PARTICLES & EFFECTS
+   (100% LOCKED & PRESERVED)
+   -------------------------------------------------------------------------- */
+/* Bat Flapping Animation */
+@keyframes festBatFlap {
+  0%, 100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(0.3);
+  }
+}
+
+/* Bat Trajectories */
+@keyframes festBatFlight1 {
+  0% {
+    transform: translate(-10vw, 5vh) scale(0.9);
+    opacity: 0;
+  }
+  10% { opacity: 0.95; }
+  45% {
+    transform: translate(45vw, -8vh) scale(1.1);
+    opacity: 1;
+  }
+  90% { opacity: 0.95; }
+  100% {
+    transform: translate(110vw, 15vh) scale(0.85);
+    opacity: 0;
+  }
+}
+
+@keyframes festBatFlight2 {
+  0% {
+    transform: translate(105vw, 20vh) scale(0.8) scaleX(-1);
+    opacity: 0;
+  }
+  10% { opacity: 0.9; }
+  50% {
+    transform: translate(50vw, 28vh) scale(1) scaleX(-1);
+    opacity: 1;
+  }
+  90% { opacity: 0.9; }
+  100% {
+    transform: translate(-10vw, 18vh) scale(0.8) scaleX(-1);
+    opacity: 0;
+  }
+}
+
+@keyframes festBatFlight3 {
+  0% {
+    transform: translate(-8vw, 55vh) scale(0.75);
+    opacity: 0;
+  }
+  15% { opacity: 0.85; }
+  50% {
+    transform: translate(52vw, 42vh) scale(0.95);
+    opacity: 0.95;
+  }
+  85% { opacity: 0.85; }
+  100% {
+    transform: translate(108vw, 60vh) scale(0.75);
+    opacity: 0;
+  }
+}
+
+/* Creeping Mist Drift */
+@keyframes festMistDrift {
+  0% {
+    transform: translateX(-10%);
+    opacity: 0.25;
+  }
+  50% {
+    transform: translateX(10%);
+    opacity: 0.45;
+  }
+  100% {
+    transform: translateX(-10%);
+    opacity: 0.25;
+  }
+}
+
+/* Translucent Mist Passing Over Moon */
+@keyframes festMoonMist {
+  0% {
+    transform: translateX(-20px) scaleY(0.9);
+    opacity: 0.25;
+  }
+  50% {
+    transform: translateX(20px) scaleY(1.1);
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateX(-20px) scaleY(0.9);
+    opacity: 0.25;
+  }
+}
+
+/* Candle / Pumpkin Flicker */
+@keyframes festCandleFlicker {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.8;
+    filter: drop-shadow(0 0 15px rgba(249, 115, 22, 0.7));
+  }
+  30% {
+    transform: scale(1.06);
+    opacity: 1;
+    filter: drop-shadow(0 0 25px rgba(249, 115, 22, 0.9));
+  }
+  70% {
+    transform: scale(0.96);
+    opacity: 0.7;
+    filter: drop-shadow(0 0 12px rgba(249, 115, 22, 0.5));
+  }
+}
+
+/* Christmas Snow Sway & Fall */
+@keyframes festSnowSwayFall {
+  0% {
+    transform: translateY(-20px) translateX(0);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.95;
+  }
+  30% {
+    transform: translateY(30vh) translateX(18px);
+  }
+  60% {
+    transform: translateY(65vh) translateX(-15px);
+  }
+  92% {
+    opacity: 0.95;
+  }
+  100% {
+    transform: translateY(105vh) translateX(15px);
+    opacity: 0;
+  }
+}
+
+/* Fairy Lights Twinkle */
+@keyframes festFairyTwinkle {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+/* Firework Burst & Expansion */
+@keyframes festFireworkExplode {
+  0% {
+    transform: scale(0.05);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  70% {
+    transform: scale(1.15);
+    opacity: 0.85;
+  }
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
+
+/* Confetti & Star Dust Fall */
+@keyframes festConfettiFall {
+  0% {
+    transform: translateY(-20px) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(50vh) rotate(180deg) translateX(20px);
+  }
+  90% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(105vh) rotate(360deg) translateX(-15px);
+    opacity: 0;
+  }
+}

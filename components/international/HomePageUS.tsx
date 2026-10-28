@@ -29,6 +29,8 @@ import {
   Flame
 } from 'lucide-react';
 
+import { FestivalEventId } from '../../types/festival';
+
 interface CartItem {
   dish: AmericanDishDisplay;
   quantity: number;
@@ -42,12 +44,14 @@ interface HomePageUSProps {
   onSelectCountry: (code: CountryCode) => void;
   currentTheme?: any;
   onThemeChange?: (theme: any) => void;
+  festivalEvent?: FestivalEventId;
 }
 
 export const HomePageUS: React.FC<HomePageUSProps> = ({
   menu = [],
   selectedCountry,
   onSelectCountry,
+  festivalEvent = 'default',
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [activeModalDish, setActiveModalDish] = useState<AmericanDishDisplay | null>(null);
@@ -158,7 +162,10 @@ export const HomePageUS: React.FC<HomePageUSProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFCF7] text-[#1E293B] font-sans antialiased selection:bg-red-100 selection:text-red-900">
+    <div 
+      data-festival={festivalEvent} 
+      className="min-h-screen bg-[#FDFCF7] text-[#1E293B] font-sans antialiased selection:bg-red-100 selection:text-red-900"
+    >
       
       {/* Toast Notification */}
       {toastMessage && (

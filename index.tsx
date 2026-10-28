@@ -59,6 +59,11 @@ import { HomePageKR } from './components/international/HomePageKR';
 import { HomePageJP } from './components/international/HomePageJP';
 import { HomePageUS } from './components/international/HomePageUS';
 import { DELIVERY_LINKS } from './deliveryLinks';
+import './styles/festivalThemes.css';
+import { FestivalEventId, FestivalPreviewState } from './types/festival';
+import { FestivalAtmosphere } from './components/festival/FestivalAtmosphere';
+import { FestivalPreviewBar } from './components/festival/FestivalPreviewBar';
+import { FestivalAdminTab } from './components/festival/FestivalAdminTab';
 import { NotificationDuration } from './types';
 import {
   calculateNotificationExpiration,
@@ -1975,7 +1980,7 @@ const AdminHeroVideoPreview = ({ url }: { url: string }) => {
   );
 };
 
-const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onThemeChange, menuImageUrl, pollData, onVote, selectedCountry, onSelectCountry }: any) => {
+const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onThemeChange, menuImageUrl, pollData, onVote, selectedCountry, onSelectCountry, festivalEvent = 'default' }: any) => {
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const [activeFilter, setActiveFilter] = useState<Category>(Category.All);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -2765,7 +2770,10 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
   };
 
   return (
-    <div className={`min-h-screen ${themeData.bg} ${themeData.font} ${themeData.text} transition-colors duration-500`}>
+    <div 
+      data-festival={festivalEvent}
+      className={`min-h-screen ${themeData.bg} ${themeData.font} ${themeData.text} transition-colors duration-500`}
+    >
       <ThemeSwitcher 
         currentTheme={currentTheme} 
         onThemeChange={onThemeChange} 
@@ -3993,8 +4001,8 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
   );
 };
 
-const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase, theme, onThemeChange, menuImageUrl, setMenuImageUrl, pollData, onSavePoll }: any) => {
-  const [activeTab, setActiveTab] = useState<'menu' | 'hero' | 'notifications' | 'quick' | 'guestbook' | 'stats' | 'poll'>('menu');
+const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase, theme, onThemeChange, menuImageUrl, setMenuImageUrl, pollData, onSavePoll, onStartPreviewFestival, activeFestival }: any) => {
+  const [activeTab, setActiveTab] = useState<'menu' | 'hero' | 'notifications' | 'quick' | 'guestbook' | 'stats' | 'poll' | 'festival'>('menu');
   const themeData = THEMES[theme as Theme] || THEMES[Theme.White];
   const [notifications, setNotifications] = useState<any[]>([]);
   const [guestbookItems, setGuestbookItems] = useState<GuestbookEntry[]>([]);
@@ -4657,6 +4665,7 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
           <button onClick={() => setActiveTab('poll')} className={`flex-1 py-4 px-3 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${activeTab === 'poll' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>🎵 QUẢN LÝ NHẠC & BÌNH CHỌN</button>
           <button onClick={() => setActiveTab('guestbook')} className={`flex-1 py-4 px-3 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${activeTab === 'guestbook' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>💬 GÓP Ý</button>
           <button onClick={() => setActiveTab('stats')} className={`flex-1 py-4 px-3 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${activeTab === 'stats' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>📊 THỐNG KÊ</button>
+          <button onClick={() => setActiveTab('festival')} className={`flex-1 py-4 px-3 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${activeTab === 'festival' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>✨ SỰ KIỆN</button>
         </div>
         
         <div className="p-12">
@@ -6131,6 +6140,13 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
               </div>
             </div>
           )}
+
+          {activeTab === 'festival' && (
+            <FestivalAdminTab 
+              onStartPreview={onStartPreviewFestival} 
+              activeFestival={activeFestival}
+            />
+          )}
         </div>
       </div>
     </div>
@@ -6177,6 +6193,7 @@ const App = () => {
   });
   const [menu, setMenu] = useState<Dish[]>([]);
   const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([]);
+  const [publicFestival, setPublicFestival] = useState<FestivalEventId>('default');
   const [isLoading, setIsLoading] = useState(true);
   const supabase = useMemo(() => createClient(supabaseConfig.url, supabaseConfig.key), [supabaseConfig]);
   
@@ -6191,6 +6208,12 @@ const App = () => {
       if (slides) setHeroSlides(deduplicateHeroSlides(slides.map(parseHeroSlide)));
       if (stats) {
         if (stats.menu_image_url) setMenuImageUrl(stats.menu_image_url);
+        if (stats.active_festival) {
+          const validFestivals: FestivalEventId[] = ['default', 'halloween', 'christmas', 'newyear'];
+          if (validFestivals.includes(stats.active_festival as FestivalEventId)) {
+            setPublicFestival(stats.active_festival as FestivalEventId);
+          }
+        }
         if (stats.poll_question !== undefined || stats.poll_is_active !== undefined) {
           const remotePoll: VotePoll = {
             is_active: stats.poll_is_active ?? true,
@@ -6390,10 +6413,27 @@ const App = () => {
   });
 
   const [selectedCountry, setSelectedCountry] = useState<CountryCode>(() => getStoredCountry());
+  const [previewFestival, setPreviewFestival] = useState<FestivalPreviewState | null>(null);
+  const [previewCountry, setPreviewCountry] = useState<CountryCode | null>(null);
 
   const handleSelectCountry = (code: CountryCode) => {
-    setSelectedCountry(code);
-    setStoredCountry(code);
+    if (previewFestival) {
+      setPreviewCountry(code);
+    } else {
+      setSelectedCountry(code);
+      setStoredCountry(code);
+    }
+  };
+
+  const handleStartPreviewFestival = (event: FestivalEventId, enableAnimations: boolean) => {
+    setPreviewFestival({ event, enableAnimations });
+    setPreviewCountry(selectedCountry);
+  };
+
+  const handleExitPreview = () => {
+    setPreviewFestival(null);
+    setPreviewCountry(null);
+    window.location.hash = '#ACP1122';
   };
 
   useEffect(() => {
@@ -6404,7 +6444,7 @@ const App = () => {
 
   const isAcp = hash.toUpperCase().includes('ACP1122');
 
-  if (isAcp) {
+  if (isAcp && !previewFestival) {
     if (!isAcpUnlocked) {
       return (
         <AcpPinLock 
@@ -6427,66 +6467,105 @@ const App = () => {
         setMenuImageUrl={setMenuImageUrl}
         pollData={pollData}
         onSavePoll={handleSavePoll}
+        onStartPreviewFestival={handleStartPreviewFestival}
+        activeFestival={publicFestival}
       />
     );
   }
 
-  if (selectedCountry === 'KR') {
-    return (
+  const effectiveCountry: CountryCode = previewFestival ? (previewCountry || selectedCountry) : selectedCountry;
+  const effectiveFestival: FestivalEventId = previewFestival ? previewFestival.event : publicFestival;
+  const effectiveAnimations: boolean = previewFestival ? previewFestival.enableAnimations : (publicFestival !== 'default');
+
+  let pageContent: React.ReactNode = null;
+
+  if (effectiveCountry === 'KR') {
+    pageContent = (
       <HomePageKR
         menu={menu}
         heroSlides={heroSlides}
         isLoading={isLoading}
-        selectedCountry={selectedCountry}
+        selectedCountry={effectiveCountry}
         onSelectCountry={handleSelectCountry}
         currentTheme={currentTheme}
         onThemeChange={handleThemeChange}
+        festivalEvent={effectiveFestival}
       />
     );
-  }
-
-  if (selectedCountry === 'JP') {
-    return (
+  } else if (effectiveCountry === 'JP') {
+    pageContent = (
       <HomePageJP
         menu={menu}
         heroSlides={heroSlides}
         isLoading={isLoading}
-        selectedCountry={selectedCountry}
+        selectedCountry={effectiveCountry}
         onSelectCountry={handleSelectCountry}
         currentTheme={currentTheme}
         onThemeChange={handleThemeChange}
+        festivalEvent={effectiveFestival}
       />
     );
-  }
-
-  if (selectedCountry === 'US') {
-    return (
+  } else if (effectiveCountry === 'US') {
+    pageContent = (
       <HomePageUS
         menu={menu}
         heroSlides={heroSlides}
         isLoading={isLoading}
-        selectedCountry={selectedCountry}
+        selectedCountry={effectiveCountry}
         onSelectCountry={handleSelectCountry}
         currentTheme={currentTheme}
         onThemeChange={handleThemeChange}
+        festivalEvent={effectiveFestival}
+      />
+    );
+  } else {
+    pageContent = (
+      <HomePage 
+        menu={menu} 
+        heroSlides={heroSlides} 
+        isLoading={isLoading} 
+        supabase={supabase}
+        currentTheme={currentTheme}
+        onThemeChange={handleThemeChange}
+        menuImageUrl={menuImageUrl}
+        pollData={pollData}
+        onVote={handleVote}
+        selectedCountry={effectiveCountry}
+        onSelectCountry={handleSelectCountry}
+        festivalEvent={effectiveFestival}
       />
     );
   }
 
   return (
-    <HomePage 
-      menu={menu} 
-      heroSlides={heroSlides} 
-      isLoading={isLoading} 
-      supabase={supabase}
-      currentTheme={currentTheme}
-      onThemeChange={handleThemeChange}
-      menuImageUrl={menuImageUrl}
-      pollData={pollData}
-      onVote={handleVote}
-      selectedCountry={selectedCountry}
-      onSelectCountry={handleSelectCountry}
-    />
+    <>
+      {pageContent}
+      {previewFestival ? (
+        <>
+          <FestivalPreviewBar
+            currentEvent={previewFestival.event}
+            previewCountry={effectiveCountry}
+            onSelectCountry={(c) => setPreviewCountry(c)}
+            enableAnimations={effectiveAnimations}
+            onToggleAnimations={() => setPreviewFestival(prev => prev ? { ...prev, enableAnimations: !prev.enableAnimations } : null)}
+            onExitPreview={handleExitPreview}
+          />
+          <FestivalAtmosphere
+            event={previewFestival.event}
+            enableAnimations={effectiveAnimations}
+            forceAnimations={true}
+          />
+        </>
+      ) : (
+        publicFestival !== 'default' && (
+          <FestivalAtmosphere
+            event={publicFestival}
+            enableAnimations={true}
+            forceAnimations={false}
+          />
+        )
+      )}
+    </>
   );
 };
 

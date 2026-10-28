@@ -24,6 +24,8 @@ import {
   Crown
 } from 'lucide-react';
 
+import { FestivalEventId } from '../../types/festival';
+
 interface HomePageKRProps {
   menu: any[];
   heroSlides?: any[];
@@ -32,12 +34,14 @@ interface HomePageKRProps {
   onSelectCountry: (code: CountryCode) => void;
   currentTheme?: any;
   onThemeChange?: (theme: any) => void;
+  festivalEvent?: FestivalEventId;
 }
 
 export const HomePageKR: React.FC<HomePageKRProps> = ({
   menu = [],
   selectedCountry,
   onSelectCountry,
+  festivalEvent = 'default',
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [activeModalDish, setActiveModalDish] = useState<KoreanDishDisplay | null>(null);
@@ -71,7 +75,10 @@ export const HomePageKR: React.FC<HomePageKRProps> = ({
   }, [localizedDishes, selectedCategory]);
 
   return (
-    <div className="min-h-screen bg-[#FFFDF7] text-[#2c1d11] font-kr antialiased selection:bg-pink-100 selection:text-pink-900">
+    <div 
+      data-festival={festivalEvent} 
+      className="min-h-screen bg-[#FFFDF7] text-[#2c1d11] font-kr antialiased selection:bg-pink-100 selection:text-pink-900"
+    >
       
       {/* 1. TOP HEADER BAR */}
       <header className="sticky top-0 z-50 bg-[#FAF7F2]/95 backdrop-blur-md border-b border-[#EFE8DD] shadow-2xs">

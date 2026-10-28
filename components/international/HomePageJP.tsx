@@ -24,6 +24,8 @@ import {
   ThumbsUp
 } from 'lucide-react';
 
+import { FestivalEventId } from '../../types/festival';
+
 interface HomePageJPProps {
   menu: any[];
   heroSlides?: any[];
@@ -32,12 +34,14 @@ interface HomePageJPProps {
   onSelectCountry: (code: CountryCode) => void;
   currentTheme?: any;
   onThemeChange?: (theme: any) => void;
+  festivalEvent?: FestivalEventId;
 }
 
 export const HomePageJP: React.FC<HomePageJPProps> = ({
   menu = [],
   selectedCountry,
   onSelectCountry,
+  festivalEvent = 'default',
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [activeModalDish, setActiveModalDish] = useState<JapaneseDishDisplay | null>(null);
@@ -91,7 +95,10 @@ export const HomePageJP: React.FC<HomePageJPProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] text-[#241a13] font-jp-sans antialiased selection:bg-rose-100 selection:text-rose-900">
+    <div 
+      data-festival={festivalEvent} 
+      className="min-h-screen bg-[#FAF7F2] text-[#241a13] font-jp-sans antialiased selection:bg-rose-100 selection:text-rose-900"
+    >
       
       {/* 1. TOP HEADER BAR */}
       <header className="sticky top-0 z-50 bg-[#FAF7F2]/95 backdrop-blur-md border-b border-[#E8DFD3] shadow-2xs">
