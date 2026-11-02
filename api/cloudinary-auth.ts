@@ -8,7 +8,7 @@ import {
   createSessionToken,
   buildSetCookieHeader,
   buildClearCookieHeader
-} from './cloudinary-session';
+} from './cloudinary-session.js';
 
 export default async function handler(req: any, res: any) {
   // Always prevent public or shared caching

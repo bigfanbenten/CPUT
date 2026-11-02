@@ -1,5 +1,5 @@
 import type { CloudinaryAccountUsage, CloudinaryUsageResponse } from '../types/cloudinary';
-import { parseCookies, verifySessionToken } from './cloudinary-session';
+import { parseCookies, verifySessionToken } from './cloudinary-session.js';
 
 // In-memory cache per serverless instance: Reduces redundant API calls within the same warm instance.
 // NOTE: This does NOT act as a global rate limiter across different cold-start Vercel instances.
