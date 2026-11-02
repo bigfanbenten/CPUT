@@ -64,6 +64,7 @@ import { FestivalEventId, FestivalPreviewState } from './types/festival';
 import { FestivalAtmosphere } from './components/festival/FestivalAtmosphere';
 import { FestivalPreviewBar } from './components/festival/FestivalPreviewBar';
 import { FestivalAdminTab } from './components/festival/FestivalAdminTab';
+import { CloudinaryUsageMonitor } from './components/CloudinaryUsageMonitor';
 import { NotificationDuration } from './types';
 import {
   calculateNotificationExpiration,
@@ -4035,7 +4036,7 @@ const HomePage = ({ menu, heroSlides, isLoading, supabase, currentTheme, onTheme
 };
 
 const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase, theme, onThemeChange, menuImageUrl, setMenuImageUrl, pollData, onSavePoll, onStartPreviewFestival, activeFestival, onSaveFestival }: any) => {
-  const [activeTab, setActiveTab] = useState<'menu' | 'hero' | 'notifications' | 'quick' | 'guestbook' | 'stats' | 'poll' | 'festival'>('menu');
+  const [activeTab, setActiveTab] = useState<'menu' | 'hero' | 'notifications' | 'quick' | 'guestbook' | 'stats' | 'poll' | 'festival' | 'cloudinary'>('menu');
   const themeData = THEMES[theme as Theme] || THEMES[Theme.White];
   const [notifications, setNotifications] = useState<any[]>([]);
   const [guestbookItems, setGuestbookItems] = useState<GuestbookEntry[]>([]);
@@ -4698,6 +4699,7 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
           <button onClick={() => setActiveTab('poll')} className={`flex-1 py-4 px-3 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${activeTab === 'poll' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>🎵 QUẢN LÝ NHẠC & BÌNH CHỌN</button>
           <button onClick={() => setActiveTab('guestbook')} className={`flex-1 py-4 px-3 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${activeTab === 'guestbook' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>💬 GÓP Ý</button>
           <button onClick={() => setActiveTab('stats')} className={`flex-1 py-4 px-3 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${activeTab === 'stats' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>📊 THỐNG KÊ</button>
+          <button onClick={() => setActiveTab('cloudinary')} className={`flex-1 py-4 px-3 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${activeTab === 'cloudinary' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>☁️ THỐNG KÊ CLOUDINARY</button>
           <button onClick={() => setActiveTab('festival')} className={`flex-1 py-4 px-3 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${activeTab === 'festival' ? 'bg-white shadow-md text-amber-800' : 'text-stone-400'}`}>✨ SỰ KIỆN</button>
         </div>
         
@@ -6180,6 +6182,12 @@ const AdminPanel = ({ menu, setMenu, heroSlides, setHeroSlides, onSave, supabase
               activeFestival={activeFestival}
               onSaveFestival={onSaveFestival}
             />
+          )}
+
+          {activeTab === 'cloudinary' && (
+            <div className="bg-[#0B0E14] -m-12 p-8 sm:p-12 rounded-b-[40px]">
+              <CloudinaryUsageMonitor />
+            </div>
           )}
         </div>
       </div>
