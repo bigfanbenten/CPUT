@@ -61,10 +61,36 @@ export const COUNTRY_LIST: CountryInfo[] = [
   COUNTRIES.US,
 ];
 
-export const CPUT_COUNTRY_STORAGE_KEY = 'cput_selected_country';
+export const hasStoredCountry = (): boolean => {
+  try {
+    const saved = localStorage.getItem(CPUT_COUNTRY_STORAGE_KEY);
+    return saved === 'VN' || saved === 'KR' || saved === 'JP' || saved === 'US';
+  } catch {
+    return false;
+  }
+};
+
+export const getUrlCountryParam = (): CountryCode | null => {
+  try {
+    if (typeof window === 'undefined') return null;
+    const params = new URLSearchParams(window.location.search);
+    const country = (params.get('country') || params.get('lang'))?.toUpperCase();
+    if (country === 'VN' || country === 'KR' || country === 'JP' || country === 'US') {
+      return country as CountryCode;
+    }
+  } catch {
+    // ignore
+  }
+  return null;
+};
 
 export const getStoredCountry = (): CountryCode => {
   try {
+    // Check URL parameter first if present
+    const urlCountry = getUrlCountryParam();
+    if (urlCountry) {
+      return urlCountry;
+    }
     const saved = localStorage.getItem(CPUT_COUNTRY_STORAGE_KEY);
     if (saved === 'KR' || saved === 'JP' || saved === 'US') {
       return saved;
@@ -82,3 +108,4 @@ export const setStoredCountry = (code: CountryCode): void => {
     console.warn('Cannot write country to localStorage:', e);
   }
 };
+

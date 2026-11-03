@@ -53,8 +53,9 @@ import { createClient } from '@supabase/supabase-js';
 import { ChevronRight, ChevronDown, ChevronUp, UtensilsCrossed, ShoppingBag, Trash2, Plus, Minus, MessageSquare, CheckCircle2, Facebook, Mail, Youtube, Users, Vote, Music, VolumeX, Play, Pause, BarChart2, Check, X, RefreshCw, Shuffle, ExternalLink, Trophy, ListTree, Copy, ArrowLeft } from 'lucide-react';
 import Hls from 'hls.js';
 import { AcpPinLock } from './components/AcpPinLock';
-import { CountryCode, getStoredCountry, setStoredCountry } from './countryConfig';
+import { CountryCode, getStoredCountry, setStoredCountry, hasStoredCountry, getUrlCountryParam } from './countryConfig';
 import { CountrySelectorBar } from './components/CountrySelectorBar';
+import { LanguageGateway } from './components/LanguageGateway';
 import { HomePageKR } from './components/international/HomePageKR';
 import { HomePageJP } from './components/international/HomePageJP';
 import { HomePageUS } from './components/international/HomePageUS';
@@ -6458,6 +6459,42 @@ const App = () => {
   const [previewFestival, setPreviewFestival] = useState<FestivalPreviewState | null>(null);
   const [previewCountry, setPreviewCountry] = useState<CountryCode | null>(null);
 
+  // Language Gateway State: Show for first-time visitors (no stored language preference)
+  const [showLanguageGateway, setShowLanguageGateway] = useState<boolean>(() => {
+    // 1. If URL has #ACP1122, never show gateway
+    if (typeof window !== 'undefined' && window.location.hash.toUpperCase().includes('ACP1122')) {
+      return false;
+    }
+    // 2. If URL has explicit language query param, save it and bypass gateway
+    const urlCountry = getUrlCountryParam();
+    if (urlCountry) {
+      setStoredCountry(urlCountry);
+      return false;
+    }
+    // 3. If URL has #gateway or ?gateway=true, allow opening gateway
+    if (typeof window !== 'undefined') {
+      const search = window.location.search;
+      const hash = window.location.hash;
+      if (search.includes('gateway=true') || hash.toLowerCase().includes('gateway')) {
+        return true;
+      }
+    }
+    // 4. Returning visitor: if country is already stored in localStorage, do NOT show gateway
+    if (hasStoredCountry()) {
+      return false;
+    }
+    // 5. First-time visitor: show Language Gateway
+    return true;
+  });
+
+  const handleGatewaySelectLanguage = (code: CountryCode) => {
+    handleSelectCountry(code);
+    if (typeof window !== 'undefined' && window.location.hash.toLowerCase().includes('gateway')) {
+      window.location.hash = '';
+    }
+    setShowLanguageGateway(false);
+  };
+
   const handleSelectCountry = (code: CountryCode) => {
     if (previewFestival) {
       setPreviewCountry(code);
@@ -6548,6 +6585,13 @@ const App = () => {
         activeFestival={publicFestival}
         onSaveFestival={handleSaveFestival}
       />
+    );
+  }
+
+  // Language Gateway: First-time visitor welcome screen (or manual #gateway trigger)
+  if (showLanguageGateway && !previewFestival) {
+    return (
+      <LanguageGateway onSelectLanguage={handleGatewaySelectLanguage} />
     );
   }
 
